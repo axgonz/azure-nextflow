@@ -52,7 +52,7 @@ def replaceParams(fileName, text, subs, flags=0):
        contents = pattern.sub(subs, contents)
        f1.seek(0)
        f1.truncate()
-       f1.write(file_contents)
+       f1.write(contents)
 
 curl("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config")
 curl("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf")
