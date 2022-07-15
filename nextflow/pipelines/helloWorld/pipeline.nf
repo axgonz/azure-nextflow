@@ -31,3 +31,4 @@ process convertToUpper {
 workflow {
     splitLetters | flatten | convertToUpper | view { it.trim() }
 }
+
