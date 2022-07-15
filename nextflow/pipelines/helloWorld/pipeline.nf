@@ -16,6 +16,9 @@ process splitLetters {
 }
 
 process convertToUpper {
+    queue 'default'
+    container "$params.azureRegistryServer/default/ubuntu:latest"
+
     input:
         file x
 
