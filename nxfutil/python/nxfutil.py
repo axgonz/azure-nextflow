@@ -59,9 +59,9 @@ credential = DefaultAzureCredential()
 client = SecretClient(vault_url=KVUri, credential=credential)
 
 for secret in secrets:
-    print(f"Importing secret '{secret}' to nextflow.")
+    print(f"Importing secret '{secret}' to nextflow")
     azSecret = client.get_secret(secret.replace("_","-"))
-    subprocess.run(["./nextflow", "secrets", "put", "-n", secret, "-v", azSecret.value])
+    subprocess.run(["./nextflow", "secrets", "put", "-n", secret.replace("-","_"), "-v", azSecret.value])
 
 for param in params:
     azSecret = client.get_secret(param.replace("_","-"))
