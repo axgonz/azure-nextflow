@@ -45,6 +45,15 @@ def findParams(fileName):
             list.append(item)
     return list
 
+def replaceParams(Path, text, subs, flags=0):
+  with open(filepath, "r+") as f1:
+       contents = f1.read()
+       pattern = re.compile(re.escape(text), flags)
+       contents = pattern.sub(subs, contents)
+       f1.seek(0)
+       f1.truncate()
+       f1.write(file_contents)
+
 curl("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config")
 curl("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf")
 curl("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json")
@@ -64,10 +73,10 @@ for secret in secrets:
     subprocess.run(["./nextflow", "secrets", "put", "-n", secret, "-v", azSecret.value])
 
 for param in params:
+    print(f"Extending param '{secret.replace('_','-')}'")
     azSecret = client.get_secret(param.replace("_","-"))
-    print(f"{param}: {azSecret.value}")
-    # ToDo replace exParam with value in nextflow.config
+    replaceParams("nextflow.config", f"exParams.{param}", azSecret.value)
 
 subprocess.run(["./nextflow", "config"])
-subprocess.run(["./nextflow", "run pipeline.nf", "-params-file", "parameters.json", "-w", "az://batch/work", "-with-timeline", "-with-dag"])
+subprocess.run(["./nextflow", "run", "pipeline.nf", "-params-file", "parameters.json", "-w", "az://batch/work", "-with-timeline", "-with-dag"])
 
