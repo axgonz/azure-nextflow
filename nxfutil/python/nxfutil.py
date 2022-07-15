@@ -45,8 +45,8 @@ def findParams(fileName):
             list.append(item)
     return list
 
-def replaceParams(Path, text, subs, flags=0):
-  with open(filepath, "r+") as f1:
+def replaceParams(fileName, text, subs, flags=0):
+  with open(fileName, "r+") as f1:
        contents = f1.read()
        pattern = re.compile(re.escape(text), flags)
        contents = pattern.sub(subs, contents)
