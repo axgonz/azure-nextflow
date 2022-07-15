@@ -60,7 +60,7 @@ client = SecretClient(vault_url=KVUri, credential=credential)
 
 for secret in secrets:
     azSecret = client.get_secret(secret.replace("_","-"))
-    subprocess.run("./nextflow", f"secrets put -n {secret} -v {azSecret.value}")
+    subprocess.run("./nextflow", "secrets", "put", "-n", secret, "-v", azSecret.value)
 
 for param in params:
     azSecret = client.get_secret(param.replace("_","-"))
