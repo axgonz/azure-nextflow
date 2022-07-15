@@ -33,7 +33,7 @@ def findSecrets(fileName):
     for item in matches:
         item = item.split(".")[1]
         if item not in list:
-            list.append(item.replace("_","-"))
+            list.append(item)
     return list
 
 def findParams(fileName):
@@ -59,9 +59,9 @@ credential = DefaultAzureCredential()
 client = SecretClient(vault_url=KVUri, credential=credential)
 
 for secret in secrets:
-    print(f"Importing secret '{secret}' to nextflow")
+    print(f"Importing secret '{secret.replace("_","-")}' to nextflow as '{secret}'")
     azSecret = client.get_secret(secret.replace("_","-"))
-    subprocess.run(["./nextflow", "secrets", "put", "-n", secret.replace("-","_"), "-v", azSecret.value])
+    subprocess.run(["./nextflow", "secrets", "put", "-n", secret, "-v", azSecret.value])
 
 for param in params:
     azSecret = client.get_secret(param.replace("_","-"))
