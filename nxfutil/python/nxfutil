@@ -3,8 +3,8 @@
 while getopts ":u:" opt
 do
     case "${opt}" in
-        u) uri=${OPTARG};
-        :) uri=""
+        u) uri=${OPTARG};;
+        :) uri="";;
     esac
 done
 
