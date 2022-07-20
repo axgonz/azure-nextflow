@@ -41,16 +41,21 @@ With the following secrets created:
 - Storage files with 'batchsmb' share created.
 - Keys enabled and stored in Key Vault.
 
+### Managed Identities
+
+- Create a Managed Identity for Batch Account 'batchmid'.
+- Create a Managed Identity for nextflow Container Instance(s) 'nextflowmid'
+
 ### Batch Account
 
 - Pool allocation mode set to "Batch service".
-- Connected to above Storage Account using a Managed Identity.
+- Connected to above Storage Account using User Assigned Managed Identity.
 - Keys enabled and stored in Key Vault.
 
 ### Container Instance
 
 - Configured using the nextflow image.
-- System Assigned Managed Identity enabled with read access granted in Key Vault.
+- Read access granted in Key Vault using User Assigned Managed Identity.
 - Override the "AZ_KEY_VAULT_NAME" environment variable with the name of the Key Vault resource.
 - (optional) Override the CMD with one similar to that below to execute a different Nextflow pipeline.
     ``` bash
@@ -68,4 +73,26 @@ Once called, nxfutil will download the default or provided Nextflow files and pa
 
 Once the config file has been parsed nxfutil will show the resultant Nextflow config by running `nextflow config` and will finally offload to nextflow by running `nextflow run` specifying the pipeline and parameters files.
 
+After the `nextflow` command completes successfully the Contain Instance will stop. 
+
 It is intended that the next iteration of nxfutil will integrate with Nextflow Tower so that launched jobs can be monitored remotely. It is also possible that the utility will be re-written using nodejs, dotNet and/or Rust.
+
+## Lifecycle
+
+A new nextflow Container Instance is needed for each different Nextflow pipeline, parameters and configuration combination.
+
+Once a Container Instance executes and terminates it can be safely deleted unless the same job is to be dispatched again (using the same Nextflow pipeline, parameters and configuration files).
+
+The quickest way to dispatched different Nextflow jobs is to use the Azure Cli to create a new nextflow Container Instance.
+
+``` bash
+az container create -g myRgName \
+    --name nextflow1 \
+    --image myCrName.azurecr.io/default/nextflow:latest \
+    --cpu 1 \
+    --memory 1 \
+    --restart-policy Never \
+    --environment-variables AZ_KEY_VAULT_NAME="myKvName" AZURE_CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
+    --assign-identity "/subscriptions/mySubscriptionId/resourcegroups/myRG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/myID" \
+    --command-line "cd /.nextflow && ./nxfutil -c https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config -p https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf -a https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json"
+```
