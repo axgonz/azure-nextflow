@@ -57,6 +57,7 @@ With the following secrets created:
 - Configured using the nextflow image.
 - Read access granted in Key Vault using User Assigned Managed Identity.
 - Override the "AZ_KEY_VAULT_NAME" environment variable with the name of the Key Vault resource.
+- Override the "AZURE_CLIENT_ID" environment variable with the client id of the nextflowmid Managed Identity resource.
 - (optional) Override the CMD with one similar to that below to execute a different Nextflow pipeline.
     ``` bash
     cd /.nextflow && \
