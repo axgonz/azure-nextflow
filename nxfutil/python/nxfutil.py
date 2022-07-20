@@ -1,9 +1,21 @@
 import os
-import requests
 import re
 import subprocess
+
+import requests
+import argparse
+
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-u",
+    "--uri", 
+    help="URI path containing 'nextflow.config', 'parameters.json' and 'pipeline.nf' files.",
+    type=string,
+    default="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld")
+parser.add_argument("--version", action="version", version='%(prog)s - Version 1.0')
+args = parser.parse_args()
 
 def curl(uri, fileName=""):
     if fileName == "":
@@ -54,9 +66,9 @@ def replaceParams(fileName, text, subs, flags=0):
        f1.truncate()
        f1.write(contents)
 
-curl("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config")
-curl("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf")
-curl("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json")
+curl(f"{args.uri.strip('/')}/nextflow.config")
+curl(f"{args.uri.strip('/')}/pipeline.nf")
+curl(f"{args.uri.strip('/')}/parameters.json")
 
 secrets = findSecrets("nextflow.config")
 params = findParams("nextflow.config")

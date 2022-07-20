@@ -1,0 +1,16 @@
+#!/bin/bash
+
+while getopts ":u:" opt
+do
+    case "${opt}" in
+        u) uri=${OPTARG};
+        :) uri=""
+    esac
+done
+
+if [[uri==""]]
+then
+    python3 nxfutil.py
+else
+    python3 nxfutil.py --uri $uri
+fi
