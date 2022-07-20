@@ -97,3 +97,5 @@ az container create -g myRgName \
     --assign-identity "/subscriptions/mySubscriptionId/resourcegroups/myRgName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/nextflowmid" \
     --command-line "/bin/bash -c 'cd /.nextflow && ./nxfutil -c https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config -p https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf -a https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json'"
 ```
+
+> N.B. The point-in-time Docker build of the nextflow image used in this sample is available on Docker Hub. To use it replace `--image ...` in the command above with `--image algonz/nextflow:latest`
