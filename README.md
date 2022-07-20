@@ -94,6 +94,6 @@ az container create -g myRgName \
     --memory 1 \
     --restart-policy Never \
     --environment-variables AZ_KEY_VAULT_NAME="myKvName" AZURE_CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
-    --assign-identity "/subscriptions/mySubscriptionId/resourcegroups/myRG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/myID" \
-    --command-line "cd /.nextflow && ./nxfutil -c https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config -p https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf -a https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json"
+    --assign-identity "/subscriptions/mySubscriptionId/resourcegroups/myRgName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/nextflowmid" \
+    --command-line "/bin/bash -c 'cd /.nextflow && ./nxfutil -c https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config -p https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf -a https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json'"
 ```
