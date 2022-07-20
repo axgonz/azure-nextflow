@@ -9,11 +9,21 @@ from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-u",
-    "--uri", 
-    help="URI path containing 'nextflow.config', 'parameters.json' and 'pipeline.nf' files.",
-    type=string,
-    default="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld")
+parser.add_argument("-c",
+    "--config-uri", 
+    help="Uri to nextflow config ('.config') file.",
+    type=str,
+    default="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config")
+parser.add_argument("-p",
+    "--pipeline-uri", 
+    help="Uri to nextflow pipeline ('.nf') file.",
+    type=str,
+    default="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf")    
+parser.add_argument("-a",
+    "--parameters-uri", 
+    help="Uri to nextflow parameters ('.json') file.",
+    type=str,
+    default="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json")
 parser.add_argument("--version", action="version", version='%(prog)s - Version 1.0')
 args = parser.parse_args()
 
@@ -66,9 +76,9 @@ def replaceParams(fileName, text, subs, flags=0):
        f1.truncate()
        f1.write(contents)
 
-curl(f"{args.uri.strip('/')}/nextflow.config")
-curl(f"{args.uri.strip('/')}/pipeline.nf")
-curl(f"{args.uri.strip('/')}/parameters.json")
+curl(args.config_uri, "nextflow.config")
+curl(args.pipeline_uri, "pipeline.nf")
+curl(args.parameters_uri, "parameters.json")
 
 secrets = findSecrets("nextflow.config")
 params = findParams("nextflow.config")

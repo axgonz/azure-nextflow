@@ -1,16 +1,30 @@
 #!/bin/bash
 
-while getopts ":u:" opt
+while getopts "c:p:a:" opt
 do
     case "${opt}" in
-        u) uri=${OPTARG};;
-        :) uri="";;
+        c) config=${OPTARG};;
+        p) pipeline=${OPTARG};;
+        a) parameters=${OPTARG};;
     esac
 done
 
-if [[ $uri == "" ]]
+cmd="python3 nxfutil.py"
+
+if [[ $config != "" ]] 
 then
-    python3 nxfutil.py
-else
-    python3 nxfutil.py --uri $uri
+    cmd="$cmd -c $config"
 fi
+
+if [[ $pipeline != "" ]] 
+then
+    cmd="$cmd -p $pipeline"
+fi
+
+if [[ $parameters != "" ]] 
+then
+    cmd="$cmd -a $parameters"
+fi
+
+echo $cmd
+$cmd
