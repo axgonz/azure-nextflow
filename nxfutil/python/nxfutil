@@ -8,7 +8,7 @@ do
     esac
 done
 
-if [[uri==""]]
+if [[ $uri == "" ]]
 then
     python3 nxfutil.py
 else
