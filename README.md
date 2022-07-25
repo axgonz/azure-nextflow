@@ -93,15 +93,25 @@ Once a Container Instance executes and terminates it can be safely deleted unles
 The quickest way to dispatched different Nextflow jobs is to use the Azure Cli to create a new nextflow Container Instance.
 
 ``` bash
-az container create -g myRgName \
+az_subId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+az_rgName="myRgName"
+az_kvName="myKvName"
+az_crName="myCrName"
+az_midClientId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+nxf_configUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config"
+nxf_pipelineUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf"
+nxf_parametersUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json"
+
+az container create -g $az_rgName \
     --name nextflow1 \
-    --image myCrName.azurecr.io/default/nextflow:latest \
+    --image "$az_crName.azurecr.io/default/nextflow:latest" \
     --cpu 1 \
     --memory 1 \
     --restart-policy Never \
-    --environment-variables AZ_KEY_VAULT_NAME="myKvName" AZURE_CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
-    --assign-identity "/subscriptions/mySubscriptionId/resourcegroups/myRgName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/nextflowmid" \
-    --command-line "/bin/bash -c 'cd /.nextflow && ./nxfutil -c https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config -p https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf -a https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json'"
+    --environment-variables AZ_KEY_VAULT_NAME=$az_kvName AZURE_CLIENT_ID=$az_midClientId \
+    --assign-identity "/subscriptions/$az_subId/resourcegroups/$az_rgName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/nextflowmid" \
+    --command-line "/bin/bash -c 'cd /.nextflow && ./nxfutil -c $nxf_configUri -p $nxf_pipelineUri -a $nxf_parametersUri'"
 ```
 
 > N.B. The point-in-time Docker build of the nextflow image used in this sample is available on Docker Hub. To use it replace `--image ...` in the command above with `--image algonz/nextflow:latest`
