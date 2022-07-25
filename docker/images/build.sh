@@ -5,10 +5,10 @@ cd ${script_dir}
 
 echo "---ubuntu---"
 cd ubuntu
-docker build -t ubuntu -f Dockerfile .
+docker build -t algonz/ubuntu -f Dockerfile .
 cd ..
 
 echo "---nextflow---"
 cd nextflow
-docker build -t nextflow -f Dockerfile .
+docker build -t algonz/nextflow -f Dockerfile .
 cd ..
