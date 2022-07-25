@@ -1,4 +1,6 @@
 #!/bin/bash
 
+ACR="azurecr454"
+
 az login --tenant microsoft.com
-az acr login --name azurecr454
+az acr login --name $ACR

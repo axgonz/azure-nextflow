@@ -1,9 +1,11 @@
 #!/bin/bash
 
+ACR="azurecr454"
+
 # ubuntu
-docker image tag algonz/ubuntu azurecr454.azurecr.io/default/ubuntu
-docker push azurecr454.azurecr.io/default/ubuntu
+docker image tag algonz/ubuntu "$ACR.azurecr.io/default/ubuntu"
+docker push "$ACR.azurecr.io/default/ubuntu"
 
 # nextflow
-docker image tag algonz/nextflow azurecr454.azurecr.io/default/ubuntu
-docker push azurecr454.azurecr.io/default/nextflow
+docker image tag algonz/nextflow "$ACR.azurecr.io/default/ubuntu"
+docker push "$ACR.azurecr.io/default/nextflow"
