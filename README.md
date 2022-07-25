@@ -10,6 +10,12 @@ It is assumed that this infrastructure would be deployed through a DevOps pipeli
 
 This sample will be eventually expanded to include Bicep templates for capturing the state of required Azure resources and pipeline/workflow files for the deployment.
 
+``` bash
+loc="australiaeast"
+sub="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+az deployment sub create --name "batch-$loc" --location $loc --subscription $sub --template-file ./azure/templates/main.bicep
+```
+
 ## Set up
 
 As per above, it is assumed (for now) that the following Azure resources are already deployed.

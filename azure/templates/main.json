@@ -1,0 +1,41 @@
+{
+    "regionPrefixLookup": {
+        "//": "Use the well known abbreviations from Microsoft docs.",
+        "australiacentral": "auc",
+        "australiaeast": "aue",
+        "australiasoutheast": "ase"
+    },
+    "resourceGroup": {
+        "//": "Will be made globally unique with an auto generated suffix.",
+        "name": "batch3",
+        "nameIsAlreadyUnique": true
+    },
+    "managedIdentity": {
+        "batch": {
+            "name": "batchmid"
+        },
+        "nextflow": {
+            "name": "nextflowmid"
+        }
+    },
+    "containerRegistry": {
+        "//": "Will be made globally unique with an auto generated suffix.",
+        "name": "cr",
+        "nameIsAlreadyUnique": false
+    },
+    "storageAccount": {
+        "//": "Will be made globally unique with an auto generated suffix.",
+        "name": "st",
+        "nameIsAlreadyUnique": false
+    },
+    "batchAccount": {
+        "//": "Will be made globally unique with an auto generated suffix.",
+        "name": "bt",
+        "nameIsAlreadyUnique": false
+    },
+    "keyVault": {
+        "//": "Will be made globally unique with an auto generated suffix.",
+        "name": "kv",
+        "nameIsAlreadyUnique": false
+    }
+}
