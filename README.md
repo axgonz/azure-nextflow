@@ -25,7 +25,7 @@ As per above, it is assumed (for now) that the following Azure resources are alr
 With the following secrets created:
 
 - azure-registry-server
-- azure-registry-userName
+- azure-registry-username
 - azure-registry-password
 - azure-batch-location
 - azure-batch-accountName

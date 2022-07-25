@@ -38,6 +38,7 @@ module dep_acr 'resourceGroups/batch/containerRegistry.bicep' = {
   params: {
     location: location
     name: config.containerRegistry.nameIsAlreadyUnique ? config.containerRegistry.name : '${config.containerRegistry.name}${substring(uniqueString(config.containerRegistry.name, subscription().id, location), 0, 4)}'
+    kvName: dep_kv.outputs.name
   }
 }
 
@@ -48,6 +49,7 @@ module dep_storage 'resourceGroups/batch/storageAccount.bicep' = {
     location: location
     name: config.storageAccount.nameIsAlreadyUnique ? config.storageAccount.name : '${config.storageAccount.name}${substring(uniqueString(config.storageAccount.name, subscription().id, location), 0, 4)}'
     objectId: dep_midBatch.outputs.objectId
+    kvName: dep_kv.outputs.name
   }
 }
 
@@ -59,6 +61,7 @@ module dep_batch 'resourceGroups/batch/batchAccount.bicep' = {
     name: config.batchAccount.nameIsAlreadyUnique ? config.batchAccount.name : '${config.batchAccount.name}${substring(uniqueString(config.batchAccount.name, subscription().id, location), 0, 4)}'
     managedIdentityId: dep_midBatch.outputs.id
     storageAccountId: dep_storage.outputs.id
+    kvName: dep_kv.outputs.name
   }
 }
 

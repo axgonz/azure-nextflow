@@ -1,6 +1,11 @@
 param location string = resourceGroup().location
 param name string
 param objectId string
+param kvName string
+
+resource kv 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
+    name: kvName
+}
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
     location: location
@@ -64,6 +69,28 @@ resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/container
 resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-09-01' = {
     parent: serviceFile
     name: 'batchsmb'
+}
+
+resource secret_storageName 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
+    parent: kv
+    name: 'azure-storage-accountName'
+    properties: {
+        value: storageAccount.name
+        attributes: {
+            enabled: true
+        }
+    }
+}
+
+resource secret_storageKey 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
+    parent: kv
+    name: 'azure-storage-accountKey'
+    properties: {
+        value: storageAccount.listKeys().keys[0].value
+        attributes: {
+            enabled: true
+        }
+    }
 }
 
 output id string = storageAccount.id
