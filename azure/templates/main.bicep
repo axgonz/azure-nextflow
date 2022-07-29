@@ -1,6 +1,7 @@
 targetScope = 'subscription'
 
 param location string = deployment().location
+param gitHubMsiClientId string = 'null'
 
 var configText = loadTextContent('./main.json')
 var config = json(configText)
@@ -93,9 +94,13 @@ module dep_keyVault 'resourceGroups/batch/keyVault.bicep' = {
     location: location
     name: config.keyVault.nameIsAlreadyUnique ? config.keyVault.name : '${config.keyVault.name}${substring(uniqueString(config.keyVault.name, subscription().id, location), 0, 4)}'
     tenantId: dep_msiNextflow.outputs.tenantId
-    objectIds: [
+    objectIds: gitHubMsiClientId == 'null' ? [
       dep_msiFunctionApp.outputs.objectId
       dep_msiNextflow.outputs.objectId
+    ] : [
+      dep_msiFunctionApp.outputs.objectId
+      dep_msiNextflow.outputs.objectId
+      gitHubMsiClientId
     ]
   }
 }

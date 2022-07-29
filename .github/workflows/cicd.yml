@@ -1,0 +1,37 @@
+# Authentication
+# Set up the following secrets in your GitHub repository: 
+#
+#   AZURE_CREDENTIALS
+#
+# For details on usage of secrets, please refer to:
+#  https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets
+
+name: Build and deploy Azure templates
+
+on: 
+  workflow_dispatch:
+    inputs:
+      AZURE_LOCATION: 
+        description: 'Azure region name'
+        required: true
+        default: 'australiaeast'
+      AZURE_SUBSCRIPTION_ID:
+        description: 'Azure subscription id'
+        required: true
+
+env:
+  AZURE_LOCATION: ${{ github.event.inputs.AZURE_LOCATION }}
+  AZURE_SUBSCRIPTION_ID: ${{ github.event.inputs.AZURE_SUBSCRIPTION_ID }}
+
+jobs:
+  azure-templates:
+    uses: axgonz/azure-nextflow/.github/workflows/azure-templates.yml@main
+    with:
+      AZURE_LOCATION: ${{ env.AZURE_LOCATION }}
+      AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
+  
+  docker-images:
+    needs: azure-templates
+    uses: axgonz/azure-nextflow/.github/workflows/docker-images.yml@main
+    with:
+      AZURE_KEYVAULT_NAME: ${{ needs.azure-templates.outputs.AZURE_KEYVAULT_NAME }}
