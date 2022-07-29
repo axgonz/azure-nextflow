@@ -10,7 +10,22 @@ It is assumed that this infrastructure would be deployed through a DevOps pipeli
 
 This sample will be eventually expanded to include Bicep templates for capturing the state of required Azure resources and pipeline/workflow files for the deployment.
 
-## Set up
+## Set up (GitHub)
+
+1. Create a GitHub secret with permission to deploy to Azure; more information can be found in [Azure Docs](https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Cwindows).
+
+    ``` bash
+    az_subId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+    az ad sp create-for-rbac --name "GitHub" \
+        --role contributor \
+        --scopes /subscriptions/$az_subId \
+        --sdk-auth
+    ```
+
+2. Run the deployment workflows or add automatic triggers.
+
+## Set up (manuall)
 
 1. Deploy Azure resources.
 

@@ -44,18 +44,18 @@ jobs:
       uses: Azure/cli@1.0.4
       with:
         inlineScript: |
-          az deployment sub validate --name ${{ github.run_number }} --location ${{ env.AZ_LOCATION }} --subscription {{ env.AZ_SUBSCRIPTION_ID }} --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
+          az deployment sub validate --name ${{ github.run_number }} --location ${{ env.AZURE_LOCATION }} --subscription {{ env.AZURE_SUBSCRIPTION_ID }} --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
           az bicep upgrade 
           az bicep build --file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --outdir ${{ env.BICEP_OUTPUT_DIRECTORY }}
     
     # Deployment Bicep template
-    - name: Deploy ${{ env.ENVIRONMENT_TYPE }} environment infrastructure to ${{ env.RESOURCE_GROUP_NAME }}
+    - name: Deploy infrastructure
       id: infraDeployment
       uses: azure/arm-deploy@v1
       with:
         deploymentName: ${{ github.run_number }}
-        location: ${{ env.AZ_LOCATION }} 
-        subscription: ${{ env.AZ_SUBSCRIPTION_ID }}
+        location: ${{ env.AZURE_LOCATION }} 
+        subscription: ${{ env.AZURE_SUBSCRIPTION_ID }}
         template: ${{ env.BICEP_OUTPUT_DIRECTORY }}/${{ env.BICEP_FILE_NAME }}.json
 
     # Azure logout
