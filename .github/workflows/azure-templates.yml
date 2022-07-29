@@ -37,6 +37,12 @@ jobs:
     # Broken
     - name: 'creds'
       run: |
+        objectId=$(az ad sp list --spn "967269a3-c73b-4389-b0fd-8306908aa9e0" --query "[].objectId" --output tsv)
+        echo objectId is $objectId
+      shell: bash
+
+    - name: 'creds'
+      run: |
         clientId=$(echo "$SSH_KEY" | jq -r .clientId)
         echo clientId is $clientId
         objectId=$(az ad sp list --spn "$clientId" --query "[].objectId" --output tsv)
