@@ -38,9 +38,12 @@ jobs:
     - name: 'Get principal from clientId'
       id: gitHubMsiPrincipal
       run: |
-        objectId=$(az ad sp list --spn "${{ env.GITHUB_CLIENT_ID }}" --query "[].objectId" --output tsv)
-        echo $objectId
+        objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].objectId" --output tsv)
+        echo clientId is $CLIENT_ID
+        echo objectId is $objectId
         echo "::set-output name=objectId::$objectId"
+      env: 
+        CLIENT_ID: ${{ env.GITHUB_CLIENT_ID }}
 
     # Build ARM Template from Bicep
     - name: Azure CLI - Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
