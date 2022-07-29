@@ -38,19 +38,15 @@ jobs:
     - name: 'creds'
       run: |
         clientId=$(echo "$SSH_KEY" | jq -r .clientId)
-        echo clientId
-        objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].objectId" --output tsv)
-        echo objectId is $objectId
+        echo clientId is $clientId
       shell: bash
       env:
-        SSH_KEY: ${{ secrets.AZURE_CREDENTIALS }}         
+        SSH_KEY: ${{ secrets.AZURE_CREDENTIALS }}      
 
     - name: 'creds.clientId'
       run: |
         clientId=$(echo "$SSH_KEY")
-        echo clientId
-        objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].objectId" --output tsv)
-        echo objectId is $objectId        
+        echo clientId is $clientId   
       shell: bash
       env:
         SSH_KEY: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}     
