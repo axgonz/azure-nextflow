@@ -30,7 +30,7 @@ jobs:
     secrets: inherit
   
   docker-images:
-    needs: azure-templates
+    needs: azureTemplates
     uses: axgonz/azure-nextflow/.github/workflows/docker-images.yml@main
     with:
       AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
