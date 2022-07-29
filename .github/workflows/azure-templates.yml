@@ -39,7 +39,7 @@ jobs:
       run: |
         objectId=$(az ad sp list --spn "${{ env.GITHUB_CLIENT_ID }}" --query "[].objectId" --output tsv)
         echo $objectId
-        echo "::set-output name=GITHUB_OBJECT_ID::$objectId"
+        echo "::set-output name=GITHUB_OBJECT_ID::$objectId" >> $GITHUB_ENV
 
     # Build ARM Template from Bicep
     - name: Azure CLI - Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
