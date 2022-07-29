@@ -16,6 +16,11 @@ jobs:
   validate_and_push:
     runs-on: ubuntu-latest
     steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: 'Checkout repository branch'
         uses: actions/checkout@v2
       
