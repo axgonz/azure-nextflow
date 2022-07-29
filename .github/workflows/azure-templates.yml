@@ -36,10 +36,11 @@ jobs:
 
     # Get objectId from clientId
     - name: 'Get principal from clientId'
+      id: gitHubMsiPrincipal
       run: |
         objectId=$(az ad sp list --spn "${{ env.GITHUB_CLIENT_ID }}" --query "[].objectId" --output tsv)
         echo $objectId
-        echo "::set-output name=GITHUB_OBJECT_ID::$objectId" >> $GITHUB_ENV
+        echo "::set-output name=objectId::$objectId"
 
     # Build ARM Template from Bicep
     - name: Azure CLI - Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
@@ -47,7 +48,7 @@ jobs:
       with:
         inlineScript: |
           mkdir -p ${{ env.BICEP_OUTPUT_DIRECTORY }}
-          az deployment sub validate --name ${{ github.run_number }} --location ${{ env.AZURE_LOCATION }} --subscription ${{ env.AZURE_SUBSCRIPTION_ID }} --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --parameters gitHubMsiClientId=${{ env.GITHUB_OBJECT_ID }}
+          az deployment sub validate --name ${{ github.run_number }} --location ${{ env.AZURE_LOCATION }} --subscription ${{ env.AZURE_SUBSCRIPTION_ID }} --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --parameters gitHubMsiClientId=${{ steps.gitHubMsiPrincipal.outputs.objectId }}
           az bicep upgrade 
           az bicep build --file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --outdir ${{ env.BICEP_OUTPUT_DIRECTORY }}
     
@@ -61,7 +62,7 @@ jobs:
         region: ${{ env.AZURE_LOCATION }} 
         deploymentName: ${{ github.run_number }}
         template: ${{ env.BICEP_OUTPUT_DIRECTORY }}/${{ env.BICEP_FILE_NAME }}.json
-        parameters: gitHubMsiClientId=${{ env.GITHUB_OBJECT_ID }}
+        parameters: gitHubMsiClientId=${{ steps.gitHubMsiPrincipal.outputs.objectId }}
 
     # Azure logout
     - name: logout
