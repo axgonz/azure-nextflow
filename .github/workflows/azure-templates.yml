@@ -44,7 +44,7 @@ jobs:
       uses: Azure/cli@1.0.4
       with:
         inlineScript: |
-          az deployment sub validate --name ${{ github.run_number }} --location ${{ env.AZURE_LOCATION }} --subscription {{ env.AZURE_SUBSCRIPTION_ID }} --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
+          az deployment sub validate --name ${{ github.run_number }} --location ${{ env.AZURE_LOCATION }} --subscription ${{ env.AZURE_SUBSCRIPTION_ID }} --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
           az bicep upgrade 
           az bicep build --file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --outdir ${{ env.BICEP_OUTPUT_DIRECTORY }}
     
