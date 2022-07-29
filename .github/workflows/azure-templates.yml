@@ -37,14 +37,9 @@ jobs:
     # Broken
     - name: 'creds'
       run: |
-        objectId=$(az ad sp list --spn "967269a3-c73b-4389-b0fd-8306908aa9e0" --query "[].objectId" --output tsv)
-        echo objectId is $objectId
-      shell: bash
-
-    - name: 'creds'
-      run: |
         clientId=$(echo "$SSH_KEY" | jq -r .clientId)
         echo clientId is $clientId
+        az ad sp list --spn "$clientId"
         objectId=$(az ad sp list --spn "$clientId" --query "[].objectId" --output tsv)
         echo objectId is $objectId
       shell: bash
@@ -55,6 +50,7 @@ jobs:
       run: |
         clientId=$(echo "$SSH_KEY")
         echo clientId is $clientId   
+        az ad sp list --spn "$clientId"
         objectId=$(az ad sp list --spn "$clientId" --query "[].objectId" --output tsv)
         echo objectId is $objectId
       shell: bash
@@ -65,12 +61,14 @@ jobs:
     - name: 'Get principal from clientId'
       id: gitHubMsiPrincipal
       run: |
-        objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].objectId" --output tsv)
-        echo clientId is $CLIENT_ID
+        clientId=$(echo "$CLIENT_ID" | jq -r .clientId)
+        echo clientId is $clientId  
+        az ad sp list --spn "$clientId"
+        objectId=$(az ad sp list --spn "$clientId" --query "[].objectId" --output tsv)
         echo objectId is $objectId
         echo "::set-output name=objectId::$objectId"
       env: 
-        CLIENT_ID: ${{ env.GITHUB_CLIENT_ID }}
+        CLIENT_ID: ${{ secrets.AZURE_CREDENTIALS }}
 
     # Build ARM Template from Bicep
     - name: Azure CLI - Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
