@@ -1,12 +1,12 @@
 param location string = resourceGroup().location
 param name string
-param kvName string
+param keyVaultName string
 
-resource kv 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
-    name: kvName
+resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
+    name: keyVaultName
 }
 
-resource acr 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
     location: location
     name: name
     sku: {
@@ -18,10 +18,10 @@ resource acr 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
 }
 
 resource secret_batchLocation 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
-    parent: kv
+    parent: keyVault
     name: 'azure-registry-server'
     properties: {
-        value: acr.properties.loginServer
+        value: containerRegistry.properties.loginServer
         attributes: {
             enabled: true
         }
@@ -29,10 +29,10 @@ resource secret_batchLocation 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
 }
 
 resource secret_batchName 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
-    parent: kv
+    parent: keyVault
     name: 'azure-registry-username'
     properties: {
-        value: acr.listCredentials().username
+        value: containerRegistry.listCredentials().username
         attributes: {
             enabled: true
         }
@@ -40,16 +40,16 @@ resource secret_batchName 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
 }
 
 resource secret_batchKey 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
-    parent: kv
+    parent: keyVault
     name: 'azure-registry-password'
     properties: {
-        value: acr.listCredentials().passwords[0].value
+        value: containerRegistry.listCredentials().passwords[0].value
         attributes: {
             enabled: true
         }
     }
 }
 
-output id string = acr.id
-output name string = acr.name
-output server string = acr.properties.loginServer
+output id string = containerRegistry.id
+output name string = containerRegistry.name
+output server string = containerRegistry.properties.loginServer

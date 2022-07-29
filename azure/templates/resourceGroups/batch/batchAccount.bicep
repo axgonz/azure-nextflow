@@ -2,10 +2,10 @@ param location string = resourceGroup().location
 param name string
 param managedIdentityId string
 param storageAccountId string
-param kvName string
+param keyVaultName string
 
-resource kv 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
-    name: kvName
+resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
+    name: keyVaultName
 }
 
 resource batchAccount 'Microsoft.Batch/batchAccounts@2022-06-01' = {
@@ -35,7 +35,7 @@ resource batchAccount 'Microsoft.Batch/batchAccounts@2022-06-01' = {
 }
 
 resource secret_batchLocation 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
-    parent: kv
+    parent: keyVault
     name: 'azure-batch-location'
     properties: {
         value: location
@@ -46,7 +46,7 @@ resource secret_batchLocation 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
 }
 
 resource secret_batchName 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
-    parent: kv
+    parent: keyVault
     name: 'azure-batch-accountName'
     properties: {
         value: batchAccount.name
@@ -57,7 +57,7 @@ resource secret_batchName 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
 }
 
 resource secret_batchKey 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
-    parent: kv
+    parent: keyVault
     name: 'azure-batch-accountKey'
     properties: {
         value: batchAccount.listKeys().primary

@@ -11,11 +11,14 @@
         "nameIsAlreadyUnique": true
     },
     "managedIdentity": {
-        "batch": {
-            "name": "batchmid"
+        "batchAccount": {
+            "name": "batchmsi"
         },
-        "nextflow": {
-            "name": "nextflowmid"
+        "functionApp": {
+            "name": "funcmsi"
+        },
+        "containerInstance": {
+            "name": "nextflowmsi"
         }
     },
     "containerRegistry": {
@@ -36,6 +39,11 @@
     "keyVault": {
         "//": "Will be made globally unique with an auto generated suffix.",
         "name": "kv",
+        "nameIsAlreadyUnique": false
+    },
+    "functionApp": {
+        "//": "Will be made globally unique with an auto generated suffix.",
+        "name": "fc",
         "nameIsAlreadyUnique": false
     }
 }

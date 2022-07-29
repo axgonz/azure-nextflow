@@ -1,9 +1,9 @@
 param location string = resourceGroup().location
 param name string
 param tenantId string
-param objectId string
+param objectIds array
 
-resource kv 'Microsoft.KeyVault/vaults@2021-10-01' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' = {
     location: location
     name: name
     properties: {
@@ -12,8 +12,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-10-01' = {
             name: 'standard'
         }
         tenantId: tenantId
-        accessPolicies: [
-            {
+        accessPolicies: [for objectId in objectIds: {
                 tenantId: tenantId
                 objectId: objectId
                 permissions: {
@@ -24,8 +23,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-10-01' = {
                     ]
                     certificates: []
                 }
-            }
-        ]
+            }]
         enabledForDeployment: true
         enabledForDiskEncryption: true
         enabledForTemplateDeployment: true
@@ -33,6 +31,6 @@ resource kv 'Microsoft.KeyVault/vaults@2021-10-01' = {
     }
 }
 
-output id string = kv.id
-output name string = kv.name
-output vaultUri string = kv.properties.vaultUri
+output id string = keyVault.id
+output name string = keyVault.name
+output vaultUri string = keyVault.properties.vaultUri
