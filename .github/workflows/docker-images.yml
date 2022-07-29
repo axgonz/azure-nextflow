@@ -20,7 +20,7 @@ env:
   DOCKER_IMAGES_PATH: './docker/images'
   
 jobs:
-  build:
+  validate_and_push:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout repository branch'
