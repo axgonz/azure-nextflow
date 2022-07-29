@@ -19,7 +19,6 @@ env:
   BICEP_FILE_PATH: './azure/templates'
   BICEP_FILE_NAME: 'main'
   BICEP_OUTPUT_DIRECTORY: './azure/templates/builds'
-  GITHUB_CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
 
 jobs:
   validate_and_deploy:
@@ -34,41 +33,16 @@ jobs:
     - name: 'Checkout repository branch'
       uses: actions/checkout@v1
 
-    # Broken
-    - name: 'creds'
-      run: |
-        clientId=$(echo "$SSH_KEY" | jq -r .clientId)
-        echo clientId is $clientId
-        az ad sp list --spn "$clientId"
-        objectId=$(az ad sp list --spn "$clientId" --query "[].objectId" --output tsv)
-        echo objectId is $objectId
-      shell: bash
-      env:
-        SSH_KEY: ${{ secrets.AZURE_CREDENTIALS }}      
-
-    - name: 'creds.clientId'
-      run: |
-        clientId=$(echo "$SSH_KEY")
-        echo clientId is $clientId   
-        az ad sp list --spn "$clientId"
-        objectId=$(az ad sp list --spn "$clientId" --query "[].objectId" --output tsv)
-        echo objectId is $objectId
-      shell: bash
-      env:
-        SSH_KEY: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}     
-
     # Get objectId from clientId
     - name: 'Get principal from clientId'
       id: gitHubMsiPrincipal
       run: |
-        clientId=$(echo "$CLIENT_ID" | jq -r .clientId)
-        echo clientId is $clientId  
-        az ad sp list --spn "$clientId"
-        objectId=$(az ad sp list --spn "$clientId" --query "[].objectId" --output tsv)
+        az ad sp list --spn "$CLIENT_ID"
+        objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].id" --output tsv)
         echo objectId is $objectId
         echo "::set-output name=objectId::$objectId"
       env: 
-        CLIENT_ID: ${{ secrets.AZURE_CREDENTIALS }}
+        CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
 
     # Build ARM Template from Bicep
     - name: Azure CLI - Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
