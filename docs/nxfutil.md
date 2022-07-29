@@ -1,5 +1,7 @@
 # nxfutil
 
+nxfutil extends the Nextflow program to provide additional integration with Azure. The utility executes in the context of a container to meet the dependencies of Nextflow.
+
 ## Usage
 
 Once deployed the Container Instance will start and execute the default command of `./nxfutil` or that provided when the Container Instance was deployed.

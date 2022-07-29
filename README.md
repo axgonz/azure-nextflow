@@ -8,123 +8,65 @@ Deploying the Azure resources supporting this sample is left to you.
 
 It is assumed that this infrastructure would be deployed through a DevOps pipeline or GitHub workflow. 
 
-This sample will be eventually expanded to include Bicep templates for capturing the state of required Azure resources and pipeline/workflow files for the deployment.
+## Set up
 
-## Set up (GitHub)
+The following uses the provided GitHub workflows to build and deploy the sample. See Annex below for manual set up instructions.
 
-1. Create a GitHub secret with permission to deploy to Azure; more information can be found in [Azure Docs](https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Cwindows).
+### Azure resources
 
-    ``` bash
-    az_subId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+1. Create `AZURE_CREDENTIALS` GitHub Secret; details in [Azure Docs](https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Cwindows#create-a-service-principal-and-add-it-as-a-github-secret).
 
-    az ad sp create-for-rbac --name "GitHub" \
-        --role contributor \
-        --scopes /subscriptions/$az_subId \
-        --sdk-auth
-    ```
+1. Run `Build and deploy Azure templates` GitHub Action and/or add automatic trigger to workflow.
 
-2. Run the deployment workflows or add automatic triggers.
+### Docker images
 
-## Set up (manuall)
+1. Create `AZURE_CONTAINERREGISTRY_PASSWORD` GitHub Secret; details in [Azure Docs](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-authentication?tabs=azure-cli#admin-account)
 
-1. Deploy Azure resources.
+1. Run `Build and push Docker images` GitHub Action and/or add automatic trigger to workflow.
 
-    ``` bash
-    az_location="australiaeast"
-    az_subId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+### Function packages
 
-    az deployment sub create --name "batch-$az_location" --location $az_location --subscription $az_subId --template-file ./azure/templates/main.bicep
-    ```
+1. Create `AZURE_FUNCTIONAPP_PUBLISH_PROFILE` GitHub Secret; details in [Azure Docs](https://docs.microsoft.com/en-us/azure/azure-functions/functions-how-to-github-actions?tabs=python). 
 
-1. Build Docker images.
+1. Run `Build and publish Python functions` GitHub Action and/or add automatic trigger to workflow.
 
-    ``` bash
-    cd ./docker/images/
-    chmod +x build.sh
-    ./build.sh
-    ```
+## Validation
 
-1. Push images to the Container Registry deployed in step #1.
+To validate set up was successful, trigger the Azure Function using its webhook.
 
-    ``` bash
-    # Update the 'ACR' variable before running
-    nano ./docker/images/login.sh
-    chmod +x ./docker/images/login.sh
-    ./docker/images/login.sh
+``` bash
+az_funcAppName="myFuncAppName"
 
-    # Update the 'ACR' variable before running
-    nano ./docker/images/push.sh
-    chmod +x ./docker/images/push.sh
-    ./docker/images/push.sh
-    ```
-
-1. Validate deployment by running the default "Hello World" Nextflow pipeline provided with this sample.
-
-    ``` bash
-    az_subId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-    az_rgName="myRgName"
-    az_kvName="myKvName"
-    az_crName="myCrName"
-    az_midClientId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-
-    az container create -g $az_rgName \
-        --name nextflow1 \
-        --image "algonz/nextflow:latest" \
-        --cpu 1 \
-        --memory 1 \
-        --restart-policy Never \
-        --environment-variables AZ_KEY_VAULT_NAME=$az_kvName AZURE_CLIENT_ID=$az_midClientId \
-        --assign-identity "/subscriptions/$az_subId/resourcegroups/$az_rgName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/nextflowmid"
-    ```
+curl https://$az_funcAppName.azurewebsites.net/api/nxfutil?
+```
 
 ## Usage
 
-Once deployed the Container Instance will start and execute the default command of `./nxfutil` or that provided when the Container Instance was deployed.
+When the Function App is triggered it will create a new nxfutil Container Instance. See Annex for nxfutil details.
 
-Once called, nxfutil will download the default or provided Nextflow files and parse the "nextflow.config" to create a list of secrets it will need to retrieve from Key Vault. At this time, it will also expand and replace any `exParams` parameters with their values (also retrieved from Key Vault).
-
-Once the config file has been parsed nxfutil will show the resultant Nextflow config by running `nextflow config` and will finally offload to nextflow by running `nextflow run` specifying the pipeline and parameters files.
-
-After the `nextflow` command completes successfully the Container Instance will stop. 
-
-It is intended that the next iteration of nxfutil will integrate with Nextflow Tower so that launched jobs can be monitored remotely. It is also possible that the utility will be re-written using nodejs, dotNet and/or Rust.
-
-## Lifecycle
-
-A new nextflow Container Instance is needed for each different Nextflow pipeline, parameters and configuration combination.
-
-Once a Container Instance executes and terminates it can be safely deleted unless the same job is to be dispatched again (using the same Nextflow pipeline, parameters and configuration files).
-
-The quickest way to dispatched different Nextflow jobs is to use the Azure Cli to create a new nextflow Container Instance.
+The http trigger currently accepts 3 (optional) arguments.
+- A URI to a Nextflow `config` file. 
+- A URI to a Nextflow `pipeline` file.
+- A URI to a Nextflow `parameters` file.
 
 ``` bash
-az_subId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-az_rgName="myRgName"
-az_kvName="myKvName"
-az_crName="myCrName"
-az_midClientId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+az_funcAppName="nxfutil-py"
 
 nxf_configUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config"
 nxf_pipelineUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf"
 nxf_parametersUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json"
 
-az container create -g $az_rgName \
-    --name nextflow1 \
-    --image "$az_crName.azurecr.io/default/nextflow:latest" \
-    --cpu 1 \
-    --memory 1 \
-    --restart-policy Never \
-    --environment-variables AZ_KEY_VAULT_NAME=$az_kvName AZURE_CLIENT_ID=$az_midClientId \
-    --assign-identity "/subscriptions/$az_subId/resourcegroups/$az_rgName/providers/Microsoft.ManagedIdentity/userAssignedIdentities/nextflowmid" \
-    --command-line "/bin/bash -c 'cd /.nextflow && ./nxfutil -c $nxf_configUri -p $nxf_pipelineUri -a $nxf_parametersUri'"
+curl "https://$az_funcAppName.azurewebsites.net/api/nxfutil?config=$nxf_configUri&pipeline=$nxf_pipelineUri&parameters=$nxf_parametersUri"
 ```
-
-> N.B. The point-in-time Docker build of the nextflow image used in this sample is available on Docker Hub. To use it replace `--image ...` in the command above with `--image algonz/nextflow:latest`
 
 ## Annexes
 
 ### [Azure infrastructure](./docs/AzureInfrastructure.md)
 
+### [Azure Functions - Python](./azure/functions/python/README.md)
+
 ### [nxfutil](./docs/nxfutil.md)
 
 ### [Data upload](./docs/DataUpload.md)
+
+### [Manual set up](./docs/ManualSetup.md)
