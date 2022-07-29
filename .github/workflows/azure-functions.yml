@@ -1,0 +1,49 @@
+# Authentication
+# Set up the following secrets in your GitHub repository: 
+#
+#   AZURE_FUNCTIONAPP_PUBLISH_PROFILE
+#
+# For details on usage of secrets, please refer to: 
+#  https://docs.microsoft.com/en-us/azure/azure-functions/functions-how-to-github-actions?tabs=python
+
+name: Build and publish Python functions
+
+on:
+  workflow_dispatch:
+    inputs:
+      AZURE_FUNCTIONAPP_NAME: 
+        description: 'Azure Function App name'
+        required: true
+
+env:
+  AZURE_FUNCTIONAPP_NAME: ${{ github.event.inputs.AZURE_FUNCTIONAPP_NAME }}
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './azure/functions/python'
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Checkout repository branch'
+      uses: actions/checkout@master
+
+    - name: Setup Python ${{ env.PYTHON_VERSION }} Environment
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: 'Resolve Project Dependencies Using Pip'
+      shell: bash
+      run: |
+        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt --target=".python_packages/lib/site-packages"
+        popd
+
+    - name: 'Run Azure Functions Action'
+      uses: Azure/functions-action@v1
+      id: fa
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
