@@ -19,16 +19,12 @@ on:
         description: 'Azure subscription id'
         required: true
 
-env:
-  AZURE_LOCATION: ${{ github.event.inputs.AZURE_LOCATION }}
-  AZURE_SUBSCRIPTION_ID: ${{ github.event.inputs.AZURE_SUBSCRIPTION_ID }}
-
 jobs:
   azure-templates:
     uses: axgonz/azure-nextflow/.github/workflows/azure-templates.yml@main
     with:
-      AZURE_LOCATION: ${{ env.AZURE_LOCATION }}
-      AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
+      AZURE_LOCATION: ${{ github.event.inputs.AZURE_LOCATION }}
+      AZURE_SUBSCRIPTION_ID: ${{ github.event.inputs.AZURE_SUBSCRIPTION_ID }}
   
   docker-images:
     needs: azure-templates
