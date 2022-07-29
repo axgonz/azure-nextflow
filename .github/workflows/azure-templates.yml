@@ -45,12 +45,7 @@ jobs:
       with:
         inlineScript: |
           mkdir -p ${{ env.BICEP_OUTPUT_DIRECTORY }}
-          az deployment sub validate /
-            --name ${{ github.run_number }} /
-            --location ${{ env.AZURE_LOCATION }} /
-            --subscription ${{ env.AZURE_SUBSCRIPTION_ID }} /
-            --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep /
-            --parameters gitHubMsiClientId=${{ env.GITHUB_CLIENT_ID }}
+          az deployment sub validate --name ${{ github.run_number }} --location ${{ env.AZURE_LOCATION }} --subscription ${{ env.AZURE_SUBSCRIPTION_ID }} --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --parameters gitHubMsiClientId=${{ env.GITHUB_CLIENT_ID }}
           az bicep upgrade 
           az bicep build --file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --outdir ${{ env.BICEP_OUTPUT_DIRECTORY }}
     
