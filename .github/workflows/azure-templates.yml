@@ -4,10 +4,12 @@ on:
   workflow_call:
     inputs:
       AZURE_LOCATION: 
+        type: string
         description: 'Azure region name'
         required: true
         default: 'australiaeast'
       AZURE_SUBSCRIPTION_ID:
+        type: string
         description: 'Azure subscription id'
         required: true   
 

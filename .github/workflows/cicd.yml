@@ -12,16 +12,18 @@ on:
   workflow_dispatch:
     inputs:
       AZURE_LOCATION: 
+        type: string
         description: 'Azure region name'
         required: true
         default: 'australiaeast'
       AZURE_SUBSCRIPTION_ID:
+        type: string
         description: 'Azure subscription id'
         required: true
 
-jobs:
+jobs: 
   azure-templates:
-    uses: axgonz/azure-nextflow/.github/workflows/azure-templates.yml@main
+    uses: axgonz/azure-nextflow/.github/workflows/azure-templates.yml@
     with:
       AZURE_LOCATION: ${{ github.event.inputs.AZURE_LOCATION }}
       AZURE_SUBSCRIPTION_ID: ${{ github.event.inputs.AZURE_SUBSCRIPTION_ID }}
