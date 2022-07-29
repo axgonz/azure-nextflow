@@ -33,13 +33,24 @@ jobs:
     - name: 'Checkout repository branch'
       uses: actions/checkout@v1
 
+    # Show which the
+    - name: 'gitHubMsiClientId' 
+      run: |
+        echo gitHubMsiClientId_1: ${{ secrets.AZURE_CREDENTIALS.clientId }}
+        echo gitHubMsiClientId_2: ${{ secrets.AZURE_CREDENTIALS }}.clientId
+
     # Build ARM Template from Bicep
     - name: Azure CLI - Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
       uses: Azure/cli@1.0.4
       with:
         inlineScript: |
           mkdir -p ${{ env.BICEP_OUTPUT_DIRECTORY }}
-          az deployment sub validate --name ${{ github.run_number }} --location ${{ env.AZURE_LOCATION }} --subscription ${{ env.AZURE_SUBSCRIPTION_ID }} --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
+          az deployment sub validate /
+            --name ${{ github.run_number }} /
+            --location ${{ env.AZURE_LOCATION }} /
+            --subscription ${{ env.AZURE_SUBSCRIPTION_ID }} /
+            --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep /
+            --parameters gitHubMsiClientId=${{ secrets.AZURE_CREDENTIALS.clientId }}
           az bicep upgrade 
           az bicep build --file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --outdir ${{ env.BICEP_OUTPUT_DIRECTORY }}
     
