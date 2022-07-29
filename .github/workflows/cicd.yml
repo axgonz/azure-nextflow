@@ -22,7 +22,7 @@ on:
         required: true
 
 jobs: 
-  azure-templates:
+  azureTemplates:
     uses: axgonz/azure-nextflow/.github/workflows/azure-templates.yml@main
     with:
       AZURE_LOCATION: ${{ github.event.inputs.AZURE_LOCATION }}
@@ -33,5 +33,5 @@ jobs:
     needs: azure-templates
     uses: axgonz/azure-nextflow/.github/workflows/docker-images.yml@main
     with:
-      AZURE_KEYVAULT_NAME: ${{ needs.azure-templates.outputs.AZURE_KEYVAULT_NAME }}
+      AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit
