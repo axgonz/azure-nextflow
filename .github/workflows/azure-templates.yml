@@ -1,7 +1,7 @@
 name: Build and deploy Azure templates
 
 on: 
-  workflow_dispatch:
+  workflow_call:
     inputs:
       AZURE_LOCATION: 
         description: 'Azure region name'
