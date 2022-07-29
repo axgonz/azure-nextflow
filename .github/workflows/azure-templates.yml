@@ -41,9 +41,9 @@ jobs:
         echo clientId
         objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].objectId" --output tsv)
         echo objectId is $objectId
-       shell: bash
-       env:
-         SSH_KEY: ${{ secrets.AZURE_CREDENTIALS }}
+      shell: bash
+      env:
+        SSH_KEY: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: 'creds'
       run: |
@@ -51,9 +51,9 @@ jobs:
         echo clientId
         objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].objectId" --output tsv)
         echo objectId is $objectId
-       shell: bash
-       env:
-         SSH_KEY: ${{ secrets.AZURE_CREDENTIALS }}         
+      shell: bash
+      env:
+        SSH_KEY: ${{ secrets.AZURE_CREDENTIALS }}         
 
     - name: 'base64 creds.clientId'
       run: |
@@ -61,9 +61,9 @@ jobs:
         echo clientId
         objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].objectId" --output tsv)
         echo objectId is $objectId        
-       shell: bash
-       env:
-         SSH_KEY: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}  
+      shell: bash
+      env:
+        SSH_KEY: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}  
 
     - name: 'creds.clientId'
       run: |
@@ -71,9 +71,9 @@ jobs:
         echo clientId
         objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].objectId" --output tsv)
         echo objectId is $objectId        
-       shell: bash
-       env:
-         SSH_KEY: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}      
+      shell: bash
+      env:
+        SSH_KEY: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}      
 
     # Get objectId from clientId
     - name: 'Get principal from clientId'
