@@ -31,14 +31,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     NXFUTIL_AZ_RG_NAME = os.environ["NXFUTIL_AZ_RG_NAME"]
     NXFUTIL_AZ_KV_NAME = os.environ["NXFUTIL_AZ_KV_NAME"]
     NXFUTIL_AZ_CR_NAME = os.environ["NXFUTIL_AZ_CR_NAME"]
-    NXFUTIL_AZ_MID_CLIENT_ID = os.environ["NXFUTIL_AZ_MID_CLIENT_ID"] 
+    NXFUTIL_AZ_MSI_ID = os.environ["NXFUTIL_AZ_MSI_ID"]
 
     logging.info(f"{log_prefix} App settings variables loaded:")
     logging.info(f"{log_prefix} NXFUTIL_AZ_SUB_ID = {NXFUTIL_AZ_SUB_ID}.")
     logging.info(f"{log_prefix} NXFUTIL_AZ_RG_NAME = {NXFUTIL_AZ_RG_NAME}.")
     logging.info(f"{log_prefix} NXFUTIL_AZ_KV_NAME = {NXFUTIL_AZ_KV_NAME}.")
     logging.info(f"{log_prefix} NXFUTIL_AZ_CR_NAME = {NXFUTIL_AZ_CR_NAME}.")
-    logging.info(f"{log_prefix} NXFUTIL_AZ_MID_CLIENT_ID = {NXFUTIL_AZ_MID_CLIENT_ID}.")
+    logging.info(f"{log_prefix} NXFUTIL_AZ_MSI_ID = {NXFUTIL_AZ_MSI_ID}.")
 
     nxf_config = req.params.get('config')
     nxf_pipeline = req.params.get('pipeline')
@@ -99,7 +99,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     AZURE_CLIENT_ID = EnvironmentVariable(
         name = 'AZURE_CLIENT_ID', 
-        value = NXFUTIL_AZ_MID_CLIENT_ID)
+        value = NXFUTIL_AZ_MSI_ID)
 
     logging.info(f"{log_prefix} ACI EnvironmentVariable defined.")
 

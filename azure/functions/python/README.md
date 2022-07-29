@@ -18,7 +18,8 @@ When developing locally:
             "NXFUTIL_AZ_RG_NAME": "myRgName",
             "NXFUTIL_AZ_KV_NAME": "myKvName",
             "NXFUTIL_AZ_CR_NAME": "myCrName",
-            "NXFUTIL_AZ_MID_CLIENT_ID": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            "NXFUTIL_AZ_MSI_ID": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            "AZURE_CLIENT_ID": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         }
     }
     ```
