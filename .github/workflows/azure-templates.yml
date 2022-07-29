@@ -19,6 +19,7 @@ env:
   BICEP_FILE_PATH: './azure/templates'
   BICEP_FILE_NAME: 'main'
   BICEP_OUTPUT_DIRECTORY: './azure/templates/builds'
+  GITHUB_CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
 
 jobs:
   validate_and_deploy:
@@ -36,8 +37,7 @@ jobs:
     # Show which the
     - name: 'gitHubMsiClientId' 
       run: |
-        echo gitHubMsiClientId_1: ${{ secrets.AZURE_CREDENTIALS.clientId }}
-        echo gitHubMsiClientId_2: ${{ secrets.AZURE_CREDENTIALS }}.clientId
+        echo gitHubMsiClientId_1: ${{ env.GITHUB_CLIENT_ID }}
 
     # Build ARM Template from Bicep
     - name: Azure CLI - Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
@@ -50,7 +50,7 @@ jobs:
             --location ${{ env.AZURE_LOCATION }} /
             --subscription ${{ env.AZURE_SUBSCRIPTION_ID }} /
             --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep /
-            --parameters gitHubMsiClientId=${{ secrets.AZURE_CREDENTIALS.clientId }}
+            --parameters gitHubMsiClientId=${{ env.GITHUB_CLIENT_ID }}
           az bicep upgrade 
           az bicep build --file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --outdir ${{ env.BICEP_OUTPUT_DIRECTORY }}
     
@@ -64,7 +64,7 @@ jobs:
         region: ${{ env.AZURE_LOCATION }} 
         deploymentName: ${{ github.run_number }}
         template: ${{ env.BICEP_OUTPUT_DIRECTORY }}/${{ env.BICEP_FILE_NAME }}.json
-        parameters: gitHubMsiClientId=${{ secrets.AZURE_CREDENTIALS.clientId }}
+        parameters: gitHubMsiClientId=${{ env.GITHUB_CLIENT_ID }}
 
     # Azure logout
     - name: logout
