@@ -35,16 +35,6 @@ jobs:
       uses: actions/checkout@v1
 
     # Broken
-    - name: 'base64 creds'
-      run: |
-        clientId=$(echo "$SSH_KEY" | base64 | jq -r .clientId)
-        echo clientId
-        objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].objectId" --output tsv)
-        echo objectId is $objectId
-      shell: bash
-      env:
-        SSH_KEY: ${{ secrets.AZURE_CREDENTIALS }}
-
     - name: 'creds'
       run: |
         clientId=$(echo "$SSH_KEY" | jq -r .clientId)
@@ -55,16 +45,6 @@ jobs:
       env:
         SSH_KEY: ${{ secrets.AZURE_CREDENTIALS }}         
 
-    - name: 'base64 creds.clientId'
-      run: |
-        clientId=$(echo "$SSH_KEY" | base64)
-        echo clientId
-        objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].objectId" --output tsv)
-        echo objectId is $objectId        
-      shell: bash
-      env:
-        SSH_KEY: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}  
-
     - name: 'creds.clientId'
       run: |
         clientId=$(echo "$SSH_KEY")
@@ -73,7 +53,7 @@ jobs:
         echo objectId is $objectId        
       shell: bash
       env:
-        SSH_KEY: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}      
+        SSH_KEY: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}     
 
     # Get objectId from clientId
     - name: 'Get principal from clientId'
