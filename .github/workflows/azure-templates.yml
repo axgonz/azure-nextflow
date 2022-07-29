@@ -37,7 +37,7 @@ jobs:
     # Get objectId from clientId
     - name: 'Get principal from clientId'
       run: |
-        objectId=az ad sp list --spn "${{ env.GITHUB_CLIENT_ID }}" --query "[].objectId" --output tsv
+        objectId=$(az ad sp list --spn "${{ env.GITHUB_CLIENT_ID }}" --query "[].objectId" --output tsv)
         echo $objectId
         echo "::set-output name=GITHUB_OBJECT_ID::$objectId"
 
