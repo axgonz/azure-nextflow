@@ -15,7 +15,7 @@ on:
     outputs:
       AZURE_KEYVAULT_NAME:
         description: 'Key Vault name'
-        vaule: ${{ jobs.validate_and_deploy.outputs.AZURE_KEYVAULT_NAME }}
+        value: ${{ jobs.validate_and_deploy.outputs.AZURE_KEYVAULT_NAME }}
 
 env:
   AZURE_LOCATION: ${{ github.event.inputs.AZURE_LOCATION }}
