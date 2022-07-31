@@ -28,6 +28,12 @@ jobs:
       AZURE_LOCATION: ${{ github.event.inputs.AZURE_LOCATION }}
       AZURE_SUBSCRIPTION_ID: ${{ github.event.inputs.AZURE_SUBSCRIPTION_ID }}
     secrets: inherit
+
+  echoJob:
+    runs-on: ubuntu-latest
+    needs: azureTemplates
+    steps:
+      - run: echo ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }} 
   
   docker-images:
     needs: azureTemplates
