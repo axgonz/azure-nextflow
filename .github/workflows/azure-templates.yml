@@ -66,7 +66,7 @@ jobs:
         template: ${{ env.BICEP_OUTPUT_DIRECTORY }}/${{ env.BICEP_FILE_NAME }}.json
         parameters: gitHubMsiClientId=${{ steps.gitHubMsiPrincipal.outputs.objectId }}
 
-    - names: 'echo'
+    - name: 'echo'
       run: |
         echo ${{ steps.azureResources.outputs.NXFUTIL_AZ_KV_NAME }}
 
