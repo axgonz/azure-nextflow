@@ -13,8 +13,8 @@ on:
         description: 'Azure subscription id'
         required: true
     outputs:
-      AZURE_KEYVAULT_NAME
-        description: 'key vault name'
+      AZURE_KEYVAULT_NAME:
+        description: 'Key Vault name'
         vaule: ${{ jobs.validate_and_deploy.outputs.AZURE_KEYVAULT_NAME }}
 
 env:
