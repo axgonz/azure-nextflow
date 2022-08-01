@@ -29,15 +29,29 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ github.event.inputs.AZURE_SUBSCRIPTION_ID }}
     secrets: inherit
 
-  echoJob:
+  marshalOutputs:
     runs-on: ubuntu-latest
     needs: azureTemplates
     steps:
-      - run: echo ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }} 
+      - name: marshalOutputs
+        id: marshalOutputs
+        run: |
+          echo "::set-output name=AZURE_KEYVAULT_NAME::${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}"
+    outputs:
+      AZURE_KEYVAULT_NAME: ${{ steps.azureResources.outputs.NXFUTIL_AZ_KV_NAME }}  
+
+  showOutputs:
+    runs-on: ubuntu-latest
+    needs: marshalOutputs
+    steps:
+      - name: showOutputs
+        id: showOutputs
+        run: |
+          echo ${{ needs.marshalOutputs.outputs.AZURE_KEYVAULT_NAME }}
   
   dockerImages:
     needs: azureTemplates
     uses: axgonz/azure-nextflow/.github/workflows/docker-images.yml@main
     with:
-      AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
+      AZURE_KEYVAULT_NAME: ${{ needs.marshalOutputs.outputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit
