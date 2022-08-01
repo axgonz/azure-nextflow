@@ -35,7 +35,7 @@ jobs:
     steps:
       - run: echo ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }} 
   
-  docker-images:
+  dockerImages:
     needs: azureTemplates
     uses: axgonz/azure-nextflow/.github/workflows/docker-images.yml@main
     with:
