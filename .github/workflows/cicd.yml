@@ -54,7 +54,7 @@ jobs:
           echo ${{ needs.marshalOutputs.outputs.AZURE_KEYVAULT_NAME }}
   
   dockerImages:
-    needs: azureTemplates
+    needs: marshalOutputs
     uses: axgonz/azure-nextflow/.github/workflows/docker-images.yml@main
     with:
       AZURE_KEYVAULT_NAME: ${{ needs.marshalOutputs.outputs.AZURE_KEYVAULT_NAME }}
