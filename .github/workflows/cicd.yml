@@ -42,7 +42,7 @@ jobs:
           kvName=${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
           echo "::set-output name=AZURE_KEYVAULT_NAME::$kvName"
     outputs:
-      AZURE_KEYVAULT_NAME: ${{ steps.azureResources.outputs.NXFUTIL_AZ_KV_NAME }}  
+      AZURE_KEYVAULT_NAME: ${{ steps.azureResources.outputs.AZURE_KEYVAULT_NAME }}  
 
   showOutputs:
     runs-on: ubuntu-latest
