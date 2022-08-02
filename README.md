@@ -56,7 +56,7 @@ curl "https://$az_funcAppName.azurewebsites.net/api/nxfutil?config=$nxf_configUr
 
 ## Annexes
 
-### [GitHub Action and secrets](./docs/GitHubSecrets.md)
+### [GitHub Actions and Secrets](./docs/GitHubSecrets.md)
 
 ### [Azure infrastructure](./docs/AzureInfrastructure.md)
 
