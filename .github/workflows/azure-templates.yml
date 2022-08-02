@@ -28,18 +28,21 @@ jobs:
     outputs:
       AZURE_KEYVAULT_NAME: ${{ steps.azureResources.outputs.NXFUTIL_AZ_KV_NAME }} 
     steps:
+    # Inputs
     - name: 'Show inputs'
       run: |
         echo AZURE_LOCATION : ${{ inputs.AZURE_LOCATION }}
         echo AZURE_SUBSCRIPTION_ID : ${{ inputs.AZURE_SUBSCRIPTION_ID }}
 
+    # Variables
     - name: 'Show variables'
       run: |
         echo BICEP_FILE_PATH : ${{ env.BICEP_FILE_PATH }}       
         echo BICEP_FILE_NAME : ${{ env.BICEP_FILE_NAME }}       
         echo BICEP_OUTPUT_DIRECTORY : ${{ env.BICEP_OUTPUT_DIRECTORY }}       
 
-    - name: Azure Login
+    # Login
+    - name: 'Azure login'
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -59,41 +62,35 @@ jobs:
       env: 
         CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
 
-    # # Build ARM Template from Bicep
-    # - name: Azure CLI - Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
-    #   uses: Azure/cli@1.0.4
-    #   with:
-    #     inlineScript: |
-    #       mkdir -p ${{ env.BICEP_OUTPUT_DIRECTORY }}
-    #       az deployment sub validate --name ${{ github.run_number }} --location ${{ inputs.AZURE_LOCATION }} --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID }} --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --parameters gitHubMsiClientId=${{ steps.gitHubMsiPrincipal.outputs.objectId }}
-    #       az bicep upgrade 
-    #       az bicep build --file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --outdir ${{ env.BICEP_OUTPUT_DIRECTORY }}
+    # Build
+    - name: Azure CLI - Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
+      uses: Azure/cli@1.0.4
+      with:
+        inlineScript: |
+          mkdir -p ${{ env.BICEP_OUTPUT_DIRECTORY }}
+          az deployment sub validate --name ${{ github.run_number }} --location ${{ inputs.AZURE_LOCATION }} --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID }} --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --parameters gitHubMsiClientId=${{ steps.gitHubMsiPrincipal.outputs.objectId }}
+          az bicep upgrade 
+          az bicep build --file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --outdir ${{ env.BICEP_OUTPUT_DIRECTORY }}
     
-    # # Deployment Bicep template
-    # - name: Deploy infrastructure
-    #   id: azureResources
-    #   uses: azure/arm-deploy@v1
-    #   with:
-    #     scope: subscription
-    #     subscriptionId: ${{ inputs.AZURE_SUBSCRIPTION_ID }}
-    #     region: ${{ inputs.AZURE_LOCATION }} 
-    #     deploymentName: ${{ github.run_number }}
-    #     template: ${{ env.BICEP_OUTPUT_DIRECTORY }}/${{ env.BICEP_FILE_NAME }}.json
-    #     parameters: gitHubMsiClientId=${{ steps.gitHubMsiPrincipal.outputs.objectId }}
-
-    - name: 'Create output variable'
+    # Deployment
+    - name: Deploy infrastructure
       id: azureResources
-      run: |
-        output1="kvpoei"
-        echo output1 is $output1
-        echo "::set-output name=NXFUTIL_AZ_KV_NAME::$output1"
+      uses: azure/arm-deploy@v1
+      with:
+        scope: subscription
+        subscriptionId: ${{ inputs.AZURE_SUBSCRIPTION_ID }}
+        region: ${{ inputs.AZURE_LOCATION }} 
+        deploymentName: ${{ github.run_number }}
+        template: ${{ env.BICEP_OUTPUT_DIRECTORY }}/${{ env.BICEP_FILE_NAME }}.json
+        parameters: gitHubMsiClientId=${{ steps.gitHubMsiPrincipal.outputs.objectId }}
 
+    # Outputs
     - name: 'Show outputs'
       run: |
         echo AZURE_KEYVAULT_NAME : ${{ steps.azureResources.outputs.NXFUTIL_AZ_KV_NAME }}
 
-    # Azure logout
-    - name: logout
+    # Logout
+    - name: 'Azure logout'
       run: |
         az logout
       if: always()

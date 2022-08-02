@@ -15,55 +15,62 @@ jobs:
   validate_and_push:
     runs-on: ubuntu-latest
     steps:
-    - name: 'Checkout repository branch'
-      uses: actions/checkout@v2
-
+    # Inputs
     - name: 'Show inputs'
       run: |
         echo AZURE_KEYVAULT_NAME : ${{ inputs.AZURE_KEYVAULT_NAME }}
 
+    # Variables
     - name: 'Show variables'
       run: |
-        echo DOCKER_IMAGES_PATH : ${{ env.DOCKER_IMAGES_PATH }}  
+        echo DOCKER_IMAGES_PATH : ${{ env.DOCKER_IMAGES_PATH }} 
 
-    - name: Azure Login
+    # Login
+    - name: 'Azure login'
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}                
+        creds: ${{ secrets.AZURE_CREDENTIALS }}   
+
+    # Checkout
+    - name: 'Checkout repository branch'
+      uses: actions/checkout@v2                     
     
-    # - name: 'Get secrets from Key Vault' 
-    #   id: keyVaultSecrets
-    #   uses: Azure/get-keyvault-secrets@v1
-    #   with: 
-    #     keyvault: ${{ env.AZURE_KEYVAULT_NAME }}
-    #     secrets: 'azure-registry-server, azure-registry-username, azure-registry-password'
+    # Key Vault secrets
+    - name: 'Get secrets from Key Vault' 
+      id: keyVaultSecrets
+      uses: Azure/get-keyvault-secrets@v1
+      with: 
+        keyvault: ${{ env.AZURE_KEYVAULT_NAME }}
+        secrets: 'azure-registry-server, azure-registry-username, azure-registry-password'
 
-    # - name: 'Login to Container Registry'
-    #   uses: azure/docker-login@v1
-    #   with:
-    #     login-server: ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}
-    #     username: ${{ steps.keyVaultSecrets.outputs.azure-registry-username }}
-    #     password: ${{ steps.keyVaultSecrets.outputs.azure-registry-password }}
+    # ACR login 
+    - name: 'Login to Container Registry'
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}
+        username: ${{ steps.keyVaultSecrets.outputs.azure-registry-username }}
+        password: ${{ steps.keyVaultSecrets.outputs.azure-registry-password }}
 
-    # - name: 'Build and push images'
-    #   shell: bash
-    #   run: |
-    #     pushd './${{ env.DOCKER_IMAGES_PATH }}'
+    # Deployment
+    - name: 'Build and push images'
+      shell: bash
+      run: |
+        pushd './${{ env.DOCKER_IMAGES_PATH }}'
         
-    #     pushd ubuntu
-    #     docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
-    #     docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
-    #     popd
+        pushd ubuntu
+        docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
+        docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
+        popd
 
-    #     pushd nextflow
-    #     docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
-    #     docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
-    #     popd
+        pushd nextflow
+        docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
+        docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
+        popd
 
-    #     popd
+        popd
 
-    # Azure logout
-    - name: logout
+    # Logout
+    - name: 'Azure logout'
       run: |
         az logout
       if: always()
