@@ -12,7 +12,7 @@ on:
       AZURE_KEYVAULT_NAME:
         type: string
         description: 'Azure Key Vault name'
-        required: true     
+        required: true
 
 env:
   AZURE_KEYVAULT_NAME: ${{ github.event.inputs.AZURE_KEYVAULT_NAME }}

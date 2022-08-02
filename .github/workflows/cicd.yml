@@ -51,11 +51,11 @@ jobs:
       - name: showOutputs
         id: showOutputs
         run: |
-          echo ${{ needs.marshalOutputs.outputs.AZURE_KEYVAULT_NAME }}
+          echo ${{ jobs.marshalOutputs.outputs.AZURE_KEYVAULT_NAME }}
   
   dockerImages:
     needs: marshalOutputs
     uses: axgonz/azure-nextflow/.github/workflows/docker-images.yml@main
     with:
-      AZURE_KEYVAULT_NAME: ${{ needs.marshalOutputs.outputs.AZURE_KEYVAULT_NAME }}
+      AZURE_KEYVAULT_NAME: ${{ jobs.marshalOutputs.outputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit
