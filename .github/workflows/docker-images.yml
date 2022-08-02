@@ -13,6 +13,9 @@ on:
         type: string
         description: 'Azure Key Vault name'
         required: true
+  push:
+    branches:    
+      - 'main'        
 
 env:
   AZURE_KEYVAULT_NAME: ${{ github.event.inputs.AZURE_KEYVAULT_NAME }}
