@@ -32,7 +32,7 @@ jobs:
 
       - name: echo
         run: |
-          echo ${{ env.AZURE_KEYVAULT_NAME }}
+          echo ${{ github.event.inputs.AZURE_KEYVAULT_NAME }}
       
       # - name: 'Get secrets from Key Vault' 
       #   id: keyVaultSecrets
