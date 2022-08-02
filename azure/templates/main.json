@@ -7,7 +7,7 @@
     },
     "resourceGroup": {
         "//": "Will be made globally unique with an auto generated suffix.",
-        "name": "batch3",
+        "name": "batch4",
         "nameIsAlreadyUnique": true
     },
     "managedIdentity": {
