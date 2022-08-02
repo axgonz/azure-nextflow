@@ -1,11 +1,3 @@
-# Authentication
-# Set up the following secrets in your GitHub repository: 
-#
-#   AZURE_FUNCTIONAPP_PUBLISH_PROFILE
-#
-# For details on usage of secrets, please refer to: 
-#  https://docs.microsoft.com/en-us/azure/azure-functions/functions-how-to-github-actions?tabs=python
-
 name: Build and publish Python functions
 
 on:
@@ -16,7 +8,6 @@ on:
         required: true
 
 env:
-  AZURE_FUNCTIONAPP_NAME: ${{ github.event.inputs.AZURE_FUNCTIONAPP_NAME }}
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './azure/functions/python'
   PYTHON_VERSION: '3.9'
 
@@ -24,14 +15,34 @@ jobs:
   build_and_publish:
     runs-on: ubuntu-latest
     steps:
-    - name: 'Checkout repository branch'
-      uses: actions/checkout@master
+    # Inputs
+    - name: 'Show inputs'
+      run: |
+        echo AZURE_FUNCTIONAPP_NAME : ${{ inputs.AZURE_FUNCTIONAPP_NAME }}
 
+    # Variables
+    - name: 'Show variables'
+      run: |
+        echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} 
+        echo PYTHON_VERSION : ${{ env.PYTHON_VERSION }} 
+
+    # Checkout
+    - name: 'Checkout repository branch'
+      uses: actions/checkout@v2   
+
+    # Login
+    - name: 'Azure login'
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}       
+
+    # Python setup
     - name: Setup Python ${{ env.PYTHON_VERSION }} Environment
       uses: actions/setup-python@v1
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
+    # Build
     - name: 'Resolve Project Dependencies Using Pip'
       shell: bash
       run: |
@@ -40,10 +51,15 @@ jobs:
         pip install -r requirements.txt --target=".python_packages/lib/site-packages"
         popd
 
+    # Deployment
     - name: 'Run Azure Functions Action'
       uses: Azure/functions-action@v1
-      id: fa
       with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        app-name: ${{ inputs.AZURE_FUNCTIONAPP_NAME }}
         package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+
+    # Logout
+    - name: 'Azure logout'
+      run: |
+        az logout
+      if: always()        

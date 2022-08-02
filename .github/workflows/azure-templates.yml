@@ -9,13 +9,16 @@ on:
         required: true
         default: 'australiaeast'
       AZURE_SUBSCRIPTION_ID:
-        type: string
+        type: secretstring
         description: 'Azure subscription id'
         required: true
     outputs:
       AZURE_KEYVAULT_NAME:
         description: 'Key Vault name'
         value: ${{ jobs.validate_and_deploy.outputs.AZURE_KEYVAULT_NAME }}
+      AZURE_FUNCTIONAPP_NAME:
+        description: 'Function App name'
+        value: ${{ jobs.validate_and_deploy.outputs.AZURE_FUNCTIONAPP_NAME }}
 
 env:
   BICEP_FILE_PATH: './azure/templates'
@@ -27,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest 
     outputs:
       AZURE_KEYVAULT_NAME: ${{ steps.azureResources.outputs.NXFUTIL_AZ_KV_NAME }} 
+      AZURE_FUNCTIONAPP_NAME: ${{ steps.azureResources.outputs.functionAppName }} 
     steps:
     # Inputs
     - name: 'Show inputs'
@@ -49,7 +53,7 @@ jobs:
     
     # Checkout
     - name: 'Checkout repository branch'
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
 
     # Get objectId from clientId
     - name: 'Get principal from clientId'
@@ -88,6 +92,7 @@ jobs:
     - name: 'Show outputs'
       run: |
         echo AZURE_KEYVAULT_NAME : ${{ steps.azureResources.outputs.NXFUTIL_AZ_KV_NAME }}
+        echo AZURE_FUNCTIONAPP_NAME : ${{ steps.azureResources.outputs.functionAppName }}
 
     # Logout
     - name: 'Azure logout'
