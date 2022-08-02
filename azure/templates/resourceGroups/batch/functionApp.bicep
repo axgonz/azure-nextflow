@@ -11,12 +11,14 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' existing 
 resource appServicePlan 'Microsoft.Web/serverFarms@2020-06-01' = {
     name: name
     location: location
-    kind: 'functionapp'
+    kind: 'functionapp,linux'
     sku: {
         name: 'Y1'
         tier: 'Dynamic'
     }
-    properties: {}
+    properties: {
+        reserved: true
+    }
 }
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
