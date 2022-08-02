@@ -34,33 +34,33 @@ jobs:
         run: |
           echo ${{ env.AZURE_KEYVAULT_NAME }}
       
-      - name: 'Get secrets from Key Vault' 
-        id: keyVaultSecrets
-        uses: Azure/get-keyvault-secrets@v1
-        with: 
-          keyvault: ${{ env.AZURE_KEYVAULT_NAME }}
-          secrets: 'azure-registry-server, azure-registry-username, azure-registry-password'
+      # - name: 'Get secrets from Key Vault' 
+      #   id: keyVaultSecrets
+      #   uses: Azure/get-keyvault-secrets@v1
+      #   with: 
+      #     keyvault: ${{ env.AZURE_KEYVAULT_NAME }}
+      #     secrets: 'azure-registry-server, azure-registry-username, azure-registry-password'
 
-      - name: 'Login to Container Registry'
-        uses: azure/docker-login@v1
-        with:
-          login-server: ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}
-          username: ${{ steps.keyVaultSecrets.outputs.azure-registry-username }}
-          password: ${{ steps.keyVaultSecrets.outputs.azure-registry-password }}
+      # - name: 'Login to Container Registry'
+      #   uses: azure/docker-login@v1
+      #   with:
+      #     login-server: ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}
+      #     username: ${{ steps.keyVaultSecrets.outputs.azure-registry-username }}
+      #     password: ${{ steps.keyVaultSecrets.outputs.azure-registry-password }}
 
-      - name: 'Build and push images'
-        shell: bash
-        run: |
-          pushd './${{ env.DOCKER_IMAGES_PATH }}'
+      # - name: 'Build and push images'
+      #   shell: bash
+      #   run: |
+      #     pushd './${{ env.DOCKER_IMAGES_PATH }}'
           
-          pushd ubuntu
-          docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
-          docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
-          popd
+      #     pushd ubuntu
+      #     docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
+      #     docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
+      #     popd
 
-          pushd nextflow
-          docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
-          docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
-          popd
+      #     pushd nextflow
+      #     docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
+      #     docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
+      #     popd
 
-          popd
+      #     popd
