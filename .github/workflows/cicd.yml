@@ -40,6 +40,5 @@ jobs:
     needs: azureTemplates
     uses: axgonz/azure-nextflow/.github/workflows/azure-functions.yml@main
     with:
-      AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
       AZURE_FUNCTIONAPP_NAME: ${{ needs.azureTemplates.outputs.AZURE_FUNCTIONAPP_NAME }}
     secrets: inherit    
