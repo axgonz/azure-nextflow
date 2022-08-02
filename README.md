@@ -14,21 +14,16 @@ The following uses the provided GitHub workflows to build and deploy the sample.
 
 ### Azure resources
 
-1. Create `AZURE_CREDENTIALS` GitHub Secret; details in [Azure Docs](https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Cwindows#create-a-service-principal-and-add-it-as-a-github-secret).
+1. Create `AZURE_CREDENTIALS` GitHub Secret; details in [Azure Docs](https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Cwindows#create-a-service-principal-and-add-it-as-a-github-secret). The principal will need Owner permission on the target resource group scope as a minimum.
 
-1. Run `Build and deploy Azure templates` GitHub Action and/or add automatic trigger to workflow.
+``` bash
+az_subId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+az_rgName="myRgName"
 
-### Docker images
+az ad sp create-for-rbac --name "GitHubConnection" --role owner --scopes /subscriptions/$az_subId/resourceGroups/$az_rgName --sdk-auth
+```
 
-1. Create `AZURE_CONTAINERREGISTRY_PASSWORD` GitHub Secret; details in [Azure Docs](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-authentication?tabs=azure-cli#admin-account)
-
-1. Run `Build and push Docker images` GitHub Action and/or add automatic trigger to workflow.
-
-### Function packages
-
-1. Create `AZURE_FUNCTIONAPP_PUBLISH_PROFILE` GitHub Secret; details in [Azure Docs](https://docs.microsoft.com/en-us/azure/azure-functions/functions-how-to-github-actions?tabs=python). 
-
-1. Run `Build and publish Python functions` GitHub Action and/or add automatic trigger to workflow.
+1. Run `Main CICD` GitHub Action and/or add automatic trigger to workflow.
 
 ## Validation
 
