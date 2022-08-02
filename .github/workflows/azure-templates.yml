@@ -9,7 +9,7 @@ on:
         required: true
         default: 'australiaeast'
       AZURE_SUBSCRIPTION_ID:
-        type: secretstring
+        type: string
         description: 'Azure subscription id'
         required: true
     outputs:
