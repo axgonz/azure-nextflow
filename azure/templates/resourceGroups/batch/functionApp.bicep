@@ -69,7 +69,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                 }
                 {
                     name: 'FUNCTIONS_WORKER_RUNTIME'
-                    value: 'PYTHON|3.9'
+                    value: 'Python'
                 }
             ]
         }
