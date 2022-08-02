@@ -84,7 +84,7 @@ module dep_functionApp 'resourceGroups/batch/functionApp.bicep' = {
     managedIdentityId: dep_msiFunctionApp.outputs.id
     storageAccountName: dep_storageAccount.outputs.name
     objectId: dep_msiFunctionApp.outputs.objectId
-    NXFUTIL_AZ_SUB_ID: subscription().id
+    NXFUTIL_AZ_SUB_ID: subscription().subscriptionId
     NXFUTIL_AZ_RG_NAME: rg_batch.name
     NXFUTIL_AZ_KV_NAME: dep_keyVault.outputs.name
     NXFUTIL_AZ_CR_NAME: dep_containerRegistry.outputs.name
