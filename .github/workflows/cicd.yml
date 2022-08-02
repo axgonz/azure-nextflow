@@ -20,6 +20,9 @@ on:
         type: string
         description: 'Azure subscription id'
         required: true
+  push:
+    branches:    
+      - 'main'  
 
 jobs: 
   azureTemplates:
