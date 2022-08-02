@@ -32,7 +32,10 @@ To validate set up was successful, trigger the Azure Function using its webhook.
 ``` bash
 az_funcAppName="myFuncAppName"
 
-wget "https://$az_funcAppName.azurewebsites.net/api/nxfutil"
+curl --get "https://$az_funcAppName.azurewebsites.net/api/nxfutil"
+
+# returns
+Successfully created nxfutil container instance nextflow-xxxxxx.
 ```
 
 ## Usage
@@ -51,7 +54,7 @@ nxf_configUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/next
 nxf_pipelineUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf"
 nxf_parametersUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json"
 
-wget "https://$az_funcAppName.azurewebsites.net/api/nxfutil?config=$nxf_configUri&pipeline=$nxf_pipelineUri&parameters=$nxf_parametersUri"
+curl --get "https://$az_funcAppName.azurewebsites.net/api/nxfutil?config=$nxf_configUri&pipeline=$nxf_pipelineUri&parameters=$nxf_parametersUri"
 ```
 
 ## Annexes
