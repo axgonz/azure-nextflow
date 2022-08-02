@@ -33,7 +33,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
     name: name
     location: location
-    kind: 'functionapp'
+    kind: 'functionapp,linux'
     identity: {
         type: 'UserAssigned'
         userAssignedIdentities: {
@@ -44,7 +44,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         serverFarmId: appServicePlan.id
         httpsOnly: true
         siteConfig: {
-            ftpsState: 'FtpsOnly'
+            linuxFxVersion: 'PYTHON|3.9'
             minTlsVersion: '1.2'
             appSettings: [
                 {
