@@ -11,7 +11,7 @@ var config = json(configText)
 
 // Create core resource group and update the deployment
 resource rg_batch 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: config.resourceGroup.nameIsAlreadyUnique ? config.resourceGroup.name : '${config.resourceGroup.name}${substring(uniqueString(config.resourceGroup.name, subscription().id, location), 0, 4)}'
+  name: config.resourceGroup.nameIsAlreadyUnique ? config.resourceGroup.name : '${config.resourceGroup.name}${substring(uniqueString(config.resourceGroup.name, subscription().subscriptionId, location), 0, 4)}'
   location: location
 }
 
@@ -47,7 +47,7 @@ module dep_containerRegistry 'resourceGroups/batch/containerRegistry.bicep' = {
   scope: rg_batch
   params: {
     location: location
-    name: config.containerRegistry.nameIsAlreadyUnique ? config.containerRegistry.name : '${config.containerRegistry.name}${substring(uniqueString(config.containerRegistry.name, subscription().id, location), 0, 4)}'
+    name: config.containerRegistry.nameIsAlreadyUnique ? config.containerRegistry.name : '${config.containerRegistry.name}${substring(uniqueString(config.containerRegistry.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
     keyVaultName: dep_keyVault.outputs.name
   }
 }
@@ -57,7 +57,7 @@ module dep_storageAccount 'resourceGroups/batch/storageAccount.bicep' = {
   scope: rg_batch
   params: {
     location: location
-    name: config.storageAccount.nameIsAlreadyUnique ? config.storageAccount.name : '${config.storageAccount.name}${substring(uniqueString(config.storageAccount.name, subscription().id, location), 0, 4)}'
+    name: config.storageAccount.nameIsAlreadyUnique ? config.storageAccount.name : '${config.storageAccount.name}${substring(uniqueString(config.storageAccount.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
     objectId: dep_msiBatchAccount.outputs.objectId
     keyVaultName: dep_keyVault.outputs.name
   }
@@ -68,7 +68,7 @@ module dep_batchAccount 'resourceGroups/batch/batchAccount.bicep' = {
   scope: rg_batch
   params: {
     location: location
-    name: config.batchAccount.nameIsAlreadyUnique ? config.batchAccount.name : '${config.batchAccount.name}${substring(uniqueString(config.batchAccount.name, subscription().id, location), 0, 4)}'
+    name: config.batchAccount.nameIsAlreadyUnique ? config.batchAccount.name : '${config.batchAccount.name}${substring(uniqueString(config.batchAccount.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
     managedIdentityId: dep_msiBatchAccount.outputs.id
     storageAccountId: dep_storageAccount.outputs.id
     keyVaultName: dep_keyVault.outputs.name
@@ -80,7 +80,7 @@ module dep_functionApp 'resourceGroups/batch/functionApp.bicep' = {
   scope: rg_batch
   params: {
     location: location
-    name: config.functionApp.nameIsAlreadyUnique ? config.functionApp.name : '${config.functionApp.name}${substring(uniqueString(config.functionApp.name, subscription().id, location), 0, 4)}'
+    name: config.functionApp.nameIsAlreadyUnique ? config.functionApp.name : '${config.functionApp.name}${substring(uniqueString(config.functionApp.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
     managedIdentityId: dep_msiFunctionApp.outputs.id
     storageAccountName: dep_storageAccount.outputs.name
     objectId: dep_msiFunctionApp.outputs.objectId
@@ -98,7 +98,7 @@ module dep_keyVault 'resourceGroups/batch/keyVault.bicep' = {
   scope: rg_batch
   params: {
     location: location
-    name: config.keyVault.nameIsAlreadyUnique ? config.keyVault.name : '${config.keyVault.name}${substring(uniqueString(config.keyVault.name, subscription().id, location), 0, 4)}'
+    name: config.keyVault.nameIsAlreadyUnique ? config.keyVault.name : '${config.keyVault.name}${substring(uniqueString(config.keyVault.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
     tenantId: dep_msiNextflow.outputs.tenantId
     objectIds: gitHubMsiClientId == 'null' ? [
       dep_msiFunctionApp.outputs.objectId
