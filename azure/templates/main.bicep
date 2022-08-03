@@ -114,7 +114,7 @@ module dep_keyVault 'resourceGroups/batch/keyVault.bicep' = {
 output functionAppId string = dep_functionApp.outputs.id
 output functionAppName string = dep_functionApp.outputs.name
 
-output NXFUTIL_AZ_SUB_ID string = subscription().id
+output NXFUTIL_AZ_SUB_ID string = subscription().subscriptionId
 output NXFUTIL_AZ_RG_NAME string = rg_batch.name
 output NXFUTIL_AZ_KV_NAME string = dep_keyVault.outputs.name
 output NXFUTIL_AZ_CR_NAME string = dep_containerRegistry.outputs.name
