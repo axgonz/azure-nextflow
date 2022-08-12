@@ -6,6 +6,8 @@
 
 name: Main CICD
 
+trigger: none
+
 parameters:
   - name: 'AZURE_LOCATION'
     type: string
