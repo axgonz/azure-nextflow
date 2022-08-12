@@ -20,14 +20,14 @@ steps:
 
   # Variables
   - script: |
-      echo DOCKER_IMAGES_PATH : ${{ variables.DOCKER_IMAGES_PATH }} 
+      echo DOCKER_IMAGES_PATH : ${{ parameters.DOCKER_IMAGES_PATH }} 
     displayName: 'Show variables' 
 
   # Key Vault secrets
   - task: AzureKeyVault@2
     name: keyVaultSecrets
     inputs:
-      connectedServiceName: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+      connectedServiceName: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
       keyVaultName: ${{ parameters.AZURE_KEYVAULT_NAME }}
       secretsFilter: 'azure-registry-server, azure-registry-username, azure-registry-password'
       
@@ -37,7 +37,7 @@ steps:
 
   # Deployment
   - script: |
-      pushd './${{ env.DOCKER_IMAGES_PATH }}'
+      pushd './${{ parameters.DOCKER_IMAGES_PATH }}'
       
       pushd ubuntu
       docker build -f Dockerfile . -t $(keyVaultSecrets.azure-registry-server)/default/ubuntu

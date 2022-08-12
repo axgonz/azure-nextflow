@@ -29,15 +29,15 @@ steps:
 
 # Variables
 - script: |
-    echo BICEP_FILE_PATH : ${{ variables.BICEP_FILE_PATH }}       
-    echo BICEP_FILE_NAME : ${{ variables.BICEP_FILE_NAME }}       
+    echo BICEP_FILE_PATH : ${{ parameters.BICEP_FILE_PATH }}
+    echo BICEP_FILE_NAME : ${{ parameters.BICEP_FILE_NAME }}
   displayName: 'Show variables'
 
 # Get objectId from clientId
 - task: AzureCLI@2
   name: msiPrincipal
   inputs:
-    azureSubscription: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+    azureSubscription: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
@@ -55,7 +55,7 @@ steps:
 # Build
 - task: AzureCLI@2
   inputs:
-      azureSubscription: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+      azureSubscription: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: |
@@ -64,15 +64,15 @@ steps:
           --name $(Build.BuildNumber) \
           --location ${{ parameters.AZURE_LOCATION }} \
           --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
-          --template-file ${{ variables.BICEP_FILE_PATH }}/${{ variables.BICEP_FILE_NAME }}.bicep \
+          --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
           --parameters gitHubMsiClientId=$(msiPrincipal.objectId)
-  displayName: Azure CLI - Validate Bicep file ${{ variables.BICEP_FILE_PATH }}/${{ variables.BICEP_FILE_NAME }}.bicep
+  displayName: Azure CLI - Validate Bicep file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep
 
 # Deployment
 - task: AzureCLI@2
   name: azureResources
   inputs:
-      azureSubscription: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+      azureSubscription: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: |
@@ -81,7 +81,7 @@ steps:
           --name $(Build.BuildNumber) \  
           --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
           --location ${{ parameters.AZURE_LOCATION }} \
-          --template-file ${{ variables.BICEP_FILE_PATH }}/${{ variables.BICEP_FILE_NAME }}.bicep \
+          --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
           --parameters gitHubMsiClientId=$(msiPrincipal.objectId)
         state=$(echo $deployment | jq -r ".properties.provisioningState")
         if test "$state" == 'Succeeded'
@@ -97,7 +97,7 @@ steps:
           echo $deployment | jq -r "."
           exit 1
         fi
-  displayName: Azure CLI - Deploy Bicep file ${{ variables.BICEP_FILE_PATH }}/${{ variables.BICEP_FILE_NAME }}.bicep
+  displayName: Azure CLI - Deploy Bicep file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep
 
 # Outputs
 - script: |

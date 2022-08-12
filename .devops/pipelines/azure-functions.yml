@@ -24,19 +24,19 @@ steps:
 
 # Variables
 - script: |
-    echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ variables.AZURE_FUNCTIONAPP_PACKAGE_PATH }} 
-    echo PYTHON_VERSION : ${{ variables.PYTHON_VERSION }} 
+    echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ parameters.AZURE_FUNCTIONAPP_PACKAGE_PATH }} 
+    echo PYTHON_VERSION : ${{ parameters.PYTHON_VERSION }} 
   displayName: 'Show variables' 
 
 # Python setup
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '${{ variables.PYTHON_VERSION }}'
-  displayName: 'Setup python ${{ variables.PYTHON_VERSION }} environment'              
+    versionSpec: '${{ parameters.PYTHON_VERSION }}'
+  displayName: 'Setup python ${{ parameters.PYTHON_VERSION }} environment'              
 
 # Build
 - script: |
-    pushd './${{ variables.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+    pushd './${{ parameters.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
     python -m pip install --upgrade pip
     pip install -r requirements.txt --target=".python_packages/lib/site-packages"
     popd
@@ -45,7 +45,7 @@ steps:
 # Achrive
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: './${{ variables.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+    rootFolderOrFile: './${{ parameters.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
     includeRootFolder: false
     archiveFile: '$(System.DefaultWorkingDirectory)/build-py-$(Build.BuildId).zip'
   displayName: 'Create package'
@@ -53,7 +53,7 @@ steps:
 # Deployment
 - task: AzureFunctionApp@1
   inputs:
-    azureSubscription: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+    azureSubscription: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
     appType: functionAppLinux
     appName: ${{ parameters.AZURE_FUNCTIONAPP_NAME }}
     package: '$(System.DefaultWorkingDirectory)/build-py-$(Build.BuildId).zip'
