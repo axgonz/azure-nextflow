@@ -48,4 +48,4 @@ jobs:
     - template: azure-functions.yml
       parameters:
         AZURE_SERVICE_CONNECTION_NAME: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
-        AZURE_FUNCTIONAPP_NAME: $[ dependencies.azureTemplates.outputs['azureResources.AZURE_FUNCTIONAPP_NAME'] ]
+        AZURE_FUNCTIONAPP_NAME: $( dependencies.azureTemplates.outputs['azureResources.AZURE_FUNCTIONAPP_NAME'] )
