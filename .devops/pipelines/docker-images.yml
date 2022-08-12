@@ -1,0 +1,57 @@
+name: Build and push Docker images
+
+parameters:
+  - name: 'AZURE_KEYVAULT_NAME'
+    type: string
+    displayName: 'Azure Key Vault name'
+
+variables:
+  - name: 'AZURE_SERVICE_CONNECTION_NAME'
+    value: 'algonzSubscription'
+    
+  - name: 'DOCKER_IMAGES_PATH'
+    value: './docker/images'
+
+jobs:
+  - job: 'validate_and_push'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      # Inputs
+      - script: |
+          echo AZURE_KEYVAULT_NAME : ${{ parameters.AZURE_KEYVAULT_NAME }}
+        displayName:  'Show inputs'
+
+      # Variables
+      - script: |
+          echo AZURE_SERVICE_CONNECTION_NAME : ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}     
+          echo DOCKER_IMAGES_PATH : ${{ variables.DOCKER_IMAGES_PATH }} 
+        displayName: 'Show variables' 
+
+      # Key Vault secrets
+      - task: AzureKeyVault@2
+        inputs:
+          connectedServiceName: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+          keyVaultName: ${{ inputs.AZURE_KEYVAULT_NAME }}
+          secretsFilter: 'azure-registry-server, azure-registry-username, azure-registry-password'
+          
+      # ACR login 
+      - script: |
+          docker login $(azure-registry-server) --username $(azure-registry-username) --password $(azure-registry-password)
+
+      # Deployment
+      - script: |
+          pushd './${{ env.DOCKER_IMAGES_PATH }}'
+          
+          pushd ubuntu
+          docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
+          docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
+          popd
+
+          pushd nextflow
+          docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
+          docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
+          popd
+
+          popd
+        displayName: 'Build and push images'
