@@ -102,13 +102,13 @@ jobs:
           state=$(echo $deployment | jq -r ".properties.provisioningState")
           if test "$state" == 'Succeeded'
           then 
-            kvName=$(echo $deployment | jq -r ".properties.outputs.NXFUTIL_AZ_KV_NAME.value")
-            echo setting AZURE_KEYVAULT_NAME to $kvName
-            echo "::set-output name=AZURE_KEYVAULT_NAME::$kvName"
+            kvName=$(echo $deployment | jq -r ".properties.outputs.keyVaultName.value")
+            echo setting keyVaultName to $kvName
+            echo "::set-output name=keyVaultName::$kvName"
             
             faName=$(echo $deployment | jq -r ".properties.outputs.functionAppName.value")
-            echo setting AZURE_FUNCTIONAPP_NAME to $faName
-            echo "::set-output name=AZURE_FUNCTIONAPP_NAME::$faName"
+            echo setting functionAppName to $faName
+            echo "::set-output name=functionAppName::$faName"
           else
             echo $deployment | jq -r "."
             exit 1
@@ -117,7 +117,7 @@ jobs:
     # Outputs
     - name: 'Show outputs'
       run: |
-        echo AZURE_KEYVAULT_NAME : ${{ steps.azureResources.outputs.NXFUTIL_AZ_KV_NAME }}
+        echo AZURE_KEYVAULT_NAME : ${{ steps.azureResources.outputs.keyVaultName }}
         echo AZURE_FUNCTIONAPP_NAME : ${{ steps.azureResources.outputs.functionAppName }}
 
     # Logout

@@ -92,7 +92,7 @@ steps:
         state=$(echo $deployment | jq -r ".properties.provisioningState")
         if test "$state" == 'Succeeded'
         then 
-          kvName=$(echo $deployment | jq -r ".properties.outputs.NXFUTIL_AZ_KV_NAME.value")
+          kvName=$(echo $deployment | jq -r ".properties.outputs.keyVaultName.value")
           echo setting AZURE_KEYVAULT_NAME to $kvName
           echo "##vso[task.setvariable variable=AZURE_KEYVAULT_NAME;isOutput=true]$kvName"
           
