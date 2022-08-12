@@ -38,84 +38,72 @@ steps:
     echo BICEP_FILE_NAME : ${{ parameters.BICEP_FILE_NAME }}
   displayName: 'Show variables'
 
-# # Get objectId from clientId
-# - task: AzureCLI@2
-#   name: msiPrincipal
-#   inputs:
-#     azureSubscription: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
-#     scriptType: bash
-#     scriptLocation: inlineScript
-#     inlineScript: |
-#       az --version
-#       spn=$(az account show --query "user.name" --output tsv)
-#       objectId=$(az ad sp list --spn "$spn" --query "[].objectId" --output tsv)
-#       if test "$objectId" == ''
-#       then 
-#         echo "proptery 'objectId' not found trying 'id' instead"
-#         objectId=$(az ad sp list --spn "$spn" --query "[].id" --output tsv)
-#       fi
-#       echo setting objectId to $objectId
-#       echo "##vso[task.setvariable variable=objectId;isOutput=true]$objectId"
-#   displayName: 'Get principal from clientId'
+# Get objectId from clientId
+- task: AzureCLI@2
+  name: msiPrincipal
+  inputs:
+    azureSubscription: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+      az --version
+      spn=$(az account show --query "user.name" --output tsv)
+      objectId=$(az ad sp list --spn "$spn" --query "[].objectId" --output tsv)
+      if test "$objectId" == ''
+      then 
+        echo "proptery 'objectId' not found trying 'id' instead"
+        objectId=$(az ad sp list --spn "$spn" --query "[].id" --output tsv)
+      fi
+      echo setting objectId to $objectId
+      echo "##vso[task.setvariable variable=objectId;isOutput=true]$objectId"
+  displayName: 'Get principal from clientId'
 
-# # Build
-# - task: AzureCLI@2
-#   inputs:
-#       azureSubscription: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
-#       scriptType: bash
-#       scriptLocation: inlineScript
-#       inlineScript: |
-#         az --version
-#         az deployment sub validate \
-#           --name 'devops-$(Build.BuildId)' \
-#           --location ${{ parameters.AZURE_LOCATION }} \
-#           --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
-#           --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
-#           --parameters resourceGroupName=${{ parameters.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=$(msiPrincipal.objectId)
-#   displayName: Validate Bicep file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep
+# Build
+- task: AzureCLI@2
+  inputs:
+      azureSubscription: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        az --version
+        az deployment sub validate \
+          --name 'devops-$(Build.BuildId)' \
+          --location ${{ parameters.AZURE_LOCATION }} \
+          --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
+          --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
+          --parameters resourceGroupName=${{ parameters.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=$(msiPrincipal.objectId)
+  displayName: Validate Bicep file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep
 
-# # Deployment
-# - task: AzureCLI@2
-#   name: azureResources
-#   inputs:
-#       azureSubscription: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
-#       scriptType: bash
-#       scriptLocation: inlineScript
-#       inlineScript: |
-#         az --version
-#         deployment=$(az deployment sub create \
-#           --name 'devops-$(Build.BuildId)' \
-#           --location ${{ parameters.AZURE_LOCATION }} \
-#           --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
-#           --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
-#           --parameters resourceGroupName=${{ parameters.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=$(msiPrincipal.objectId))
-#         state=$(echo $deployment | jq -r ".properties.provisioningState")
-#         if test "$state" == 'Succeeded'
-#         then 
-#           kvName=$(echo $deployment | jq -r ".properties.outputs.NXFUTIL_AZ_KV_NAME.value")
-#           echo setting AZURE_KEYVAULT_NAME to $kvName
-#           echo "##vso[task.setvariable variable=AZURE_KEYVAULT_NAME;isOutput=true]$kvName"
-          
-#           faName=$(echo $deployment | jq -r ".properties.outputs.functionAppName.value")
-#           echo setting AZURE_FUNCTIONAPP_NAME to $faName
-#           echo "##vso[task.setvariable variable=AZURE_FUNCTIONAPP_NAME;isOutput=true]$faName"
-#         else
-#           echo $deployment | jq -r "."
-#           exit 1
-#         fi
-#   displayName: Deploy Bicep file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep
-
-# Debug: create output variables
-- script: |
-    kvName="kvj6nu"
-    echo setting AZURE_KEYVAULT_NAME to $kvName
-    echo "##vso[task.setvariable variable=AZURE_KEYVAULT_NAME;isOutput=true]$kvName"
-    
-    faName="fcgz2c"
-    echo setting AZURE_FUNCTIONAPP_NAME to $faName
-    echo "##vso[task.setvariable variable=AZURE_FUNCTIONAPP_NAME;isOutput=true]$faName"
-  displayName: 'Creating output variables'
+# Deployment
+- task: AzureCLI@2
   name: azureResources
+  inputs:
+      azureSubscription: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        az --version
+        deployment=$(az deployment sub create \
+          --name 'devops-$(Build.BuildId)' \
+          --location ${{ parameters.AZURE_LOCATION }} \
+          --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
+          --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
+          --parameters resourceGroupName=${{ parameters.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=$(msiPrincipal.objectId))
+        state=$(echo $deployment | jq -r ".properties.provisioningState")
+        if test "$state" == 'Succeeded'
+        then 
+          kvName=$(echo $deployment | jq -r ".properties.outputs.NXFUTIL_AZ_KV_NAME.value")
+          echo setting AZURE_KEYVAULT_NAME to $kvName
+          echo "##vso[task.setvariable variable=AZURE_KEYVAULT_NAME;isOutput=true]$kvName"
+          
+          faName=$(echo $deployment | jq -r ".properties.outputs.functionAppName.value")
+          echo setting AZURE_FUNCTIONAPP_NAME to $faName
+          echo "##vso[task.setvariable variable=AZURE_FUNCTIONAPP_NAME;isOutput=true]$faName"
+        else
+          echo $deployment | jq -r "."
+          exit 1
+        fi
+  displayName: Deploy Bicep file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep
 
 # Outputs
 - script: |
