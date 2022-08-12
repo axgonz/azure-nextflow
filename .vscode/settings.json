@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "**/.devops/pipelines/*.yml": "azure-pipelines",
+        "**/.github/workflows/*.yml": "yaml"
+    }
+}
