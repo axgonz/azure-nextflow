@@ -41,7 +41,7 @@ jobs:
           scriptLocation: inlineScript
           inlineScript: |
             az account show
-            id=$(az account show --query "user.name")
+            id=$(az account show --query "user.name" --output tsv)
             echo $id
             az ad sp list --spn "$id"
             az ad sp show --id "$id"
