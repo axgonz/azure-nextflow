@@ -1,5 +1,3 @@
-name: Build and push Docker images
-
 parameters:
   - name: AZURE_SERVICE_CONNECTION_NAME
     type: string
@@ -9,51 +7,47 @@ parameters:
     type: string
     displayName: 'Azure Key Vault name'
 
-variables:
   - name: 'DOCKER_IMAGES_PATH'
-    value: './docker/images'
+    type: string
+    default: './docker/images'
 
-jobs:
-  - job: 'validate_and_push'
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-      # Inputs
-      - script: |
-          echo AZURE_SERVICE_CONNECTION_NAME : ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}     
-          echo AZURE_KEYVAULT_NAME : ${{ parameters.AZURE_KEYVAULT_NAME }}
-        displayName:  'Show inputs'
+steps:
+  # Inputs
+  - script: |
+      echo AZURE_SERVICE_CONNECTION_NAME : ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}     
+      echo AZURE_KEYVAULT_NAME : ${{ parameters.AZURE_KEYVAULT_NAME }}
+    displayName:  'Show inputs'
 
-      # Variables
-      - script: |
-          echo DOCKER_IMAGES_PATH : ${{ variables.DOCKER_IMAGES_PATH }} 
-        displayName: 'Show variables' 
+  # Variables
+  - script: |
+      echo DOCKER_IMAGES_PATH : ${{ variables.DOCKER_IMAGES_PATH }} 
+    displayName: 'Show variables' 
 
-      # Key Vault secrets
-      - task: AzureKeyVault@2
-        name: keyVaultSecrets
-        inputs:
-          connectedServiceName: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
-          keyVaultName: ${{ inputs.AZURE_KEYVAULT_NAME }}
-          secretsFilter: 'azure-registry-server, azure-registry-username, azure-registry-password'
-          
-      # ACR login 
-      - script: |
-          docker login $(keyVaultSecrets.azure-registry-server) --username $(keyVaultSecrets.azure-registry-username) --password $(keyVaultSecrets.azure-registry-password)
+  # Key Vault secrets
+  - task: AzureKeyVault@2
+    name: keyVaultSecrets
+    inputs:
+      connectedServiceName: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+      keyVaultName: ${{ inputs.AZURE_KEYVAULT_NAME }}
+      secretsFilter: 'azure-registry-server, azure-registry-username, azure-registry-password'
+      
+  # ACR login 
+  - script: |
+      docker login $(keyVaultSecrets.azure-registry-server) --username $(keyVaultSecrets.azure-registry-username) --password $(keyVaultSecrets.azure-registry-password)
 
-      # Deployment
-      - script: |
-          pushd './${{ env.DOCKER_IMAGES_PATH }}'
-          
-          pushd ubuntu
-          docker build -f Dockerfile . -t $(keyVaultSecrets.azure-registry-server)/default/ubuntu
-          docker push $(keyVaultSecrets.azure-registry-server)/default/ubuntu
-          popd
+  # Deployment
+  - script: |
+      pushd './${{ env.DOCKER_IMAGES_PATH }}'
+      
+      pushd ubuntu
+      docker build -f Dockerfile . -t $(keyVaultSecrets.azure-registry-server)/default/ubuntu
+      docker push $(keyVaultSecrets.azure-registry-server)/default/ubuntu
+      popd
 
-          pushd nextflow
-          docker build -f Dockerfile . -t $(keyVaultSecrets.azure-registry-server)/default/nextflow
-          docker push $(keyVaultSecrets.azure-registry-server)/default/nextflow
-          popd
+      pushd nextflow
+      docker build -f Dockerfile . -t $(keyVaultSecrets.azure-registry-server)/default/nextflow
+      docker push $(keyVaultSecrets.azure-registry-server)/default/nextflow
+      popd
 
-          popd
-        displayName: 'Build and push images'
+      popd
+    displayName: 'Build and push images'
