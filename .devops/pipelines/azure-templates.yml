@@ -87,7 +87,7 @@ steps:
           --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
           --location ${{ parameters.AZURE_LOCATION }} \
           --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
-          --parameters resourceGroupName=${{ parameters.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=$(msiPrincipal.objectId)
+          --parameters resourceGroupName=${{ parameters.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=$(msiPrincipal.objectId))
         state=$(echo $deployment | jq -r ".properties.provisioningState")
         if test "$state" == 'Succeeded'
         then 
