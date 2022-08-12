@@ -1,6 +1,10 @@
 name: Build and deploy Azure templates
 
 parameters:
+  - name: AZURE_SERVICE_CONNECTION_NAME
+    type: string
+    displayName: 'Azure service connection name'
+
   - name: 'AZURE_LOCATION'
     type: string
     displayName: 'Azure region name'
@@ -10,9 +14,6 @@ parameters:
     displayName: 'Azure subscription id'
 
 variables:
-  - name: 'AZURE_SERVICE_CONNECTION_NAME'
-    value: 'algonzSubscription'
-    
   - name: 'BICEP_FILE_PATH'
     value: './azure/templates'
 
@@ -26,13 +27,13 @@ jobs:
     steps:
     # Inputs
     - script: |
+        echo AZURE_SERVICE_CONNECTION_NAME : ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
         echo AZURE_LOCATION : ${{ parameters.AZURE_LOCATION }}
         echo AZURE_SUBSCRIPTION_ID : ${{ parameters.AZURE_SUBSCRIPTION_ID }}
       displayName: 'Show inputs'
 
     # Variables
     - script: |
-        echo AZURE_SERVICE_CONNECTION_NAME : ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}       
         echo BICEP_FILE_PATH : ${{ variables.BICEP_FILE_PATH }}       
         echo BICEP_FILE_NAME : ${{ variables.BICEP_FILE_NAME }}       
       displayName: 'Show variables'
@@ -69,11 +70,12 @@ jobs:
               --location ${{ parameters.AZURE_LOCATION }} \
               --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
               --template-file ${{ variables.BICEP_FILE_PATH }}/${{ variables.BICEP_FILE_NAME }}.bicep \
-              --parameters gitHubMsiClientId=$(objectId)
+              --parameters gitHubMsiClientId=$(msiPrincipal.objectId)
       displayName: Azure CLI - Validate Bicep file ${{ variables.BICEP_FILE_PATH }}/${{ variables.BICEP_FILE_NAME }}.bicep
     
     # Deployment
     - task: AzureCLI@2
+      name: azureResources
       inputs:
           azureSubscription: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
           scriptType: bash
@@ -85,7 +87,7 @@ jobs:
               --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
               --location ${{ parameters.AZURE_LOCATION }} \
               --template-file ${{ variables.BICEP_FILE_PATH }}/${{ variables.BICEP_FILE_NAME }}.bicep \
-              --parameters gitHubMsiClientId=$(objectId)
+              --parameters gitHubMsiClientId=$(msiPrincipal.objectId)
             state=$(echo $deployment | jq -r ".properties.provisioningState")
             if test "$state" == 'Succeeded'
             then 

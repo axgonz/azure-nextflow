@@ -1,18 +1,19 @@
 name: Build and publish Python functions
 
 parameters:
-  - name: 'AZURE_FUNCTIONAPP_NAME'
+  - name: AZURE_SERVICE_CONNECTION_NAME
+    type: string
+    displayName: 'Azure service connection name'
+
+  - name: AZURE_FUNCTIONAPP_NAME
     type: string
     displayName: 'Azure Function App name'
 
 variables:
-  - name: 'AZURE_SERVICE_CONNECTION_NAME'
-    value: 'algonzSubscription'
-
-  - name: 'AZURE_FUNCTIONAPP_PACKAGE_PATH'
+  - name: AZURE_FUNCTIONAPP_PACKAGE_PATH
     value: './azure/functions/python'
   
-  - name: 'PYTHON_VERSION'
+  - name: PYTHON_VERSION
     value: '3.9'
 
 jobs:
@@ -22,12 +23,12 @@ jobs:
     steps:
     # Inputs
     - script: |
+        echo AZURE_SERVICE_CONNECTION_NAME : ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}         
         echo AZURE_FUNCTIONAPP_NAME : ${{ parameters.AZURE_FUNCTIONAPP_NAME }}
       displayName:  'Show inputs'
 
     # Variables
     - script: |
-        echo AZURE_SERVICE_CONNECTION_NAME : ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}     
         echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ variables.AZURE_FUNCTIONAPP_PACKAGE_PATH }} 
         echo PYTHON_VERSION : ${{ variables.PYTHON_VERSION }} 
       displayName: 'Show variables' 

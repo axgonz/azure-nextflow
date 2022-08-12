@@ -1,0 +1,45 @@
+# Authentication
+# Create a Service Connection in DevOps project settings 
+#
+# For details on usage of secrets, please refer to:
+#  https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml
+
+name: Main CICD
+
+parameters:
+  - name: 'AZURE_LOCATION'
+    type: string
+    displayName: 'Azure region name'
+
+  - name: 'AZURE_SUBSCRIPTION_ID'
+    type: string
+    displayName: 'Azure subscription id'
+
+variables:
+  - name: 'AZURE_SERVICE_CONNECTION_NAME'
+    value: 'algonzSubscription'
+
+jobs:
+  - job: 'azureTemplates'
+    steps:
+    - template: azure-templates.yml
+      parameters:
+        AZURE_SERVICE_CONNECTION_NAME: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+        AZURE_LOCATION: ${{ parameters.AZURE_LOCATION }}
+        AZURE_SUBSCRIPTION_ID: ${{ parameters.AZURE_SUBSCRIPTION_ID }}
+  
+  - job: 'dockerImages'
+    dependsOn: azureTemplates
+    steps:
+    - template: docker-images.yml
+      parameters:
+        AZURE_SERVICE_CONNECTION_NAME: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+        AZURE_KEYVAULT_NAME: $[ dependencies.azureTemplates.outputs['azureResources.AZURE_KEYVAULT_NAME'] ]
+        
+  - job: 'azureFunctions'
+    dependsOn: azureTemplates
+    steps:
+    - template: azure-functions.yml
+      parameters:
+        AZURE_SERVICE_CONNECTION_NAME: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+        AZURE_FUNCTIONAPP_NAME: $[ dependencies.azureTemplates.outputs['azureResources.AZURE_FUNCTIONAPP_NAME'] ]
