@@ -33,13 +33,7 @@ steps:
       
   # ACR login 
   - script: |
-      echo 1
-      echo "$(keyVaultSecrets.azure-registry-server)"
-
-      echo 2 
-      echo "$(azure-registry-server)"
-
-      docker login $(keyVaultSecrets.azure-registry-server) --username $AZURE_REGISTRY_USERNAME --password $AZURE_REGISTRY_PASSWORD
+      docker login $(azure-registry-server) --username $(azure-registry-username) --password $(azure-registry-password)
     displayName: 'Login to registry'
 
   # Deployment
@@ -47,16 +41,14 @@ steps:
       pushd './${{ parameters.DOCKER_IMAGES_PATH }}'
       
       pushd ubuntu
-      docker build -f Dockerfile . -t $AZURE_REGISTRY_SERVER/default/ubuntu
-      docker push $AZURE_REGISTRY_SERVER/default/ubuntu
+      docker build -f Dockerfile . -t $(azure-registry-server)/default/ubuntu
+      docker push $(azure-registry-server)/default/ubuntu
       popd
 
       pushd nextflow
-      docker build -f Dockerfile . -t $AZURE_REGISTRY_SERVER/default/nextflow
-      docker push $AZURE_REGISTRY_SERVER/default/nextflow
+      docker build -f Dockerfile . -t $(azure-registry-server)/default/nextflow
+      docker push $(azure-registry-server)/default/nextflow
       popd
 
       popd
     displayName: 'Build and push images'
-    env:
-      AZURE_REGISTRY_SERVER: $(keyVaultSecrets.azure-registry-server)  
