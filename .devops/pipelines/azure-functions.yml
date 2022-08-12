@@ -1,0 +1,60 @@
+parameters:
+  - name: AZURE_SERVICE_CONNECTION_NAME
+    type: string
+    displayName: 'Azure service connection name'
+
+  - name: AZURE_FUNCTIONAPP_NAME
+    type: string
+    displayName: 'Azure Function App name'
+
+  - name: AZURE_FUNCTIONAPP_PACKAGE_PATH
+    type: string
+    default: './azure/functions/python'
+  
+  - name: PYTHON_VERSION
+    type: string
+    default: '3.9'
+
+steps:
+# Inputs
+- script: |
+    echo AZURE_SERVICE_CONNECTION_NAME : ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}         
+    echo AZURE_FUNCTIONAPP_NAME : ${{ parameters.AZURE_FUNCTIONAPP_NAME }}
+  displayName:  'Show inputs'
+
+# Variables
+- script: |
+    echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ parameters.AZURE_FUNCTIONAPP_PACKAGE_PATH }} 
+    echo PYTHON_VERSION : ${{ parameters.PYTHON_VERSION }} 
+  displayName: 'Show variables' 
+
+# Python setup
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '${{ parameters.PYTHON_VERSION }}'
+  displayName: 'Setup python ${{ parameters.PYTHON_VERSION }} environment'              
+
+# Build
+- script: |
+    pushd './${{ parameters.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt --target=".python_packages/lib/site-packages"
+    popd
+  displayName: 'Resolve project dependencies using pip'          
+
+# Achrive
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: './${{ parameters.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+    includeRootFolder: false
+    archiveFile: '$(System.DefaultWorkingDirectory)/build-py-$(Build.BuildId).zip'
+  displayName: 'Create package'
+
+# Deployment
+- task: AzureFunctionApp@1
+  inputs:
+    azureSubscription: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
+    appType: functionAppLinux
+    appName: ${{ parameters.AZURE_FUNCTIONAPP_NAME }}
+    package: '$(System.DefaultWorkingDirectory)/build-py-$(Build.BuildId).zip'
+  displayName: 'Deploy function'

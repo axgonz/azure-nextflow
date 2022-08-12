@@ -1,0 +1,54 @@
+parameters:
+  - name: AZURE_SERVICE_CONNECTION_NAME
+    type: string
+    displayName: 'Azure service connection name'
+
+  - name: 'AZURE_KEYVAULT_NAME'
+    type: string
+    displayName: 'Azure Key Vault name'
+
+  - name: 'DOCKER_IMAGES_PATH'
+    type: string
+    default: './docker/images'
+
+steps:
+  # Inputs
+  - script: |
+      echo AZURE_SERVICE_CONNECTION_NAME : ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}     
+      echo AZURE_KEYVAULT_NAME : ${{ parameters.AZURE_KEYVAULT_NAME }}
+    displayName:  'Show inputs'
+
+  # Variables
+  - script: |
+      echo DOCKER_IMAGES_PATH : ${{ parameters.DOCKER_IMAGES_PATH }} 
+    displayName: 'Show variables' 
+
+  # Key Vault secrets
+  - task: AzureKeyVault@2
+    name: keyVaultSecrets
+    inputs:
+      connectedServiceName: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
+      keyVaultName: ${{ parameters.AZURE_KEYVAULT_NAME }}
+      secretsFilter: 'azure-registry-server, azure-registry-username, azure-registry-password'
+      
+  # ACR login 
+  - script: |
+      docker login $(azure-registry-server) --username $(azure-registry-username) --password $(azure-registry-password)
+    displayName: 'Login to registry'
+
+  # Deployment
+  - script: |
+      pushd './${{ parameters.DOCKER_IMAGES_PATH }}'
+      
+      pushd ubuntu
+      docker build -f Dockerfile . -t $(azure-registry-server)/default/ubuntu
+      docker push $(azure-registry-server)/default/ubuntu
+      popd
+
+      pushd nextflow
+      docker build -f Dockerfile . -t $(azure-registry-server)/default/nextflow
+      docker push $(azure-registry-server)/default/nextflow
+      popd
+
+      popd
+    displayName: 'Build and push images'

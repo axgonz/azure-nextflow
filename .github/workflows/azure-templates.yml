@@ -12,6 +12,10 @@ on:
         type: string
         description: 'Azure subscription id'
         required: true
+      AZURE_RESOURCEGROUP_NAME:
+        type: string
+        description: 'Azure resource group name'
+        required: true        
     outputs:
       AZURE_KEYVAULT_NAME:
         description: 'Key Vault name'
@@ -23,7 +27,6 @@ on:
 env:
   BICEP_FILE_PATH: './azure/templates'
   BICEP_FILE_NAME: 'main'
-  BICEP_OUTPUT_DIRECTORY: './azure/templates/builds'
 
 jobs:
   validate_and_deploy:
@@ -37,13 +40,13 @@ jobs:
       run: |
         echo AZURE_LOCATION : ${{ inputs.AZURE_LOCATION }}
         echo AZURE_SUBSCRIPTION_ID : ${{ inputs.AZURE_SUBSCRIPTION_ID }}
+        echo AZURE_RESOURCEGROUP_NAME : ${{ inputs.AZURE_RESOURCEGROUP_NAME }}
 
     # Variables
     - name: 'Show variables'
       run: |
         echo BICEP_FILE_PATH : ${{ env.BICEP_FILE_PATH }}       
         echo BICEP_FILE_NAME : ${{ env.BICEP_FILE_NAME }}       
-        echo BICEP_OUTPUT_DIRECTORY : ${{ env.BICEP_OUTPUT_DIRECTORY }}       
 
     # Login
     - name: 'Azure login'
@@ -57,36 +60,60 @@ jobs:
 
     # Get objectId from clientId
     - name: 'Get principal from clientId'
-      id: gitHubMsiPrincipal
+      id: msiPrincipal
       run: |
         az ad sp list --spn "$CLIENT_ID"
-        objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].id" --output tsv)
-        echo objectId is $objectId
+        objectId=$(az ad sp list --spn "$CLIENT_ID" --query "[].objectId" --output tsv)
+        if test "$objectId" == ''
+        then 
+          echo "property 'objectId' not found trying 'id' instead"
+          objectId=$(az ad sp list --spn "$spn" --query "[].id" --output tsv)
+        fi
+        echo setting objectId to $objectId
         echo "::set-output name=objectId::$objectId"
       env: 
         CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
 
     # Build
-    - name: Azure CLI - Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
+    - name: Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
       uses: Azure/cli@1.0.4
       with:
         inlineScript: |
-          mkdir -p ${{ env.BICEP_OUTPUT_DIRECTORY }}
-          az deployment sub validate --name ${{ github.run_number }} --location ${{ inputs.AZURE_LOCATION }} --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID }} --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --parameters gitHubMsiClientId=${{ steps.gitHubMsiPrincipal.outputs.objectId }}
-          az bicep upgrade 
-          az bicep build --file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep --outdir ${{ env.BICEP_OUTPUT_DIRECTORY }}
-    
+          az --version
+          az deployment sub validate \
+            --name 'github-${{ github.run_number }}' \
+            --location ${{ inputs.AZURE_LOCATION }} \
+            --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID }} \
+            --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep \
+            --parameters resourceGroupName=${{ inputs.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=${{ steps.msiPrincipal.outputs.objectId }}
+
     # Deployment
-    - name: Deploy infrastructure
+    - name: Deploy Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
       id: azureResources
-      uses: azure/arm-deploy@v1
+      uses: Azure/cli@1.0.4
       with:
-        scope: subscription
-        subscriptionId: ${{ inputs.AZURE_SUBSCRIPTION_ID }}
-        region: ${{ inputs.AZURE_LOCATION }} 
-        deploymentName: ${{ github.run_number }}
-        template: ${{ env.BICEP_OUTPUT_DIRECTORY }}/${{ env.BICEP_FILE_NAME }}.json
-        parameters: gitHubMsiClientId=${{ steps.gitHubMsiPrincipal.outputs.objectId }}
+        inlineScript: |
+          az --version
+          deployment=$(az deployment sub create \
+            --name 'github-${{ github.run_number }}' \
+            --location ${{ parameters.AZURE_LOCATION }} \
+            --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
+            --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
+            --parameters resourceGroupName=${{ parameters.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=${{ steps.msiPrincipal.outputs.objectId }})
+          state=$(echo $deployment | jq -r ".properties.provisioningState")
+          if test "$state" == 'Succeeded'
+          then 
+            kvName=$(echo $deployment | jq -r ".properties.outputs.NXFUTIL_AZ_KV_NAME.value")
+            echo setting AZURE_KEYVAULT_NAME to $kvName
+            echo "::set-output name=AZURE_KEYVAULT_NAME::$kvName"
+            
+            faName=$(echo $deployment | jq -r ".properties.outputs.functionAppName.value")
+            echo setting AZURE_FUNCTIONAPP_NAME to $faName
+            echo "::set-output name=AZURE_FUNCTIONAPP_NAME::$faName"
+          else
+            echo $deployment | jq -r "."
+            exit 1
+          fi
 
     # Outputs
     - name: 'Show outputs'
