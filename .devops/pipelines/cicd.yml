@@ -49,10 +49,12 @@ jobs:
 
   - job: 'echoOutputs'
     dependsOn: ['azureTemplates']
+    variables:
+      AZURE_KEYVAULT_NAME: $[ dependencies.azureTemplates.outputs['azureResources.AZURE_KEYVAULT_NAME'] ]
     steps:
       - script: |
           echo 1
-          echo $[ dependencies.azureTemplates.outputs['azureResources.AZURE_KEYVAULT_NAME'] ]
+          echo $(AZURE_KEYVAULT_NAME)
         displayName: 'Show job output variables'
   
   # - job: 'dockerImages'
