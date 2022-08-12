@@ -4,6 +4,7 @@ parameters:
   - name: 'AZURE_FUNCTIONAPP_NAME'
     type: string
     displayName: 'Azure Function App name'
+    default: 'fcj6qd' # remove after debugging
 
 variables:
   - name: 'AZURE_SERVICE_CONNECTION_NAME'
@@ -15,62 +16,57 @@ variables:
   - name: 'PYTHON_VERSION'
     value: '3.9'
 
-jobs:
-  - deployment: 'build_and_publish'
-    pool:
-      vmImage: 'ubuntu-latest'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-            # Inputs
-            - script: |
-                echo AZURE_FUNCTIONAPP_NAME : ${{ parameters.AZURE_FUNCTIONAPP_NAME }}
-              displayName:  'Show inputs'
+pool:
+  vmImage: 'ubuntu-latest'
 
-            # Variables
-            - script: |
-                echo AZURE_SERVICE_CONNECTION_NAME : ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}     
-                echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ variables.AZURE_FUNCTIONAPP_PACKAGE_PATH }} 
-                echo PYTHON_VERSION : ${{ variables.PYTHON_VERSION }} 
-              displayName: 'Show variables' 
+steps:
+  # Inputs
+  - script: |
+      echo AZURE_FUNCTIONAPP_NAME : ${{ parameters.AZURE_FUNCTIONAPP_NAME }}
+    displayName:  'Show inputs'
 
-            # Debug who is logged in 
-            - task: AzureCLI@2
-              inputs:
-                azureSubscription: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
-                scriptType: bash
-                inlineScript: |
-                  az account show
+  # Variables
+  - script: |
+      echo AZURE_SERVICE_CONNECTION_NAME : ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}     
+      echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ variables.AZURE_FUNCTIONAPP_PACKAGE_PATH }} 
+      echo PYTHON_VERSION : ${{ variables.PYTHON_VERSION }} 
+    displayName: 'Show variables' 
 
-            # Python setup
-            - task: UsePythonVersion@0
-              inputs:
-                versionSpec: '${{ variables.PYTHON_VERSION }}'
-              displayName: 'Setup python ${{ variables.PYTHON_VERSION }} environment'              
+  # Debug who is logged in 
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+      scriptType: bash
+      inlineScript: |
+        az account show
 
-            # Build
-            - script: |
-                pushd './${{ variables.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-                python -m pip install --upgrade pip
-                pip install -r requirements.txt --target=".python_packages/lib/site-packages"
-                popd
-              displayName: 'Resolve project dependencies using pip'          
+  # Python setup
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '${{ variables.PYTHON_VERSION }}'
+    displayName: 'Setup python ${{ variables.PYTHON_VERSION }} environment'              
 
-            # Achrive
-            - task: ArchiveFiles@2
-              inputs:
-                rootFolderOrFile: './${{ variables.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-                includeRootFolder: false
-                archiveFile: '$(System.DefaultWorkingDirectory)/build-py-$(Build.BuildId).zip'
-              displayName: 'Create package'
+  # Build
+  - script: |
+      pushd './${{ variables.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+      python -m pip install --upgrade pip
+      pip install -r requirements.txt --target=".python_packages/lib/site-packages"
+      popd
+    displayName: 'Resolve project dependencies using pip'          
 
-            # Deployment
-            - task: AzureFunctionApp@1
-              inputs:
-                azureSubscription: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
-                appType: functionAppLinux
-                appName: ${{ parameters.AZURE_FUNCTIONAPP_NAME }}
-                package: '$(System.DefaultWorkingDirectory)/build-py-$(Build.BuildId).zip'
-              displayName: 'Deploy function'
-   
+  # Achrive
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: './${{ variables.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+      includeRootFolder: false
+      archiveFile: '$(System.DefaultWorkingDirectory)/build-py-$(Build.BuildId).zip'
+    displayName: 'Create package'
+
+  # Deployment
+  - task: AzureFunctionApp@1
+    inputs:
+      azureSubscription: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+      appType: functionAppLinux
+      appName: ${{ parameters.AZURE_FUNCTIONAPP_NAME }}
+      package: '$(System.DefaultWorkingDirectory)/build-py-$(Build.BuildId).zip'
+    displayName: 'Deploy function'
