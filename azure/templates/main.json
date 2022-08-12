@@ -5,11 +5,6 @@
         "australiaeast": "aue",
         "australiasoutheast": "ase"
     },
-    "resourceGroup": {
-        "//": "Will be made globally unique with an auto generated suffix.",
-        "name": "batch4",
-        "nameIsAlreadyUnique": true
-    },
     "managedIdentity": {
         "batchAccount": {
             "name": "batchmsi"

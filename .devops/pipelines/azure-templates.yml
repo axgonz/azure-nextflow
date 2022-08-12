@@ -11,6 +11,10 @@ parameters:
     type: string
     displayName: 'Azure subscription id'
 
+  - name: 'AZURE_RESOURCEGROUP_NAME'
+    type: string
+    displayName: 'Azure resource group name'
+
   - name: 'BICEP_FILE_PATH'
     type: string
     default: './azure/templates'
@@ -25,6 +29,7 @@ steps:
     echo AZURE_SERVICE_CONNECTION_NAME : ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
     echo AZURE_LOCATION : ${{ parameters.AZURE_LOCATION }}
     echo AZURE_SUBSCRIPTION_ID : ${{ parameters.AZURE_SUBSCRIPTION_ID }}
+    echo AZURE_RESOURCEGROUP_NAME : ${{ parameters.AZURE_RESOURCEGROUP_NAME }}
   displayName: 'Show inputs'
 
 # Variables
@@ -65,7 +70,7 @@ steps:
           --location ${{ parameters.AZURE_LOCATION }} \
           --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
           --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
-          --parameters gitHubMsiClientId=$(msiPrincipal.objectId)
+          --parameters resourceGroupName=${{ parameters.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=$(msiPrincipal.objectId)
   displayName: Validate Bicep file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep
 
 # Deployment
@@ -82,7 +87,7 @@ steps:
           --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
           --location ${{ parameters.AZURE_LOCATION }} \
           --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
-          --parameters gitHubMsiClientId=$(msiPrincipal.objectId)
+          --parameters resourceGroupName=${{ parameters.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=$(msiPrincipal.objectId)
         state=$(echo $deployment | jq -r ".properties.provisioningState")
         if test "$state" == 'Succeeded'
         then 

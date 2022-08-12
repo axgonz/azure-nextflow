@@ -16,6 +16,10 @@ parameters:
     type: string
     displayName: 'Azure subscription id'
 
+  - name: 'AZURE_RESOURCEGROUP_NAME'
+    type: string
+    displayName: 'Azure resource group name'    
+
 variables:
   - name: 'AZURE_SERVICE_CONNECTION_NAME'
     value: 'algonzSubscription'
@@ -28,6 +32,7 @@ jobs:
         AZURE_SERVICE_CONNECTION_NAME: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
         AZURE_LOCATION: ${{ parameters.AZURE_LOCATION }}
         AZURE_SUBSCRIPTION_ID: ${{ parameters.AZURE_SUBSCRIPTION_ID }}
+        AZURE_RESOURCEGROUP_NAME: ${{ parameters.AZURE_RESOURCEGROUP_NAME }}
   
   - job: 'dockerImages'
     dependsOn: azureTemplates

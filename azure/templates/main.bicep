@@ -1,7 +1,8 @@
 targetScope = 'subscription'
 
 param location string = deployment().location
-param gitHubMsiClientId string = 'null'
+param resourceGroupName string
+param deploymentPrincipalObjectId string = 'null'
 
 var configText = loadTextContent('./main.json')
 var config = json(configText)
@@ -11,7 +12,7 @@ var config = json(configText)
 
 // Create core resource group and update the deployment
 resource rg_batch 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: config.resourceGroup.nameIsAlreadyUnique ? config.resourceGroup.name : '${config.resourceGroup.name}${substring(uniqueString(config.resourceGroup.name, subscription().subscriptionId, location), 0, 4)}'
+  name: resourceGroupName
   location: location
 }
 
@@ -100,13 +101,13 @@ module dep_keyVault 'resourceGroups/batch/keyVault.bicep' = {
     location: location
     name: config.keyVault.nameIsAlreadyUnique ? config.keyVault.name : '${config.keyVault.name}${substring(uniqueString(config.keyVault.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
     tenantId: dep_msiNextflow.outputs.tenantId
-    objectIds: gitHubMsiClientId == 'null' ? [
+    objectIds: deploymentPrincipalObjectId == 'null' ? [
       dep_msiFunctionApp.outputs.objectId
       dep_msiNextflow.outputs.objectId
     ] : [
       dep_msiFunctionApp.outputs.objectId
       dep_msiNextflow.outputs.objectId
-      gitHubMsiClientId
+      deploymentPrincipalObjectId
     ]
   }
 }
