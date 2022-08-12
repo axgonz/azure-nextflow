@@ -7,7 +7,7 @@ parameters:
 
 variables:
   - name: 'AZURE_SERVICE_CONNECTION_NAME'
-    value: '<Azure service connection>'
+    value: 'algonzSubscription'
 
   - name: 'AZURE_FUNCTIONAPP_PACKAGE_PATH'
     value: './azure/functions/python'
