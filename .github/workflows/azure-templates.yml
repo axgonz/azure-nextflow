@@ -32,7 +32,7 @@ jobs:
   validate_and_deploy:
     runs-on: ubuntu-latest 
     outputs:
-      AZURE_KEYVAULT_NAME: ${{ steps.azureResources.outputs.NXFUTIL_AZ_KV_NAME }} 
+      AZURE_KEYVAULT_NAME: ${{ steps.azureResources.outputs.keyVaultName }} 
       AZURE_FUNCTIONAPP_NAME: ${{ steps.azureResources.outputs.functionAppName }} 
     steps:
     # Inputs
