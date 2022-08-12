@@ -51,6 +51,7 @@ steps:
       objectId=$(az ad sp list --spn "$spn" --query "[].objectId" --output tsv)
       if test "$objectId" == ''
       then 
+        echo "proptery 'objectId' not found trying 'id' instead"
         objectId=$(az ad sp list --spn "$spn" --query "[].id" --output tsv)
       fi
       echo setting objectId to $objectId
@@ -84,8 +85,8 @@ steps:
         az --version
         deployment=$(az deployment sub create \
           --name 'devops-$(Build.BuildId)' \  
-          --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
           --location ${{ parameters.AZURE_LOCATION }} \
+          --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
           --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
           --parameters resourceGroupName=${{ parameters.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=$(msiPrincipal.objectId))
         state=$(echo $deployment | jq -r ".properties.provisioningState")
