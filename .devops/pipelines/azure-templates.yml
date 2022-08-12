@@ -78,7 +78,7 @@ steps:
       inlineScript: |
         az --version
         deployment=$(az deployment sub create \
-          --name main-${{parameters.sLocation}} \  
+          --name $(Build.BuildNumber) \  
           --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
           --location ${{ parameters.AZURE_LOCATION }} \
           --template-file ${{ variables.BICEP_FILE_PATH }}/${{ variables.BICEP_FILE_NAME }}.bicep \
