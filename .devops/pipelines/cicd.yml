@@ -10,6 +10,7 @@ parameters:
   - name: 'AZURE_LOCATION'
     type: string
     displayName: 'Azure region name'
+    default: australiaeast
 
   - name: 'AZURE_SUBSCRIPTION_ID'
     type: string
