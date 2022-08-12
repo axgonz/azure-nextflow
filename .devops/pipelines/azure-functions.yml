@@ -37,6 +37,7 @@ steps:
     inputs:
       azureSubscription: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
       scriptType: bash
+      scriptLocation: inlineScript
       inlineScript: |
         az account show
 
