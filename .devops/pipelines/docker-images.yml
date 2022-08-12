@@ -28,7 +28,7 @@ steps:
     name: keyVaultSecrets
     inputs:
       connectedServiceName: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
-      keyVaultName: ${{ inputs.AZURE_KEYVAULT_NAME }}
+      keyVaultName: ${{ parameters.AZURE_KEYVAULT_NAME }}
       secretsFilter: 'azure-registry-server, azure-registry-username, azure-registry-password'
       
   # ACR login 
