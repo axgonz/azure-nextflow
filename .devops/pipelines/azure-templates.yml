@@ -61,7 +61,7 @@ steps:
       inlineScript: |
         az --version
         az deployment sub validate \
-          --name $(Build.BuildNumber) \
+          --name 'devops-$(Build.BuildNumber)' \
           --location ${{ parameters.AZURE_LOCATION }} \
           --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
           --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
@@ -78,7 +78,7 @@ steps:
       inlineScript: |
         az --version
         deployment=$(az deployment sub create \
-          --name $(Build.BuildNumber) \  
+          --name 'devops-$(Build.BuildNumber)' \  
           --subscription ${{ parameters.AZURE_SUBSCRIPTION_ID }} \
           --location ${{ parameters.AZURE_LOCATION }} \
           --template-file ${{ parameters.BICEP_FILE_PATH }}/${{ parameters.BICEP_FILE_NAME }}.bicep \
