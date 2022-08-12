@@ -107,6 +107,6 @@ steps:
 
 # Outputs
 - script: |
-    echo AZURE_KEYVAULT_NAME : $(AZURE_KEYVAULT_NAME)
-    echo AZURE_FUNCTIONAPP_NAME : $(AZURE_FUNCTIONAPP_NAME)
+    echo AZURE_KEYVAULT_NAME : $(azureResources.AZURE_KEYVAULT_NAME)
+    echo AZURE_FUNCTIONAPP_NAME : $(azureResources.AZURE_FUNCTIONAPP_NAME)
   displayName: 'Show outputs'
