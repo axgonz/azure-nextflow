@@ -33,12 +33,14 @@ steps:
       
   # ACR login 
   - script: |
-      docker login $AZURE_REGISTRY_SERVER --username $AZURE_REGISTRY_USERNAME --password $AZURE_REGISTRY_PASSWORD
+      echo 1
+      echo "$(keyVaultSecrets.azure-registry-server)"
+
+      echo 2 
+      echo "$(azure-registry-server)"
+
+      docker login $(keyVaultSecrets.azure-registry-server) --username $AZURE_REGISTRY_USERNAME --password $AZURE_REGISTRY_PASSWORD
     displayName: 'Login to registry'
-    env:
-      AZURE_REGISTRY_SERVER: $(keyVaultSecrets.azure-registry-server)
-      AZURE_REGISTRY_USERNAME: $(keyVaultSecrets.azure-registry-username)
-      AZURE_REGISTRY_PASSWORD: $(keyVaultSecrets.azure-registry-password)
 
   # Deployment
   - script: |
