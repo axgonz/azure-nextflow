@@ -39,11 +39,17 @@ jobs:
     steps:
       - script: |
           echo 1
-          echo '$[ dependencies.azureTemplates.outputs['azureResources.AZURE_KEYVAULT_NAME'] ]'
+          echo ${ dependencies.azureTemplates.outputs['azureResources.AZURE_KEYVAULT_NAME'] }
 
-          echo 1
-          echo "$[ dependencies.azureTemplates.outputs['azureResources.AZURE_KEYVAULT_NAME'] ]"
+          echo 2
+          echo "${ dependencies.azureTemplates.outputs['azureResources.AZURE_KEYVAULT_NAME'] }"
           
+          echo 3
+          echo ${{ dependencies.azureTemplates.outputs['azureResources.AZURE_KEYVAULT_NAME'] }}
+
+          echo 4
+          echo "${{ dependencies.azureTemplates.outputs['azureResources.AZURE_KEYVAULT_NAME'] }}"
+
         displayName: 'Show job output variables'
   
   # - job: 'dockerImages'
