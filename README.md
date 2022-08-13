@@ -45,7 +45,7 @@ The following uses the provided GitHub workflows or DevOps pipelines to build an
 
 1. Run the workflow called `GitHub Workflows`.
 
-    ![Running the GitHub Workflow](./docs/GitHubWorkflow.png)
+    <img src="./docs/GitHubWorkflow.png" width="300" alt="Running the GitHub Workflow">
 
 ### Deploy using DevOps 
 
@@ -57,9 +57,7 @@ The following uses the provided GitHub workflows or DevOps pipelines to build an
 
 1. Run the newly created pipeline.
 
-    > Important: The Service Connection parameter is case-sensitive.
-
-    ![Running the DevOps Pipeline](./docs/DevOpsPipeline.png)
+    <img src="./docs/DevOpsPipeline.png" width="300" alt="Running the DevOps Pipeline">
 
 ### Validate deployment
 
