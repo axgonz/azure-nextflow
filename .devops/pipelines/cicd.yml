@@ -4,7 +4,7 @@
 # For details on usage of secrets, please refer to:
 #  https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml
 
-name: Main CICD
+name: DevOps Pipelines
 
 trigger: none
 
@@ -20,18 +20,18 @@ parameters:
 
   - name: 'AZURE_RESOURCEGROUP_NAME'
     type: string
-    displayName: 'Azure resource group name'    
+    displayName: 'Azure resource group name'
 
-variables:
   - name: 'AZURE_SERVICE_CONNECTION_NAME'
-    value: 'algonzSubscription'
+    type: string
+    displayName: '(case-sensitive) Azure service connection name'
 
 jobs:
   - job: 'azureTemplates'
     steps:
     - template: azure-templates.yml
       parameters:
-        AZURE_SERVICE_CONNECTION_NAME: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+        AZURE_SERVICE_CONNECTION_NAME: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
         AZURE_LOCATION: ${{ parameters.AZURE_LOCATION }}
         AZURE_SUBSCRIPTION_ID: ${{ parameters.AZURE_SUBSCRIPTION_ID }}
         AZURE_RESOURCEGROUP_NAME: ${{ parameters.AZURE_RESOURCEGROUP_NAME }}
@@ -43,7 +43,7 @@ jobs:
     steps:
     - template: docker-images.yml
       parameters:
-        AZURE_SERVICE_CONNECTION_NAME: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+        AZURE_SERVICE_CONNECTION_NAME: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
         AZURE_KEYVAULT_NAME: $(AZURE_KEYVAULT_NAME)
         
   - job: 'azureFunctions'
@@ -53,5 +53,5 @@ jobs:
     steps:
     - template: azure-functions.yml
       parameters:
-        AZURE_SERVICE_CONNECTION_NAME: ${{ variables.AZURE_SERVICE_CONNECTION_NAME }}
+        AZURE_SERVICE_CONNECTION_NAME: ${{ parameters.AZURE_SERVICE_CONNECTION_NAME }}
         AZURE_FUNCTIONAPP_NAME: $(AZURE_FUNCTIONAPP_NAME)
