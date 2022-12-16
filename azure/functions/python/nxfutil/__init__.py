@@ -31,6 +31,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     NXFUTIL_AZ_RG_NAME = os.environ["NXFUTIL_AZ_RG_NAME"]
     NXFUTIL_AZ_KV_NAME = os.environ["NXFUTIL_AZ_KV_NAME"]
     NXFUTIL_AZ_CR_NAME = os.environ["NXFUTIL_AZ_CR_NAME"]
+    NXFUTIL_AZ_MSI_NAME = os.environ["NXFUTIL_AZ_MSI_NAME"]
     NXFUTIL_AZ_MSI_ID = os.environ["NXFUTIL_AZ_MSI_ID"]
 
     logging.info(f"{log_prefix} App settings variables loaded:")
@@ -38,6 +39,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"{log_prefix} NXFUTIL_AZ_RG_NAME = {NXFUTIL_AZ_RG_NAME}.")
     logging.info(f"{log_prefix} NXFUTIL_AZ_KV_NAME = {NXFUTIL_AZ_KV_NAME}.")
     logging.info(f"{log_prefix} NXFUTIL_AZ_CR_NAME = {NXFUTIL_AZ_CR_NAME}.")
+    logging.info(f"{log_prefix} NXFUTIL_AZ_MSI_NAME = {NXFUTIL_AZ_MSI_NAME}.")
     logging.info(f"{log_prefix} NXFUTIL_AZ_MSI_ID = {NXFUTIL_AZ_MSI_ID}.")
 
     nxf_config = req.params.get('config')
@@ -120,7 +122,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"{log_prefix} Retrieving Key Vault secrets...")
 
     acr_credential = ImageRegistryCredential(
-        server = secret_client. get_secret('azure-registry-server'),
+        server = secret_client.get_secret('azure-registry-server'),
         username = secret_client.get_secret('azure-registry-username'),
         password = secret_client.get_secret('azure-registry-password')
     )
@@ -139,7 +141,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"{log_prefix} ACI Container defined.")
 
     # Define the ContainerGroupIdentity
-    user_assigned_identity_key = f"/subscriptions/{NXFUTIL_AZ_SUB_ID}/resourcegroups/{NXFUTIL_AZ_RG_NAME}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/nextflowmid"
+    user_assigned_identity_key = f"/subscriptions/{NXFUTIL_AZ_SUB_ID}/resourcegroups/{NXFUTIL_AZ_RG_NAME}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{NXFUTIL_AZ_MSI_NAME}"
     user_assigned_identity_value = f"{{}}"
 
     mid_string = f"{{'{user_assigned_identity_key}':{user_assigned_identity_value}}}"

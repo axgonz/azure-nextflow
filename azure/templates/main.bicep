@@ -89,6 +89,7 @@ module dep_functionApp 'resourceGroups/batch/functionApp.bicep' = {
     NXFUTIL_AZ_RG_NAME: rg_batch.name
     NXFUTIL_AZ_KV_NAME: dep_keyVault.outputs.name
     NXFUTIL_AZ_CR_NAME: dep_containerRegistry.outputs.name
+    NXFUTIL_AZ_MSI_NAME: dep_msiNextflow.outputs.name
     NXFUTIL_AZ_MSI_ID: dep_msiNextflow.outputs.clientId
     AZURE_CLIENT_ID: dep_msiFunctionApp.outputs.clientId
   }

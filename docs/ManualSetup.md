@@ -1,4 +1,4 @@
-## Set up (manual)
+## Manual set up (depreciated)
 
 1. Deploy Azure resources.
 
