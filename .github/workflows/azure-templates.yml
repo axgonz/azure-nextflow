@@ -67,7 +67,7 @@ jobs:
         objectId=$(az ad sp list --spn "$spn" --query "[].objectId" --output tsv)
         if test "$objectId" == ''
         then 
-          echo "proptery 'objectId' not found trying 'id' instead"
+          echo "property 'objectId' not found trying 'id' instead"
           objectId=$(az ad sp list --spn "$spn" --query "[].id" --output tsv)
         fi
         echo setting objectId to $objectId

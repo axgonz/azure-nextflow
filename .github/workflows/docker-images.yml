@@ -1,7 +1,7 @@
 name: Build and push Docker images
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       AZURE_KEYVAULT_NAME:
         type: string
