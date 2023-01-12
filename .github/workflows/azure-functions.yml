@@ -41,8 +41,17 @@ jobs:
       run: |
         sudo apt-get install pkg-config libssl-dev
 
-    # Build
-    - name: 'Build binary using Cargo --release'
+    # Cache
+    - name: 'Cache cargo target dir'
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: ./${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target
+        key: cargo-cache-nxfutil-target 
+
+    # Build (cache run)
+    - name: 'Build binary using Cargo --release (cache run)'
+      if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
@@ -56,6 +65,25 @@ jobs:
         cargo --version
         cargo build --release
 
+    # Build
+    - name: 'Build binary using Cargo --release'
+      shell: bash
+      run: |
+        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        
+        OPENSSL_STATIC=1 
+        OPENSSL_INCLUDE_DIR=/usr/include/openssl
+        OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu
+
+        ls -la $OPENSSL_INCLUDE_DIR/*ssl*
+        ls -la $OPENSSL_LIB_DIR/libssl*
+        cargo --version
+        cargo build --release        
+
+    # Move files 
+    - name: 'Select only required files for FuncApp'
+      shell: bash
+      run: |
         mkdir -p ./output/nxfutil
         cp -v ./nxfutil/function.json ./output/nxfutil/function.json
         cp -v ./target/release/handler ./output/handler
