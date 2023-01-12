@@ -17,7 +17,7 @@ env:
 
 jobs:
   build_and_publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     # Inputs
     - name: 'Show inputs'
@@ -68,17 +68,12 @@ jobs:
         echo "----libssl (before)----" && ls -la --full-time libssl.*
         sudo rm libssl.so
         sudo ln -s libssl.so.1.1 libssl.so
-        echo "----libssl (after)----" && ls -la --full-time libssl.*
-
-        echo "----libcrypt (before)----" && ls -la --full-time libcrypt.*
-        sudo rm libcrypt.so
-        sudo ln -s libcrypt.so.1.1.0 libcrypt.so
-        echo "----libcrypt (after)----" && ls -la --full-time libcrypt.*       
+        echo "----libssl (after)----" && ls -la --full-time libssl.*    
 
         echo "----libcrypto (before)----" && ls -la --full-time libcrypto.*
         sudo rm libcrypto.so
         sudo ln -s libcrypto.so.1.1 libcrypto.so
-        echo "----libcrypto (after)----" && ls -la --full-time libcrypto.*       
+        echo "----libcrypto (after)----" && ls -la --full-time libcrypto.*
         
         popd        
 
