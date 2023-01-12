@@ -40,6 +40,9 @@ jobs:
       shell: bash
       run: |
         sudo apt-get install pkg-config libssl-dev
+        OPENSSL_STATIC=1 
+        OPENSSL_INCLUDE_DIR=/usr/include/openssl
+        OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu
 
     # Build
     - name: 'Build binary using Cargo --release'
