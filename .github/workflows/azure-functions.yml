@@ -12,6 +12,8 @@ env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure/functions/rust'
   RUST_BACKTRACE: 'full'
   CARGO_TARGET: 'x86_64-unknown-linux-gnu'
+  OPENSSL_LIB_DIR: '/usr/lib/x86_64-linux-gnu'
+  OPENSSL_INCLUDE_DIR: '/usr/include/openssl'
 
 jobs:
   build_and_publish:
@@ -55,15 +57,30 @@ jobs:
         default: true
         override: true
 
+    # Upgrade TLS on this build host
+    - name: 'Upgrade TLS on build host'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install libssl-dev pkg-config
+        pushd '${{ env.OPENSSL_LIB_DIR }}'
+        ls -la libssl*
+        sudo rm libssl.so
+        sudo ln -s libssl.so.1.1 libssl.so
+        ls -la libssl*
+        popd        
+
     # Build
     - name: 'Build custom handler binary'
       shell: bash
       run: |
+        pushd '${{ env.OPENSSL_LIB_DIR }}'
+        ls -la libssl*
+        popd
+        
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-
         sudo apt-get install pkg-config libssl-dev
-        cargo build --target "${{ env.CARGO_TARGET }}" --release --verbose
-
+        cargo build --target "${{ env.CARGO_TARGET }}" --release
         popd
    
     # Move files 
