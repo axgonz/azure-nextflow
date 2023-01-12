@@ -1,0 +1,17 @@
+{
+    "azureFunctions.deploySubpath": ".",
+    "azureFunctions.projectLanguage": "Custom",
+    "azureFunctions.projectRuntime": "~4",
+    "debug.internalConsoleOptions": "neverOpen",
+    "cSpell.words": [
+        "azurecr",
+        "chrono",
+        "containerinstance",
+        "CUSTOMHANDLER",
+        "datetime",
+        "Imds",
+        "keyvault",
+        "mgmt",
+        "resourcegroups"
+    ]
+}

@@ -1,0 +1,13 @@
+GET http://localhost:7071/api/nxfutil HTTP/1.1
+
+###
+
+POST http://localhost:7071/api/nxfutil HTTP/1.1
+content-type: application/json
+
+{
+    "config_uri": "https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config",
+    "pipeline_uri": "https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf",
+    "parameters_uri": "https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json",
+    "auto_delete": true
+}
