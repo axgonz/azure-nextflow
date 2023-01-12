@@ -64,22 +64,25 @@ jobs:
         sudo apt-get update
         sudo apt-get install libssl-dev pkg-config
         pushd '${{ env.OPENSSL_LIB_DIR }}'
-        ls -la libssl*
+        
+
+        echo "----libssl (before)----" && ls -la --full-time libssl*
         sudo rm libssl.so
         sudo ln -s libssl.so.1.1 libssl.so
-        ls -la libssl*
+        echo "----libssl (after)----" && ls -la --full-time libssl*
+
+        echo "----libcrypto (before)----" && ls -la --full-time libcrypto*
+        sudo rm libcrypto.so
+        sudo ln -s libcrypto.so.1.1 libcrypto.so
+        echo "----libcrypto (after)----" && ls -la --full-time libcrypto*       
+        
         popd        
 
     # Build
     - name: 'Build custom handler binary'
       shell: bash
-      run: |
-        pushd '${{ env.OPENSSL_LIB_DIR }}'
-        ls -la libssl*
-        popd
-        
+      run: |       
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        sudo apt-get install pkg-config libssl-dev
         cargo build --target "${{ env.CARGO_TARGET }}" --release
         popd
    
