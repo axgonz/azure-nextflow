@@ -9,7 +9,7 @@ on:
         required: true
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: './azure/functions/rust'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure/functions/rust'
 
 jobs:
   build_and_publish:
@@ -46,21 +46,25 @@ jobs:
       id: cache
       uses: actions/cache@v3
       with:
-        path: azure/functions/rust/target
+        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         key: cargo-cache-nxfutil-target 
 
     # Build
     - name: 'Build binary using Cargo --release'
       shell: bash
       run: |
-        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         
         OPENSSL_STATIC=1 
         OPENSSL_INCLUDE_DIR=/usr/include/openssl
         OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu
 
+        echo $OPENSSL_STATIC
+        echo $OPENSSL_INCLUDE_DIR
         ls -la $OPENSSL_INCLUDE_DIR/*ssl*
+        echo OPENSSL_LIB_DIR
         ls -la $OPENSSL_LIB_DIR/libssl*
+        
         cargo --version
         cargo build --release        
         
@@ -70,12 +74,14 @@ jobs:
     - name: 'Select only required files for FuncApp'
       shell: bash
       run: |
-        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+
         mkdir -p ./output/nxfutil
         cp -v ./nxfutil/function.json ./output/nxfutil/function.json
         cp -v ./target/release/handler ./output/handler
         cp -v ./host.json ./output/host.json
         cp -v ./.funcignore ./output/.funcignore
+        
         popd
 
     # Deployment
