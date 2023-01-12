@@ -71,7 +71,7 @@ jobs:
           objectId=$(az ad sp list --spn "$spn" --query "[].id" --output tsv)
         fi
         echo setting objectId to $objectId
-        echo "::set-output name=objectId::$objectId"
+        echo "objectId=$objectId" >> $GITHUB_OUTPUT
 
     # Build
     - name: Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
@@ -104,11 +104,11 @@ jobs:
           then 
             kvName=$(echo $deployment | jq -r ".properties.outputs.keyVaultName.value")
             echo setting keyVaultName to $kvName
-            echo "::set-output name=keyVaultName::$kvName"
+            echo "keyVaultName=$kvName" >> $GITHUB_OUTPUT
             
             faName=$(echo $deployment | jq -r ".properties.outputs.functionAppName.value")
             echo setting functionAppName to $faName
-            echo "::set-output name=functionAppName::$faName"
+            echo "functionAppName=$faName" >> $GITHUB_OUTPUT
           else
             echo $deployment | jq -r "."
             exit 1
