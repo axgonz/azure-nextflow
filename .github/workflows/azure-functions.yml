@@ -35,12 +35,6 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}   
 
-    # Install SSL
-    - name: 'Install openssl dev binaries'
-      shell: bash
-      run: |
-        sudo apt-get install pkg-config libssl-dev
-
     # Cache
     - name: 'Cache cargo target dir'
       id: cache
@@ -49,39 +43,54 @@ jobs:
         path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
         key: cargo-cache-nxfutil-target 
 
-    # Build
-    - name: 'Build binary using Cargo --release'
+    # Install SSL
+    - name: 'Install openssl dev binaries'
+      shell: bash
+      run: |
+        sudo apt-get install pkg-config libssl-dev
+
+    # Update rust tool chain
+    - name: 'Update rust'
+      uses: actions-rs/toolchain@v1
+      with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+    # pushd to build dir 
+    - name: 'pushd to build dir'
       shell: bash
       run: |
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        
-        OPENSSL_STATIC=1 
-        OPENSSL_INCLUDE_DIR=/usr/include/openssl
-        OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu
 
-        echo $OPENSSL_STATIC
-        echo $OPENSSL_INCLUDE_DIR
-        ls -la $OPENSSL_INCLUDE_DIR/*ssl*
-        echo OPENSSL_LIB_DIR
-        ls -la $OPENSSL_LIB_DIR/libssl*
-        
-        cargo --version
-        cargo build --release        
-        
-        popd
-    
+    # Run cargo check
+    - name: 'Run cargo check'
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
+        args: --verbose
+
+    # Run cargo build
+    - name: 'Run cargo build'
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release --verbose
+   
     # Move files 
     - name: 'Select only required files for FuncApp'
       shell: bash
       run: |
-        pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-
         mkdir -p ./output/nxfutil
         cp -v ./nxfutil/function.json ./output/nxfutil/function.json
         cp -v ./target/release/handler ./output/handler
         cp -v ./host.json ./output/host.json
         cp -v ./.funcignore ./output/.funcignore
         
+    # popd
+    - name: 'popd'
+      shell: bash
+      run: |
         popd
 
     # Deployment
