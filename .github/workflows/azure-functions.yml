@@ -10,6 +10,8 @@ on:
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure/functions/rust'
+  RUST_BACKTRACE: 'full'
+  CARGO_TARGET: 'x86_64-unknown-linux-gnu'
 
 jobs:
   build_and_publish:
@@ -43,34 +45,26 @@ jobs:
         path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
         key: cargo-cache-nxfutil-target 
 
-    # Install SSL
-    - name: 'Install openssl dev binaries'
-      shell: bash
-      run: |
-        sudo apt-get install pkg-config libssl-dev
-
-    # Update rust tool chain
-    - name: 'Update rust'
+    # Update / Install Rust
+    - name: 'Update / install rust'
       uses: actions-rs/toolchain@v1
       with:
-          profile: minimal
-          toolchain: stable
-          override: true   
+        profile: minimal
+        target: ${{ env.CARGO_TARGET }}
+        toolchain: stable
+        default: true
+        override: true
 
-    # # Run cargo check
-    # - name: 'Run cargo check'
-    #   uses: actions-rs/cargo@v1
-    #   with:
-    #     command: check
-    #     args: --verbose
+    # Build
+    - name: 'Build custom handler binary'
+      shell: bash
+      run: |
+        pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
 
-    # Run cargo build
-    - name: 'Run cargo build'
-      uses: ClementTsang/cargo-action@v0.0.3
-      with:
-        command: build
-        args: --release --verbose
-        directory: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        compile_target=${{ env.CARGO_TARGET }}
+        cross build --target "${compile_target}" --release --verbose
+
+        popd
    
     # Move files 
     - name: 'Select only required files for FuncApp'
@@ -79,7 +73,7 @@ jobs:
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         mkdir -p ./output/nxfutil
         cp -v ./nxfutil/function.json ./output/nxfutil/function.json
-        cp -v ./target/release/handler ./output/handler
+        cp -v ./target/${{ env.CARGO_TARGET }}/release/handler ./output/handler
         cp -v ./host.json ./output/host.json
         cp -v ./.funcignore ./output/.funcignore
         popd
