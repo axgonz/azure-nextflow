@@ -53,7 +53,6 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         serverFarmId: appServicePlan.id
         httpsOnly: true
         siteConfig: {
-            linuxFxVersion: 'PYTHON|3.9'
             minTlsVersion: '1.2'
             appSettings: [
                 {
@@ -69,16 +68,12 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                     value: applicationInsights.properties.InstrumentationKey
                 }
                 {
-                    name: 'WEBSITE_CONTENTSHARE'
-                    value: toLower(name)
-                }
-                {
                     name: 'FUNCTIONS_EXTENSION_VERSION'
-                    value: '~3'
+                    value: '~4'
                 }
                 {
                     name: 'FUNCTIONS_WORKER_RUNTIME'
-                    value: 'Python'
+                    value: 'custom'
                 }              
                 {
                     name: 'NXFUTIL_AZ_SUB_ID'

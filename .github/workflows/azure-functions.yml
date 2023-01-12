@@ -1,4 +1,4 @@
-name: Build and publish Python functions
+name: Build and publish Rust functions
 
 on:
   workflow_call:
@@ -9,8 +9,7 @@ on:
         required: true
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: './azure/functions/python'
-  PYTHON_VERSION: '3.9'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './azure/functions/rust'
 
 jobs:
   build_and_publish:
@@ -25,7 +24,6 @@ jobs:
     - name: 'Show variables'
       run: |
         echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} 
-        echo PYTHON_VERSION : ${{ env.PYTHON_VERSION }} 
 
     # Checkout
     - name: 'Checkout repository branch'
@@ -37,19 +35,14 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}       
 
-    # Python setup
-    - name: Setup Python ${{ env.PYTHON_VERSION }} Environment
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-
     # Build
-    - name: 'Resolve Project Dependencies Using Pip'
+    - name: 'Build binary using Cargo --release'
       shell: bash
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt --target=".python_packages/lib/site-packages"
+        cargo --version
+        cargo build --release
+        cp -v ./target/release/handler ./handler
         popd
 
     # Deployment
