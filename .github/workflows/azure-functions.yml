@@ -33,7 +33,13 @@ jobs:
     - name: 'Azure login'
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}       
+        creds: ${{ secrets.AZURE_CREDENTIALS }}   
+
+    # Install SSL
+    - name: 'Install openssl dev binaries'
+      shell: bash
+      run: |
+        sudo apt-get install pkg-config libssl-dev
 
     # Build
     - name: 'Build binary using Cargo --release'
