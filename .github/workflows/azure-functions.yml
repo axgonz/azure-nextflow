@@ -49,9 +49,13 @@ jobs:
       shell: bash
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        mkdir ./output
         cargo --version
         cargo build --release
-        cp -v ./target/release/handler ./handler
+        cp -v ./nxfutil/function.json ./output/nxfutil/function.json
+        cp -v ./target/release/handler ./output/handler
+        cp -v ./host.json ./output/host.json
+        cp -v ./.funcignore ./.funcignore
         popd
 
     # Deployment
@@ -59,7 +63,7 @@ jobs:
       uses: Azure/functions-action@v1
       with:
         app-name: ${{ inputs.AZURE_FUNCTIONAPP_NAME }}
-        package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output
 
     # Logout
     - name: 'Azure logout'
