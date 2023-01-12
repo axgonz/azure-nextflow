@@ -104,11 +104,11 @@ jobs:
           then 
             kvName=$(echo $deployment | jq -r ".properties.outputs.keyVaultName.value")
             echo setting keyVaultName to $kvName
-            echo "keyVaultName=$kvName" >> "$GITHUB_OUTPUT"
+            echo "::set-output name=keyVaultName::$kvName"
             
             faName=$(echo $deployment | jq -r ".properties.outputs.functionAppName.value")
             echo setting functionAppName to $faName
-            echo "functionAppName=$faName" >> "$GITHUB_OUTPUT"
+            echo "::set-output name=functionAppName::$faName"
           else
             echo $deployment | jq -r "."
             exit 1
