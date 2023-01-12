@@ -62,7 +62,7 @@ jobs:
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
 
         sudo apt-get install pkg-config libssl-dev
-        cross build --target "${{ env.CARGO_TARGET }}" --release --verbose
+        cargo build --target "${{ env.CARGO_TARGET }}" --release --verbose
 
         popd
    
