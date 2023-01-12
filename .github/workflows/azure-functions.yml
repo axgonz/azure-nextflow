@@ -40,18 +40,23 @@ jobs:
       shell: bash
       run: |
         sudo apt-get install pkg-config libssl-dev
-        OPENSSL_STATIC=1 
-        OPENSSL_INCLUDE_DIR=/usr/include/openssl
-        OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu
 
     # Build
     - name: 'Build binary using Cargo --release'
       shell: bash
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        mkdir ./output
+        
+        OPENSSL_STATIC=1 
+        OPENSSL_INCLUDE_DIR=/usr/include/openssl
+        OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu
+
+        ls -la $OPENSSL_INCLUDE_DIR/*ssl*
+        ls -la $OPENSSL_LIB_DIR/libssl*
         cargo --version
         cargo build --release
+
+        mkdir -p ./output/nxfutil
         cp -v ./nxfutil/function.json ./output/nxfutil/function.json
         cp -v ./target/release/handler ./output/handler
         cp -v ./host.json ./output/host.json
