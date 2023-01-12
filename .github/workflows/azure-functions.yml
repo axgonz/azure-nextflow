@@ -1,7 +1,7 @@
 name: Build and publish Rust functions
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       AZURE_FUNCTIONAPP_NAME: 
         type: string
@@ -61,8 +61,8 @@ jobs:
       run: |
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
 
-        compile_target=${{ env.CARGO_TARGET }}
-        cross build --target "${compile_target}" --release --verbose
+        sudo apt-get install pkg-config libssl-dev
+        cross build --target "${{ env.CARGO_TARGET }}" --release --verbose
 
         popd
    
