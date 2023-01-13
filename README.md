@@ -6,7 +6,7 @@ This repository contains sample only code to demonstrate how secrets can be mars
 
 Deploying the Azure resources supporting this sample is left to you.
 
-It is assumed that this infrastructure would be deployed using GitHub workflows or DevOps pipelines; samples of each are provided.
+It is assumed that this infrastructure would be deployed using GitHub workflows and maintained examples are provided. Stale examples for DevOps pipelines are provided but are not working since moving to rust and will not be maintained.
 
 It is assumed that regardless of deployment method, GitHub is used for hosting the forked repository.
 
@@ -35,7 +35,7 @@ It is assumed that regardless of deployment method, GitHub is used for hosting t
 
 ## Set up 
 
-The following uses the provided GitHub workflows or DevOps pipelines to build and deploy the sample. See Annex below for manual set up instructions.
+The following uses the provided GitHub workflows to build and deploy the sample. See Annex below for manual set up instructions.
 
 ### Deploy using GitHub
 
@@ -47,18 +47,6 @@ The following uses the provided GitHub workflows or DevOps pipelines to build an
 
     <img src="./docs/GitHubWorkflow.png" width="300" alt="Running the GitHub Workflow">
 
-### Deploy using DevOps 
-
-![DevOps Pipeline](https://dev.azure.com/algonz/azure-nextflow/_apis/build/status/axgonz.azure-nextflow?branch=main)
-
-1. Create a new `Azure Resource Manager - Service principal (manual)` Service Connection in DevOps using the Service Principal created earlier; details in [Azure Docs](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/connect-to-azure?view=azure-devops#create-an-azure-resource-manager-service-connection-with-an-existing-service-principal).
-
-1. Creating a new pipeline and link to the `./.devops/pipelines/cicd.yml` file that's on GitHub by selecting `GitHub (YAML)` and then `Existing Azure Pipelines YAML file`.
-
-1. Run the newly created pipeline.
-
-    <img src="./docs/DevOpsPipeline.png" width="300" alt="Running the DevOps Pipeline">
-
 ### Validate deployment
 
 To validate set up was successful, trigger the Azure Function using its webhook.
@@ -69,26 +57,32 @@ az_funcAppName="myFuncAppName"
 curl --get "https://$az_funcAppName.azurewebsites.net/api/nxfutil"
 
 # returns
-Successfully created nxfutil container instance nextflow-xxxxxx.
+Hello, World!
 ```
 
 ## Usage
 
 When the Function App is triggered it will create a new nxfutil Container Instance. See Annex for nxfutil details.
 
-The http trigger currently accepts 3 (optional) arguments.
-- A URI to a Nextflow `config` file. 
-- A URI to a Nextflow `pipeline` file.
-- A URI to a Nextflow `parameters` file.
+The http trigger requires a json payload to provide the nextflow job with it's required config, pipeline and parameters files.
+
+> NOTE: providing empty values will trigger a default deployment which uses the nextflow files in this repository.
+
+``` json
+{
+    "config_uri": "",
+    "pipeline_uri": "",
+    "parameters_uri": ""
+}
+```
+
+The http trigger currently accepts 1 (optional) argument.
+- A boolean `whatif=true` argument can be provided to perform a mock deployment.
 
 ``` bash
 az_funcAppName="nxfutil-py"
 
-nxf_configUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config"
-nxf_pipelineUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf"
-nxf_parametersUri="https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json"
-
-curl --get "https://$az_funcAppName.azurewebsites.net/api/nxfutil?config=$nxf_configUri&pipeline=$nxf_pipelineUri&parameters=$nxf_parametersUri"
+curl -X POST "https://$az_funcAppName.azurewebsites.net/api/nxfutil?whatif=true" -H 'Content-Type: application/json' -d '{"config_uri":"", "pipeline_uri":"", "parameters_uri":""}'
 ```
 
 ## Annex
@@ -101,4 +95,7 @@ curl --get "https://$az_funcAppName.azurewebsites.net/api/nxfutil?config=$nxf_co
 
 ### [Data upload](./docs/DataUpload.md)
 
+### [DevOps pipelines (depreciated)](./docs/DevOpsPipelines.md)
+
 ### [Manual set up (depreciated)](./docs/ManualSetup.md)
+
