@@ -57,13 +57,7 @@ async fn get_function() -> &'static str {
     return "Hello, World!";
 }
 
-// Boiler-plate POST fn:
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Contact {
-    pub name: String,
-    pub alias: String
-}
-
+// Boiler-plate-ish POST fn:
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RequestPayload {
     pub config_uri: String,
@@ -85,45 +79,31 @@ fn log(line: String) {
 }
 
 async fn post_function(
-    axum::extract::Query(params):
+    axum::extract::Query(url_params):
     axum::extract::Query<HashMap<String, String>>,
     Json(req_payload): Json<RequestPayload>
 ) -> impl IntoResponse {
-    /* nxfutil options for specifying 'config', 'pipeline' and 'parameters' files can
-        be provided as either a json payload or as url arguments. Payload will take 
-        precedence and url arguments will be depreciated.
-    */
     log(format!("{:#?}", &req_payload));
 
-    let mut nxfutil_cmd: String = "nxfutil".to_string();
+    log("Checking url arguments for `whatif`".to_string());
+    let what_if: bool = match url_params.get("whatif") {
+        Some(key_value) => {
+            log(format!("Found 'whatif' url param {:#?}", key_value));
+            if key_value.to_lowercase() == "true" {
+                true
+            }
+            else {
+                false
+            }
+        },
+        None => {
+            false
+        }
+    };
 
-    // Check for url parameters
-    log("Checking url arguments for `config_uri`".to_string());
-    match params.get("config") {
-        Some(key_value) => {
-            log(format!("Found 'config_uri' url param {}", key_value));
-            nxfutil_cmd = format!("{} -c {}", nxfutil_cmd, key_value);
-        },
-        None => {}
-    }
-    log("Checking url arguments for `pipeline_uri`".to_string());
-    match params.get("pipeline") {
-        Some(key_value) => {
-            log(format!("Found 'pipeline_uri' url param {}", key_value));
-            nxfutil_cmd = format!("{} -p {}", nxfutil_cmd, key_value);
-        },
-        None => {}
-    }
-    log("Checking url arguments for `parameters_uri`".to_string());
-    match params.get("parameters") {
-        Some(key_value) => {
-            log(format!("Found 'parameters_uri' url param {}", key_value));
-            nxfutil_cmd = format!("{} -a {}", nxfutil_cmd, key_value);
-        },
-        None => {}
-    }
-
-    log(format!("Generated nextflow cmd is {:#?}", &nxfutil_cmd));
+    // Generate nxfutil command
+    log("Generating nxfutil command from inputs".to_string());
+    let nxfutil_cmd = generate_nxfutil_cmd(req_payload, url_params);
 
     // Request an access token
     log("Requesting access token".to_string());
@@ -140,8 +120,10 @@ async fn post_function(
 
     // Deploy container instance
     log("Deploying nextflow container instance".to_string());
-    let deployment = deploy_nxfutil_ci(credential, app_variables.clone(), app_secrets, nxfutil_cmd.clone()).await;
+    let deployment = deploy_nxfutil_ci(credential, app_variables.clone(), app_secrets, nxfutil_cmd.clone(), what_if).await;
 
+    // Generate ResponsePayload
+    log("Generating ResponsePayload".to_string());
     let res_payload = ResponsePayload { 
         sub_id: app_variables.sub_id,
         rg_name: app_variables.rg_name,
@@ -149,13 +131,80 @@ async fn post_function(
         ci_cmd: nxfutil_cmd,
         provisioning_state: deployment.1
     };
-
     log(format!("{:#?}", &res_payload));
 
     return (StatusCode::OK, Json(res_payload))
 }
 
 // App fn:
+fn generate_nxfutil_cmd(req_payload: RequestPayload, url_params: HashMap<String, String>) -> String {
+    /* nxfutil options for specifying 'config', 'pipeline' and 'parameters' files can
+        be provided as either a json payload or as url arguments. Payload will take 
+        precedence and url arguments will be depreciated.
+    */
+    log("Checking url arguments for `config_uri`".to_string());
+    let mut config_uri: String = match url_params.get("config_uri") {
+        Some(key_value) => {
+            log(format!("Found 'config_uri' url param {:#?}", key_value));
+            key_value.to_string()
+        },
+        None => {
+            "".to_string()
+        }
+    };
+    log("Checking RequestPayload for `config_uri`".to_string());
+    if !req_payload.config_uri.is_empty() {
+        log(format!("Found 'config_uri' in RequestPayload {:#?}", req_payload.config_uri));
+        config_uri = req_payload.config_uri;
+    }
+    
+    log("Checking url arguments for `pipeline_uri`".to_string());
+    let mut pipeline_uri: String = match url_params.get("pipeline_uri") {
+        Some(key_value) => {
+            log(format!("Found 'pipeline_uri' url param {:#?}", key_value));
+            key_value.to_string()
+        },
+        None => {
+            "".to_string()
+        }
+    };
+    log("Checking RequestPayload for `pipeline_uri`".to_string());
+    if !req_payload.pipeline_uri.is_empty() {
+        log(format!("Found 'pipeline_uri' in RequestPayload {:#?}", req_payload.pipeline_uri));
+        pipeline_uri = req_payload.pipeline_uri;
+    }
+
+    log("Checking url arguments for `parameters_uri`".to_string());
+    let mut parameters_uri: String = match url_params.get("parameters_uri") {
+        Some(key_value) => {
+            log(format!("Found 'parameters_uri' url param {}", key_value));
+            key_value.to_string()
+        },
+        None => {
+            "".to_string()
+        }
+    };
+    log("Checking RequestPayload for `parameters_uri`".to_string());
+    if !req_payload.parameters_uri.is_empty() {
+        log(format!("Found 'parameters_uri' in RequestPayload {:#?}", req_payload.parameters_uri));
+        parameters_uri = req_payload.parameters_uri;
+    }
+
+    let mut nxfutil_cmd: String = "nxfutil".to_string();
+    if !config_uri.is_empty() {
+        nxfutil_cmd = format!("{} -c {}", nxfutil_cmd, config_uri);
+    }
+    if !pipeline_uri.is_empty() {
+        nxfutil_cmd = format!("{} -p {}", nxfutil_cmd, pipeline_uri);
+    }
+    if !parameters_uri.is_empty() {
+        nxfutil_cmd = format!("{} -a {}", nxfutil_cmd, parameters_uri);
+    }
+    log(format!("Generated nextflow cmd is {:#?}", &nxfutil_cmd));
+    
+    return nxfutil_cmd
+}
+
 fn azure_login() -> Arc<DefaultAzureCredential> {
     /* Build Azure credential
         If using a User Assigned Managed Identity you must set the `AZURE_CLIENT_ID`
@@ -297,7 +346,8 @@ pub enum ProvisioningState {
     Failed = 1,
     Canceled = 2,
     InProgress = 3,
-    Deleting = 4
+    Deleting = 4,
+    WhatIf = 256
 }
 
 impl fmt::Display for ProvisioningState {
@@ -308,6 +358,7 @@ impl fmt::Display for ProvisioningState {
             ProvisioningState::Canceled => write!(f, "Canceled"),
             ProvisioningState::InProgress => write!(f, "InProgress"),
             ProvisioningState::Deleting => write!(f, "Deleting"),
+            ProvisioningState::WhatIf => write!(f, "WhatIf"),
         }
     }
 }
@@ -316,7 +367,8 @@ async fn deploy_nxfutil_ci (
     credential: Arc<DefaultAzureCredential>, 
     app_variables: AppVariables,
     app_secrets: AppSecrets,
-    nxfutil_cmd: String
+    nxfutil_cmd: String,
+    what_if: bool
 ) -> (String, String) {
     /* Steps to define and build the container instance
         1. Create a unique name
@@ -455,6 +507,11 @@ async fn deploy_nxfutil_ci (
     log("Establishing azure_mgmt_containerinstance::Client".to_string());
     let azure_mgmt_containerinstance = azure_mgmt_containerinstance::Client::builder(credential).build();
     let ci_group_client = azure_mgmt_containerinstance.container_groups_client();
+
+    if what_if {
+        let deployment_result = ProvisioningState::WhatIf.to_string();
+        return (ci_name, deployment_result);
+    }
 
     log("Submitting container instance deployment".to_string());
     let mut deployment_result = match ci_group_client.create_or_update(

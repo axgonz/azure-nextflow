@@ -2,7 +2,7 @@ GET http://localhost:7071/api/nxfutil HTTP/1.1
 
 ###
 
-POST http://localhost:7071/api/nxfutil HTTP/1.1
+POST http://localhost:7071/api/nxfutil?whatif=true HTTP/1.1
 content-type: application/json
 
 {

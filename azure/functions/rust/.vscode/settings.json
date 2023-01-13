@@ -12,6 +12,7 @@
         "Imds",
         "keyvault",
         "mgmt",
-        "resourcegroups"
+        "resourcegroups",
+        "whatif"
     ]
 }
