@@ -64,7 +64,7 @@ Hello, World!
 
 When the Function App is triggered it will create a new nxfutil Container Instance. See Annex for nxfutil details.
 
-The http trigger requires a json payload to provide the nextflow job with it's required config, pipeline and parameters files.
+The http trigger requires a json payload to provide the nextflow job with it's required config, pipeline and parameters files. Provide the URI for each file's location.
 
 > NOTE: providing empty values will trigger a default deployment which uses the nextflow files in this repository.
 
@@ -80,7 +80,7 @@ The http trigger currently accepts 1 (optional) argument.
 - A boolean `whatif=true` argument can be provided to perform a mock deployment.
 
 ``` bash
-az_funcAppName="nxfutil-py"
+az_funcAppName="nxfutil"
 
 curl -X POST "https://$az_funcAppName.azurewebsites.net/api/nxfutil?whatif=true" -H 'Content-Type: application/json' -d '{"config_uri":"", "pipeline_uri":"", "parameters_uri":""}'
 ```
