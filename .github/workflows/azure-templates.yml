@@ -78,7 +78,7 @@ jobs:
         client-id: ${{ steps.msiPrincipal.outputs.clientId }}
         tenant-id: ${{ steps.msiPrincipal.outputs.tenantId }}
         subscription-id: ${{ steps.msiPrincipal.outputs.subscriptionId }}
-    
+        
     # Checkout
     - name: 'Checkout repository branch'
       uses: actions/checkout@v2
