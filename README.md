@@ -14,34 +14,89 @@ It is assumed that regardless of deployment method, GitHub is used for hosting t
 
 1. Fork this repository on GitHub.
 
-1. Create a Service Principal for connecting to Azure. 
+1. Install Azure CLI [version 2.45.0](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt) or newer and login.
 
     ``` bash
-    az_subId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    # Check version
+    az --version 
 
-    az ad sp create-for-rbac --name "DeploymentConnection" --role owner --scopes /subscriptions/$az_subId--sdk-auth
+    # Login
+    az login
+
+    # Show active subscription
+    az account show
     ```
 
-1. (optional) Access can be granted at the resource group scope instead of the subscription scope if the resource group is created before running the deployment workflow/pipeline.
-    
+1. Define these variables (change values as needed).
+
+    ``` bash 
+    az_subId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    az_location="australiaeast"
+    az_rgName="GitHubFederatedIdentities"
+    az_msiName="GitHubActions"
+
+    gh_org="xxxxxx"          # this repo's org or username
+    gh_repo="azure-nextflow" # this repo's name
+    ```
+
+1. Create target Resource Group.
+
     ``` bash
-    az_subId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-    az_rgName="myRgName"
-
-    az ad sp create-for-rbac --name "GitHubConnection" --role owner --scopes /subscriptions/$az_subId/resourceGroups/$az_rgName --sdk-auth
+    # Create Resource Group
+    az group create --name $az_rgName --location $az_location --subscription $az_subId
     ```
+
+1. Create a Managed Identity (user assigned) for GitHub to authenticate with Azure. 
+
+    ``` bash
+    # Create MSI
+    az identity create --name $az_msiName --resource-group $az_rgName --subscription $az_subId
+
+    # Federate with GitHub
+    az identity federated-credential create --name "${gh_org}--${gh_repo}" --identity-name $az_msiName --subject "repo:${gh_org}/${gh_repo}:ref:refs/heads/main" --issuer "https://token.actions.githubusercontent.com" --resource-group $az_rgName --subscription $az_subId 
+
+    # Show details (needed to create the AZURE_MSI GitHub secret)
+    az identity show --name $az_msiName --resource-group $az_rgName
+    ```
+
+1. Assign ARM permissions to the Managed Identity
+
+    ``` bash
+    # Assign ARM permissions
+    az role assignment create --assignee $az_msiName --role 'Owner' --scope /subscriptions/$az_subId
+    ```    
 
     > Important: The principal will need Owner permission on the target resource group scope as a minimum.
 
-## Set up 
+## Set up
 
-The following uses the provided GitHub workflows to build and deploy the sample. See Annex below for manual set up instructions.
+The following uses the provided GitHub workflows to build and deploy the sample.
 
 ### Deploy using GitHub
 
 ![GitHub workflow](https://github.com/axgonz/azure-nextflow/actions/workflows/cicd.yml/badge.svg?branch=main)
 
-1. Create a new `AZURE_CREDENTIALS` GitHub Secret using the Service Principal created earlier; details in [Azure Docs](https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Cwindows#create-a-service-principal-and-add-it-as-a-github-secret).
+1. Use the JSON output from the pre-requisite steps to create a new `AZURE_MSI` GitHub Secret, details in [GitHub Docs](https://docs.github.com/en/actions/security-guides/encrypted-secrets).
+
+    **Name**
+    ``` json
+    AZURE_MSI
+    ```
+
+    **Value**
+    ``` json
+    {
+        "clientId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx1111",
+        "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourcegroups/nxfutil001/providers/Microsoft.ManagedIdentity/userAssignedIdentities/GitHubActions",
+        "location": "australiaeast",
+        "name": "GitHubActions",
+        "principalId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx2222",
+        "resourceGroup": "nxfutil001",
+        "tags": {},
+        "tenantId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx3333",
+        "type": "Microsoft.ManagedIdentity/userAssignedIdentities"
+    }
+    ```
 
 1. Run the workflow called `GitHub Workflows`.
 

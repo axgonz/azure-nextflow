@@ -1,5 +1,9 @@
 name: Build and push Docker images
 
+permissions:
+      id-token: write
+      contents: read
+
 on:
   workflow_call:
     inputs:
@@ -25,11 +29,29 @@ jobs:
       run: |
         echo DOCKER_IMAGES_PATH : ${{ env.DOCKER_IMAGES_PATH }} 
 
+    # Prase AZURE_MSI secret
+    - name: Prase AZURE_MSI secret
+      id: msiPrincipal
+      env:
+        SECRET: ${{ secrets.AZURE_MSI }}
+      run: |
+        clientId=$(echo $SECRET | jq -r '.["clientId"]')
+        tenantId=$(echo $SECRET | jq -r '.["tenantId"]')
+        subscriptionId=$(echo $SECRET | jq -r '.["id"] | split("/")[2]')
+        echo "::add-mask::$clientId"
+        echo "::add-mask::$tenantId"
+        echo "::add-mask::$subscriptionId"
+        echo clientId=$clientId >> $GITHUB_OUTPUT
+        echo tenantId=$tenantId >> $GITHUB_OUTPUT
+        echo subscriptionId=$subscriptionId >> $GITHUB_OUTPUT
+
     # Login
     - name: 'Azure login'
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}   
+        client-id: ${{ steps.msiPrincipal.outputs.clientId }}
+        tenant-id: ${{ steps.msiPrincipal.outputs.tenantId }}
+        subscription-id: ${{ steps.msiPrincipal.outputs.subscriptionId }}
 
     # Checkout
     - name: 'Checkout repository branch'

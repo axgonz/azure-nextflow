@@ -1,5 +1,9 @@
 name: Build and deploy Azure templates
 
+permissions:
+      id-token: write
+      contents: read
+      
 on: 
   workflow_call:
     inputs:
@@ -48,30 +52,51 @@ jobs:
         echo BICEP_FILE_PATH : ${{ env.BICEP_FILE_PATH }}       
         echo BICEP_FILE_NAME : ${{ env.BICEP_FILE_NAME }}       
 
+    # Prase AZURE_MSI secret
+    - name: Prase AZURE_MSI secret
+      id: msiPrincipal
+      env:
+        SECRET: ${{ secrets.AZURE_MSI }}
+      run: |
+        clientId=$(echo $SECRET | jq -r '.["clientId"]')
+        tenantId=$(echo $SECRET | jq -r '.["tenantId"]')
+        subscriptionId=$(echo $SECRET | jq -r '.["id"] | split("/")[2]')
+        principalId=$(echo $SECRET | jq -r '.["principalId"]')
+        echo "::add-mask::$clientId"
+        echo "::add-mask::$tenantId"
+        echo "::add-mask::$subscriptionId"
+        echo "::add-mask::$principalId"
+        echo clientId=$clientId >> $GITHUB_OUTPUT
+        echo tenantId=$tenantId >> $GITHUB_OUTPUT
+        echo subscriptionId=$subscriptionId >> $GITHUB_OUTPUT
+        echo objectId=$principalId >> $GITHUB_OUTPUT
+
     # Login
     - name: 'Azure login'
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        client-id: ${{ steps.msiPrincipal.outputs.clientId }}
+        tenant-id: ${{ steps.msiPrincipal.outputs.tenantId }}
+        subscription-id: ${{ steps.msiPrincipal.outputs.subscriptionId }}
     
     # Checkout
     - name: 'Checkout repository branch'
       uses: actions/checkout@v2
 
-    # Get objectId from clientId
-    - name: 'Get principal from clientId'
-      id: msiPrincipal
-      run: |
-        az --version
-        spn=$(az account show --query "user.name" --output tsv)
-        objectId=$(az ad sp list --spn "$spn" --query "[].objectId" --output tsv)
-        if test "$objectId" == ''
-        then 
-          echo "property 'objectId' not found trying 'id' instead"
-          objectId=$(az ad sp list --spn "$spn" --query "[].id" --output tsv)
-        fi
-        echo setting objectId to $objectId
-        echo "objectId=$objectId" >> $GITHUB_OUTPUT
+    # # Get objectId from clientId
+    # - name: 'Get principal from clientId'
+    #   id: msiPrincipal
+    #   run: |
+    #     az --version
+    #     spn=$(az account show --query "user.name" --output tsv)
+    #     objectId=$(az ad sp list --spn "$spn" --query "[].objectId" --output tsv)
+    #     if test "$objectId" == ''
+    #     then 
+    #       echo "property 'objectId' not found trying 'id' instead"
+    #       objectId=$(az ad sp list --spn "$spn" --query "[].id" --output tsv)
+    #     fi
+    #     echo setting objectId to $objectId
+    #     echo "objectId=$objectId" >> $GITHUB_OUTPUT 
 
     # Build
     - name: Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
