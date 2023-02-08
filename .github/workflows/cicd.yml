@@ -27,7 +27,7 @@ on:
 
 jobs:      
   azureTemplates:
-    uses: ./.github/workflows/azure-templates.yml@main
+    uses: ./.github/workflows/azure-templates.yml
     with:
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
       AZURE_SUBSCRIPTION_ID: ${{ inputs.AZURE_SUBSCRIPTION_ID }}
@@ -36,14 +36,14 @@ jobs:
 
   dockerImages:
     needs: azureTemplates
-    uses: ./.github/workflows/docker-images.yml@main
+    uses: ./.github/workflows/docker-images.yml
     with:
       AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit
 
   azureFunctions:
     needs: azureTemplates
-    uses: ./.github/workflows/azure-functions.yml@main
+    uses: ./.github/workflows/azure-functions.yml
     with:
       AZURE_FUNCTIONAPP_NAME: ${{ needs.azureTemplates.outputs.AZURE_FUNCTIONAPP_NAME }}
     secrets: inherit    
