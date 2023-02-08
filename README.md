@@ -39,7 +39,7 @@ It is assumed that regardless of deployment method, GitHub is used for hosting t
     gh_repo="azure-nextflow" # this repo's name
     ```
 
-1. Create target Resource Group.
+1. Create a Resource Group for the Managed Identity.
 
     ``` bash
     # Create Resource Group
@@ -66,11 +66,17 @@ It is assumed that regardless of deployment method, GitHub is used for hosting t
     az role assignment create --assignee $az_msiName --role 'Owner' --scope /subscriptions/$az_subId
     ```    
 
-    > Important: The principal will need Owner permission on the target resource group scope as a minimum.
-
+    > Note: The permissions above are an example, use the least privileged approach when assigning permissions.
+        
 ## Set up
 
 The following uses the provided GitHub workflows to build and deploy the sample.
+
+The deployment is targeted at the subscription level and will create the target resource group if it does not exist. This is why the deployment principal requires permission at the `Subscription` scope.
+
+The deployment creates and assigns permissions to a number of Managed Identities. This is why the deployment principal requires the `Owner` permission.
+
+> Important: As a minimum the deployment principal will require `Contributor` permission on the subscription and `Owner` permission on the target resource group provided the **target resource group** is **created ahead of time**.
 
 ### Deploy using GitHub
 
