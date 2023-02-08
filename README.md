@@ -85,7 +85,7 @@ The deployment creates and assigns permissions to a number of Managed Identities
 1. Use the JSON output from the pre-requisite steps to create a new `AZURE_MSI` GitHub Secret, details in [GitHub Docs](https://docs.github.com/en/actions/security-guides/encrypted-secrets).
 
     **Name**
-    ``` json
+    ```
     AZURE_MSI
     ```
 
