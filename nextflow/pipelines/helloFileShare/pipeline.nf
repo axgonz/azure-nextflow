@@ -7,14 +7,14 @@ process listFiles {
     container "$params.azureRegistryServer/default/ubuntu:latest"
 
     output:
-        path 'result.log'
+        stdout
 
-    script:
+    shell:
         """
-        ls -la ${params.azureFileShare} >> result.log
+        !{params.azureFileShare}/script.sh
         """
 }
 
 workflow {
-    listFiles | view { it.trim() }
+    listFiles | view
 }
