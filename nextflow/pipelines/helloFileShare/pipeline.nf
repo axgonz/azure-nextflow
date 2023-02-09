@@ -9,9 +9,10 @@ process listFiles {
     output:
         stdout
 
-    shell:
+    script:
         """
-        !{params.azureFileShare}/script.sh
+        ${params.azureFileShare}/script.sh >> ${params.azureFileShare}/script.log
+        cp results.log ${params.azureFileShare}/results.log
         """
 }
 
