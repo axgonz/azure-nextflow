@@ -7,11 +7,11 @@ process listFiles {
     container "$params.azureRegistryServer/default/ubuntu:latest"
 
     output:
-        stdout
+        path result.log
 
     script:
         """
-        ls -la ${params.azureFileShare}
+        ls -la ${params.azureFileShare} >> result.log
         """
 }
 
