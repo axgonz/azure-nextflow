@@ -6,6 +6,9 @@ process listFiles {
     queue 'default'
     container "$params.azureRegistryServer/default/ubuntu:latest"
 
+    output:
+        stdout
+
     script:
         """
         ls -la ${params.azureFileShare}
@@ -13,5 +16,5 @@ process listFiles {
 }
 
 workflow {
-    listFiles
+    listFiles | view { it.trim() }
 }
