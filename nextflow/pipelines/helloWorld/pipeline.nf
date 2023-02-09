@@ -8,15 +8,9 @@ process splitLetters {
 
     output:
         path 'chunk_*'
-        path 'script.log'
 
     script:
-        """
-        printf '${params.str}' | split -b 6 - chunk_
-        echo foo >> '${param.azureFileShare}'/batchsmb/bar.txt
-        chmod +x '${param.azureFileShare}'/batchsmb/script.sh
-        '${param.azureFileShare}'/batchsmb/script.sh
-        """
+        template "$param.azureFileShare/batchsmb/script.sh"
 }
 
 process convertToUpper {
