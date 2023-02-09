@@ -10,7 +10,7 @@ process splitLetters {
         path 'chunk_*'
 
     script:
-        template "$param.azureFileShare/batchsmb/script.sh"
+        template "$params.azureFileShare/batchsmb/script.sh"
 }
 
 process convertToUpper {
