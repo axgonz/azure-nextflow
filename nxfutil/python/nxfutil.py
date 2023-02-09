@@ -28,10 +28,15 @@ parser.add_argument("--version", action="version", version='%(prog)s - Version 1
 args = parser.parse_args()
 
 def curl(uri, fileName=""):
+    h = {
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
+    }
+
     if fileName == "":
         fileName = uri.split("/")[-1]
 
-    response = requests.get(uri)
+    response = requests.get(uri, headers=h)
     if response.status_code == 200:
         f = open(fileName, "w")
         f.write(response.text)
