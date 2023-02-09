@@ -13,5 +13,5 @@ process listFiles {
 }
 
 workflow {
-    listFiles | view { it.trim() }
+    listFiles
 }
