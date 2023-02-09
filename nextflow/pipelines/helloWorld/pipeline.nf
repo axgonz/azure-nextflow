@@ -10,7 +10,9 @@ process splitLetters {
         path 'chunk_*'
 
     script:
-        template "$params.azureFileShare/batchsmb/script.sh"
+        """
+        printf '${params.str}' | split -b 6 - chunk_ 
+        """
 }
 
 process convertToUpper {
