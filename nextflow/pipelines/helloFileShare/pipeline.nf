@@ -7,7 +7,7 @@ process listFiles {
     container "$params.azureRegistryServer/default/ubuntu:latest"
 
     output:
-        path result.log
+        path 'result.log'
 
     script:
         """
