@@ -19,5 +19,5 @@ process fitData {
 }
 
 workflow {
-    Channel.fromList(['1','2','3','4']]) | fitData | view
+    Channel.fromList(['1','2','3','4']) | fitData | view
 }
