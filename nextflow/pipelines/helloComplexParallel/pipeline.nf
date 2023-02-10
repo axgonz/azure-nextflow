@@ -3,6 +3,7 @@
 nextflow.enable.dsl=2
 
 process fitData {
+    cpus 2
     queue 'default'
     container "$params.azureRegistryServer/default/ubuntu:latest"
 
@@ -14,11 +15,11 @@ process fitData {
 
     script:
         """
-        sleep 30s       
-        cat $data
+        sleep 30s
+        echo "${data} on ${task.cpus} cpus"
         """
 }
 
 workflow {
-    Channel.fromList(['1','2','3','4']) | fitData | view
+    Channel.fromList(params.tasks) | fitData | view
 }
