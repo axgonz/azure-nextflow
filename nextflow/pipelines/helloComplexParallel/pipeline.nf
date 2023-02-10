@@ -18,6 +18,7 @@ process parallel {
         echo "Generate ref for $params.drugName"
         echo "Fitting sample ${sample} on ${task.cpus} cpus"
         echo "I am results of sample ${sample} for ${params.drugName} with population ${params.population} and accuracy ${params.accuracy}." > "results_${params.drugName}_${sample}.txt"
+        cp "results_${params.drugName}_${sample}.txt" "${params.azureFileShare}/results_${params.drugName}_${sample}.txt"
         """
 }
 
