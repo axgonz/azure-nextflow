@@ -146,17 +146,13 @@ az_funcAppName="nxfutil"
 curl -X POST "https://$az_funcAppName.azurewebsites.net/api/nxfutil?whatif=true" -H 'Content-Type: application/json' -d '{"config_uri":"", "pipeline_uri":"", "parameters_uri":""}'
 ```
 
-## Annex
+## Documentation
 
 ### [Azure infrastructure](./docs/AzureInfrastructure.md)
 
 ### [nxfutil](./docs/nxfutil.md)
 
-### [Azure functions](./azure/functions/python/README.md)
+### [Azure functions](./azure/functions/rust/README.md)
 
 ### [Data upload](./docs/DataUpload.md)
-
-### [DevOps pipelines (depreciated)](./docs/DevOpsPipelines.md)
-
-### [Manual set up (depreciated)](./docs/ManualSetup.md)
 

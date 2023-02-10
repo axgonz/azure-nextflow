@@ -1,4 +1,4 @@
-# Annex - Azure infrastructure
+# Azure infrastructure
 
 ## Key Vault
 
