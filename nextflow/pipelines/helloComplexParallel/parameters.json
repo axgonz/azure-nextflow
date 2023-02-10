@@ -1,3 +1,7 @@
 {
-    "name": "foobar"
+    "drugName": "foobar",
+    "numberOfSamples": 16,
+    "population": 80,
+    "accuracy": 0.001,
+    "cpusPerSample": 2
 }
