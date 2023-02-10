@@ -1,7 +1,7 @@
 {
-    "drugName": "foobar",
-    "numberOfSamples": 16,
+    "drugName": "bepridil",
+    "numberOfSamples": 1,
     "population": 80,
     "accuracy": 0.001,
-    "cpusPerSample": 2
+    "cpusPerSample": 4
 }
