@@ -13,7 +13,8 @@ process fitData {
         stdout
 
     script:
-        """       
+        """
+        sleep 30s       
         cat $data
         """
 }
