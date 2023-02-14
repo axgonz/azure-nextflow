@@ -5,7 +5,7 @@ LABEL module.name="nextflow"
 LABEL module.version="v0.0.1"
 
 # Set nextflow variables
-ENV NXF_VER=22.04.4
+ENV NXF_VER=22.10.6
 ENV NXF_HOME=/.nextflow
 ENV NXF_ENABLE_SECRETS=true
 
@@ -20,22 +20,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     python3 \
     pip
 
-# Add build dependacies
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    gradle
-
-# Build nextflow from source
-RUN mkdir -p ~/repo \
-    && cd ~/repo \
-    && git clone --branch STABLE-22.10.x https://github.com/nextflow-io/nextflow.git \
-    && cd nextflow \
-    && make compile \
-    && make pack
-
 # Install nextflow
-RUN mkdir -p /.nextflow \
+RUN mkdir /.nextflow \
     && cd /.nextflow \
-    && cp ~/repo/nextflow/build/release/nextflow-22.10.6-all nextflow \
+    && curl -s https://get.nextflow.io | bash \
     && chmod +x nextflow
 
 # Install python modules
