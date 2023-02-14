@@ -25,11 +25,11 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     gradle
 
 # Build nextflow from source
-RUN mkdir ~/repo 
-    && cd ~/repo
-    && git clone --branch STABLE-22.10.x https://github.com/nextflow-io/nextflow.git
-    && cd nextflow
-    && make compile
+RUN mkdir ~/repo \
+    && cd ~/repo \
+    && git clone --branch STABLE-22.10.x https://github.com/nextflow-io/nextflow.git \
+    && cd nextflow \
+    && make compile \
     && make pack
 
 # Install nextflow
