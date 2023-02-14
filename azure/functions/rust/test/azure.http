@@ -2,13 +2,13 @@
 @repo = azure-nextflow
 @branch = main
 @project = helloWorld
-@host = localhost:7071
+@az_funcName = fcnj6h
 
-GET http://{{host}}/api/nxfutil HTTP/1.1
+GET https://{{az_funcName}}.azurewebsites.net/api/nxfutil HTTP/1.1
 
 ###
 
-POST http://{{host}}/api/nxfutil?whatif=true HTTP/1.1
+POST https://{{az_funcName}}.azurewebsites.net/api/nxfutil?whatif=true HTTP/1.1
 content-type: application/json
 
 {
@@ -20,7 +20,19 @@ content-type: application/json
 
 ###
 
-POST http://{{host}}/api/nxfutil?whatif=true HTTP/1.1
+POST https://{{az_funcName}}.azurewebsites.net/api/nxfutil HTTP/1.1
+content-type: application/json
+
+{
+    "config_uri": "",
+    "pipeline_uri": "",
+    "parameters_uri": "",
+    "auto_delete": true
+}
+
+###
+
+POST https://{{az_funcName}}.azurewebsites.net/api/nxfutil HTTP/1.1
 content-type: application/json
 
 {
@@ -28,5 +40,4 @@ content-type: application/json
     "pipeline_uri": "https://raw.githubusercontent.com/{{org}}/{{repo}}/{{branch}}/nextflow/pipelines/{{project}}/pipeline.nf",
     "parameters_uri": "https://raw.githubusercontent.com/{{org}}/{{repo}}/{{branch}}/nextflow/pipelines/{{project}}/parameters.json",
     "auto_delete": true
-}
 }
