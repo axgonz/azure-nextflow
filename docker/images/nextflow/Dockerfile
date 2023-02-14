@@ -35,7 +35,7 @@ RUN mkdir ~/repo \
 # Install nextflow
 RUN mkdir /.nextflow \
     && cd /.nextflow \
-    && cp ~/repo/nextflow/nextflow ./ \
+    && cp ~/repo/nextflow/nextflow nextflow \
     && chmod +x nextflow
 
 # Install python modules
