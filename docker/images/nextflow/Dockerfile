@@ -20,10 +20,21 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     python3 \
     pip
 
+# Add build dependacies
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    gradle
+
+# Build nextflow from source
+RUN mkdir ~/repo 
+    && cd ~/repo
+    && git clone --branch STABLE-22.10.x https://github.com/nextflow-io/nextflow.git
+    && make compile
+    && make pack
+
 # Install nextflow
 RUN mkdir /.nextflow \
     && cd /.nextflow \
-    && curl -s https://get.nextflow.io | bash \
+    && cp ~/repo/nextflow/nextflow ./
     && chmod +x nextflow
 
 # Install python modules

@@ -97,7 +97,7 @@ client = SecretClient(vault_url=KVUri, credential=credential)
 for secret in secrets:
     print(f"Importing secret '{secret.replace('_','-')}' to nextflow as '{secret}'")
     azSecret = client.get_secret(secret.replace("_","-"))
-    subprocess.run(["./nextflow", "secrets", "put", "-n", secret, "-v", azSecret.value])
+    subprocess.run(["./nextflow", "secrets", "set", secret, azSecret.value])
 
 for param in params:
     print(f"Extending param '{secret.replace('_','-')}'")
