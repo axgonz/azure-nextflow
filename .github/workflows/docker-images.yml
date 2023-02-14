@@ -5,7 +5,7 @@ permissions:
       contents: read
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       AZURE_KEYVAULT_NAME:
         type: string
@@ -79,12 +79,12 @@ jobs:
       run: |
         pushd './${{ env.DOCKER_IMAGES_PATH }}'
         
-        # pushd ubuntu
-        # docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
-        # docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
-        # docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:latest
-        # docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:latest
-        # popd
+        pushd ubuntu
+        docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
+        docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
+        docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:latest
+        docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:latest
+        popd
 
         cp ../../nxfutil/python/* nextflow/
         pushd nextflow
