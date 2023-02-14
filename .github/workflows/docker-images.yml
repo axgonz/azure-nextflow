@@ -86,6 +86,7 @@ jobs:
         docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:latest
         popd
 
+        cp ../../nxfutil/python/* nextflow/
         pushd nextflow
         docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
         docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}

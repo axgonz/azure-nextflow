@@ -33,8 +33,8 @@ RUN pip install requests \
     && pip install azure-keyvault-secrets
 
 # Install nxfutil
-ADD https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nxfutil/python/nxfutil.py /.nextflow/nxfutil.py
-ADD https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nxfutil/python/nxfutil /.nextflow/nxfutil
+ADD nxfutil.py /.nextflow/nxfutil.py
+ADD nxfutil /.nextflow/nxfutil
 RUN cd /.nextflow \
     && chmod +x ./nxfutil
 
