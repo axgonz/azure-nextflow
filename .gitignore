@@ -395,12 +395,19 @@ __blobstorage__
 __queuestorage__
 __azurite_db*__.json
 
+# Rust targets
+azure/functions/rust/target
+nxfutil/rust/nxfutil/target
+nxfutil/rust/nxfutild/target
+
 # Azure Functions artifacts
 bin
 obj
 appsettings.json
 local.settings.json
 .python_packages
-azure/functions/rust/target
 azure/functions/rust/handler*
 azure/functions/rust/test/azure.http
+
+# Docker images artifacts
+docker/images/nextflow/nxfutil*

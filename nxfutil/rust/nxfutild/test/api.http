@@ -1,0 +1,16 @@
+@host = localhost:3000
+@FUNCTIONS_FUNCTION_NAME = nxfutild
+@api_root = api/nxfutild
+
+GET http://{{host}}/{{api_root}} HTTP/1.1
+
+### 
+
+POST http://{{host}}/{{api_root}} HTTP/1.1
+content-type: application/json
+
+{
+    "foo": "bars"
+}
+
+###
