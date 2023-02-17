@@ -1,7 +1,9 @@
 include!("app/router.rs");
 include!("app/server.rs");
 include!("app/variables.rs");
+include!("app/secrets.rs");
 include!("services/az-identity.rs");
+include!("services/az-security-keyvault.rs");
 include!("services/az-storage-queues.rs");
 
 use axum::{
@@ -9,6 +11,8 @@ use axum::{
 };
 
 use std::{
+    io,
+    io::Write,
     env,
     net::SocketAddr
 };
@@ -27,6 +31,9 @@ async fn main() {
 
     // Define our service with routes, any shared state and/or middleware (aka. exceptions), etc.
     let app = AppRouter::new().await.app_router;
+
+    // Log that everything is okay and we are ready to listen
+    println!("\nListening on {:#?}\n", &addr);
     
     // Start listening and panic if anything doesn't work.
     Server::bind(&addr).serve(app.into_make_service()).await.unwrap();

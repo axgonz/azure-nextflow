@@ -1,29 +1,44 @@
 #[derive(Clone)]
 pub struct AppServer {
     variables: AppVariables,
+    secrets: AppSecrets,
+    az_identity: AppAzIdentity,
     az_storage_queues: AppAzStorageQueues
 }
 
 impl AppServer {
-    fn new() -> Self {
-        let app_vars = AppVariables::new();
-        let az_identity = AppAzIdentity::new();
-        let az_storage_queues = AppAzStorageQueues::new(az_identity.clone().credential, &app_vars);
-        AppServer {
-            variables: app_vars,
-            az_storage_queues: az_storage_queues
+    fn new(variables: AppVariables, secrets: AppSecrets, az_identity: AppAzIdentity) -> Self {
+        Self {
+            az_storage_queues: AppAzStorageQueues::new(az_identity.credential.clone(), &variables, &secrets),
+            az_identity: az_identity,
+            variables: variables,
+            secrets: secrets
         }
     }
-    async fn init_services(app_server: &AppServer) {
-        dbg!(&app_server.variables);
-        let response = app_server.az_storage_queues.queue_client.create().await;   
-        dbg!(response.unwrap());
+    async fn init(server: &AppServer) {
+        print!("[az-storage-queues] Creating queue if not exists {:#?}...", server.variables.fc_name);
+        io::stdout().flush().unwrap();
+        match server.az_storage_queues.queue_client.create().await {
+            Ok(_) => {
+                println!("Ok");
+            },
+            Err(error) => {
+                println!("Err");
+                panic!("{}", error)
+            }
+        }
     }
-    async fn send_message_to_queue(Json(req_payload): Json<Value>, app_server: AppServer) {
-        let _response = app_server.az_storage_queues.queue_client
-            .put_message(req_payload.to_string()).await;
-    }
-    fn log(line: String) {
-        println!("[nxfutilstatus] {}", line);
+    async fn send_message_to_queue(Json(req_payload): Json<Value>, server: &AppServer) {
+        print!("[az-storage-queues] Sending message...");
+        io::stdout().flush().unwrap();
+        match server.az_storage_queues.queue_client.put_message(req_payload.to_string()).await {
+            Ok(_) => {
+                println!("Ok");
+            },
+            Err(error) => {
+                println!("Err");
+                println!("{}", error)
+            }        
+        }
     }
 }
