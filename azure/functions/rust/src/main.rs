@@ -450,7 +450,7 @@ async fn deploy_nxfutil_ci (
                                     secure_value: None
                                 },
                                 azure_mgmt_containerinstance::models::EnvironmentVariable {
-                                    name: "AZ_KEY_VAULT_NAME".to_string(),
+                                    name: "AZURE_KEYVAULT_NAME".to_string(),
                                     value: Some(app_variables.kv_name),
                                     secure_value: None
                                 }
