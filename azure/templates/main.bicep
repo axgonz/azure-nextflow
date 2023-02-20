@@ -59,7 +59,8 @@ module dep_storageAccount 'resourceGroups/batch/storageAccount.bicep' = {
   params: {
     location: location
     name: config.storageAccount.nameIsAlreadyUnique ? config.storageAccount.name : '${config.storageAccount.name}${substring(uniqueString(config.storageAccount.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
-    objectId: dep_msiBatchAccount.outputs.objectId
+    batchMsi_objectId: dep_msiBatchAccount.outputs.objectId
+    nextflowMsi_objectId: dep_msiNextflow.outputs.objectId
     keyVaultName: dep_keyVault.outputs.name
   }
 }
