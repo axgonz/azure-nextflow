@@ -121,8 +121,8 @@ jobs:
       shell: bash
       run: |
         pushd '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
-        cp -v nxfutil/rust/nxfutil/target/${{ env.CARGO_TARGET }}/release/nxfutil ./
-        cp -v nxfutil/rust/nxfutild/target/${{ env.CARGO_TARGET }}/release/nxfutild ./
+        cp -v ./nxfutil/rust/nxfutil/target/${{ env.CARGO_TARGET }}/release/nxfutil ./nxfutil
+        cp -v ./nxfutil/rust/nxfutild/target/${{ env.CARGO_TARGET }}/release/nxfutild ./nxfutild
         popd        
 
     # Deployment
