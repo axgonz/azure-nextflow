@@ -198,55 +198,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: nxfutild
-        path: '${{ env.DOCKER_IMAGES_PATH }}/nextflow'        
-
-    # # Cache nxfutil
-    # - name: 'Cache nxfutil cargo target dir'
-    #   id: cache_nxfutil
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: 'nxfutil/rust/nxfutil/target'
-    #     key: cargo-target-cache-nxfutil 
-
-    # # Build nxfutil
-    # - name: 'Build nxfutil binary'
-    #   shell: bash
-    #   run: |       
-    #     pushd 'nxfutil/rust/nxfutil'
-    #     cargo build --target "${{ env.CARGO_TARGET }}" --release
-    #     popd
-
-    # # Copy nxfutil
-    # - name: 'Copying binary files to docker image directory'
-    #   shell: bash
-    #   run: |
-    #     pushd '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
-    #     cp -v ../../../nxfutil/rust/nxfutil/target/${{ env.CARGO_TARGET }}/release/nxfutil ./nxfutil
-    #     popd   
-
-    # # Cache nxfutild
-    # - name: 'Cache nxfutild cargo target dir'
-    #   id: cache_nxfutild
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: 'nxfutil/rust/nxfutild/target'
-    #     key: cargo-target-cache-nxfutild    
-
-    # # Build nxfutild
-    # - name: 'Build nxfutild binary'
-    #   shell: bash
-    #   run: |       
-    #     pushd 'nxfutil/rust/nxfutild'
-    #     cargo build --target "${{ env.CARGO_TARGET }}" --release
-    #     popd        
-   
-    # # Copy nxfutild
-    # - name: 'Copying binary files to docker image directory'
-    #   shell: bash
-    #   run: |
-    #     pushd '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
-    #     cp -v ../../../nxfutil/rust/nxfutild/target/${{ env.CARGO_TARGET }}/release/nxfutild ./nxfutild
-    #     popd        
+        path: '${{ env.DOCKER_IMAGES_PATH }}/nextflow'     
 
     # Deployment
     - name: 'Build and push images'
