@@ -76,19 +76,19 @@ jobs:
         password: ${{ steps.keyVaultSecrets.outputs.azure-registry-password }}
 
     # Cache
-    - name: 'Cache cargo target dir'
+    - name: 'Cache nxfutil cargo target dir'
       id: cache_nxfutil
       uses: actions/cache@v3
       with:
-        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
+        path: './nxfutil/rust/nxfutil/target'
         key: cargo-target-cache-nxfutil 
 
     # Cache
-    - name: 'Cache cargo target dir'
+    - name: 'Cache nxfutild cargo target dir'
       id: cache_nxfutild
       uses: actions/cache@v3
       with:
-        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
+        path: './nxfutil/rust/nxfutild/target'
         key: cargo-target-cache-nxfutild        
 
     # Update / Install Rust
