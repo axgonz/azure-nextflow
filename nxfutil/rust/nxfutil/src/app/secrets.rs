@@ -16,15 +16,13 @@ impl AppSecrets {
         // secrets.secret_name = Self::secret("my-secret-name", secrets).await;
     }
     pub async fn secret(name: &str, secrets: &AppSecrets) -> String {
-        print!("[az-security-keyvault] Requesting key vault secret {:#?}...", name);
-        io::stdout().flush().unwrap();
         match secrets.az_security_keyvault.secret_client.get(name).await {
             Ok(value) => {
-                println!("Ok");
+                println!("[az-security-keyvault] Requesting key vault secret {:#?}...Ok", name);
                 return value.value
             }
             Err(error) => {
-                println!("Err");
+                println!("[az-security-keyvault] Requesting key vault secret {:#?}...Err", name);
                 panic!("{}", error)
             }
         }
