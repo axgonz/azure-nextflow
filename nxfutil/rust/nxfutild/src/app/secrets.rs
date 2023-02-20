@@ -16,15 +16,13 @@ impl AppSecrets {
         secrets.st_name = Self::secret("azure-storage-accountName", secrets).await;
     }
     pub async fn secret(name: &str, secrets: &AppSecrets) -> String {
-        print!("[az-security-keyvault] Requesting key vault secret {:#?}...", name);
-        io::stdout().flush().unwrap();
         match secrets.az_security_keyvault.secret_client.get(name).await {
             Ok(value) => {
-                println!("Ok");
+                println!("[nxfutild][az-security-keyvault] Requesting key vault secret {:#?}...Ok", name);
                 return value.value
             }
             Err(error) => {
-                println!("Err");
+                println!("[nxfutild][az-security-keyvault] Requesting key vault secret {:#?}...Err", name);
                 panic!("{}", error)
             }
         }

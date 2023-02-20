@@ -33,7 +33,7 @@ async fn main() {
     let app = AppRouter::new().await.app_router;
 
     // Log that everything is okay and we are ready to listen
-    println!("\nListening on {:#?}\n", &addr);
+    println!("\n[nxfutild] Listening on {:#?}\n", &addr);
     
     // Start listening and panic if anything doesn't work.
     Server::bind(&addr).serve(app.into_make_service()).await.unwrap();
