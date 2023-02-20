@@ -19,12 +19,61 @@ env:
   # OPENSSL_LIB_DIR: '/usr/lib/x86_64-linux-gnu'
   # OPENSSL_INCLUDE_DIR: '/usr/include/openssl'
 
+  HANDLER_BIN_NAME: 'handler'
+  HANDLER_SOURCE_PATH: 'azure/functions/rust'  
+
 jobs:
-  build_and_publish:
+  rust_build_handler:
     # Azure functions does not yet support openssl.3
     #  ubuntu-latest uses openssl.3 so we need to 
     #  downgrade runner to 20.04.
     runs-on: ubuntu-20.04
+    steps:
+    # Variables
+    - name: 'Show variables'
+      run: |
+        echo HANDLER_BIN_NAME : ${{ env.HANDLER_BIN_NAME }} 
+        echo HANDLER_SOURCE_PATH : ${{ env.HANDLER_SOURCE_PATH }} 
+
+    # Checkout
+    - name: 'Checkout repository branch'
+      uses: actions/checkout@v2                 
+    
+    # Update / Install Rust
+    - name: 'Update / install rust'
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        target: ${{ env.CARGO_TARGET }}
+        toolchain: stable
+        default: true
+        override: true
+
+    # Cache
+    - name: 'Cache cargo target dir'
+      id: cache_nxfutil
+      uses: actions/cache@v3
+      with:
+        path: '${{ env.HANDLER_SOURCE_PATH }}/target'
+        key: 'cargo-target-${{ env.HANDLER_BIN_NAME }}'
+
+    # Build
+    - name: 'Build binary'
+      shell: bash
+      run: |       
+        pushd '${{ env.HANDLER_SOURCE_PATH }}'
+        cargo build --target "${{ env.CARGO_TARGET }}" --release
+        popd
+
+    # Archive
+    - name: Archive binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: '${{ env.HANDLER_BIN_NAME }}'
+        path: '${{ env.HANDLER_SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.HANDLER_BIN_NAME }}'
+
+  build_and_publish:
+    runs-on: ubuntu-latest
     steps:
     # Inputs
     - name: 'Show inputs'
@@ -63,50 +112,7 @@ jobs:
         client-id: ${{ steps.msiPrincipal.outputs.clientId }}
         tenant-id: ${{ steps.msiPrincipal.outputs.tenantId }}
         subscription-id: ${{ steps.msiPrincipal.outputs.subscriptionId }}
-
-    # Cache
-    - name: 'Cache cargo target dir'
-      id: cache
-      uses: actions/cache@v3
-      with:
-        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
-        key: cargo-target-cache-nxfutil-func 
-
-    # Update / Install Rust
-    - name: 'Update / install rust'
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        target: ${{ env.CARGO_TARGET }}
-        toolchain: stable
-        default: true
-        override: true
-
-    # # Upgrade TLS on this build host
-    # - name: 'Upgrade TLS on build host'
-    #   shell: bash
-    #   run: |
-    #     sudo apt-get update
-    #     sudo apt-get install libssl-dev pkg-config
-    #     pushd '${{ env.OPENSSL_LIB_DIR }}'
-    #     echo "----libssl (before)----" && ls -la --full-time libssl.*
-    #     sudo rm libssl.so
-    #     sudo ln -s libssl.so.1.1 libssl.so
-    #     echo "----libssl (after)----" && ls -la --full-time libssl.*    
-    #     echo "----libcrypto (before)----" && ls -la --full-time libcrypto.*
-    #     sudo rm libcrypto.so
-    #     sudo ln -s libcrypto.so.1.1 libcrypto.so
-    #     echo "----libcrypto (after)----" && ls -la --full-time libcrypto.*
-    #     popd        
-
-    # Build
-    - name: 'Build custom handler binary'
-      shell: bash
-      run: |       
-        pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        cargo build --target "${{ env.CARGO_TARGET }}" --release
-        popd
-   
+  
     # Move files 
     - name: 'Select only required files for FuncApp'
       shell: bash
@@ -114,10 +120,16 @@ jobs:
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         mkdir -p ./output/nxfutil
         cp -v ./nxfutil/function.json ./output/nxfutil/function.json
-        cp -v ./target/${{ env.CARGO_TARGET }}/release/handler ./output/handler
         cp -v ./host.json ./output/host.json
         cp -v ./.funcignore ./output/.funcignore
         popd
+
+    # Download
+    - name: Download binary
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ env.HANDLER_BIN_NAME }}
+        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
 
     # Deployment
     - name: 'Run Azure Functions Action'

@@ -17,7 +17,105 @@ env:
   RUST_BACKTRACE: 'full'
   CARGO_TARGET: 'x86_64-unknown-linux-gnu'
   
+  NXFUTIL_BIN_NAME: 'nxfutil'
+  NXFUTIL_SOURCE_PATH: 'nxfutil/rust/nxfutil'
+  
+  NXFUTILD_BIN_NAME: 'nxfutild'
+  NXFUTILD_SOURCE_PATH: 'nxfutil/rust/nxfutild'
+  
 jobs:
+  rust_build_nxfutil:
+    runs-on: ubuntu-latest
+    steps:
+        # Variables
+    - name: 'Show variables'
+      run: |
+        echo NXFUTIL_BIN_NAME : ${{ env.NXFUTIL_BIN_NAME }} 
+        echo NXFUTIL_SOURCE_PATH : ${{ env.NXFUTIL_SOURCE_PATH }} 
+
+    # Checkout
+    - name: 'Checkout repository branch'
+      uses: actions/checkout@v2                 
+    
+    # Update / Install Rust
+    - name: 'Update / install rust'
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        target: ${{ env.CARGO_TARGET }}
+        toolchain: stable
+        default: true
+        override: true
+
+    # Cache
+    - name: 'Cache cargo target dir'
+      id: cache_nxfutil
+      uses: actions/cache@v3
+      with:
+        path: '${{ env.NXFUTIL_SOURCE_PATH }}/target'
+        key: 'cargo-target-${{ env.NXFUTIL_BIN_NAME }}'
+
+    # Build
+    - name: 'Build binary'
+      shell: bash
+      run: |       
+        pushd '${{ env.NXFUTIL_SOURCE_PATH }}'
+        cargo build --target "${{ env.CARGO_TARGET }}" --release
+        popd
+
+    # Archive
+    - name: Archive binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: '${{ env.NXFUTIL_BIN_NAME }}'
+        path: '${{ env.NXFUTIL_SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.NXFUTIL_BIN_NAME }}'
+
+  rust_build_nxfutild:
+    runs-on: ubuntu-latest
+    steps:
+        # Variables
+    - name: 'Show variables'
+      run: |
+        echo NXFUTILD_BIN_NAME : ${{ env.NXFUTILD_BIN_NAME }} 
+        echo NXFUTILD_SOURCE_PATH : ${{ env.NXFUTILD_SOURCE_PATH }} 
+
+    # Checkout
+    - name: 'Checkout repository branch'
+      uses: actions/checkout@v2                 
+    
+    # Update / Install Rust
+    - name: 'Update / install rust'
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        target: ${{ env.CARGO_TARGET }}
+        toolchain: stable
+        default: true
+        override: true
+
+    # Cache
+    - name: 'Cache cargo target dir'
+      id: cache_nxfutil
+      uses: actions/cache@v3
+      with:
+        path: '${{ env.NXFUTILD_SOURCE_PATH }}/target'
+        key: 'cargo-target-${{ env.NXFUTILD_BIN_NAME }}'
+
+    # Build
+    - name: 'Build binary'
+      shell: bash
+      run: |       
+        pushd '${{ env.NXFUTILD_SOURCE_PATH }}'
+        cargo build --target "${{ env.CARGO_TARGET }}" --release
+        popd
+
+    # Archive
+    - name: Archive binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: '${{ env.NXFUTILD_BIN_NAME }}'
+        path: '${{ env.NXFUTILD_SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.NXFUTILD_BIN_NAME }}'
+
   validate_and_push:
     runs-on: ubuntu-latest
     steps:
@@ -85,53 +183,67 @@ jobs:
         default: true
         override: true
 
-    # Cache nxfutil
-    - name: 'Cache nxfutil cargo target dir'
-      id: cache_nxfutil
-      uses: actions/cache@v3
+    # Download
+    - name: Download binary
+      uses: actions/download-artifact@v3
       with:
-        path: 'nxfutil/rust/nxfutil/target'
-        key: cargo-target-cache-nxfutil 
+        name: nxfutil
+        path: '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
 
-    # Build nxfutil
-    - name: 'Build nxfutil binary'
-      shell: bash
-      run: |       
-        pushd 'nxfutil/rust/nxfutil'
-        cargo build --target "${{ env.CARGO_TARGET }}" --release
-        popd
-
-    # Copy nxfutil
-    - name: 'Copying binary files to docker image directory'
-      shell: bash
-      run: |
-        pushd '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
-        cp -v ../../../nxfutil/rust/nxfutil/target/${{ env.CARGO_TARGET }}/release/nxfutil ./nxfutil
-        popd   
-
-    # Cache nxfutild
-    - name: 'Cache nxfutild cargo target dir'
-      id: cache_nxfutild
-      uses: actions/cache@v3
+    # Download
+    - name: Download binary
+      uses: actions/download-artifact@v3
       with:
-        path: 'nxfutil/rust/nxfutild/target'
-        key: cargo-target-cache-nxfutild    
+        name: nxfutild
+        path: '${{ env.DOCKER_IMAGES_PATH }}/nextflow'        
 
-    # Build nxfutild
-    - name: 'Build nxfutild binary'
-      shell: bash
-      run: |       
-        pushd 'nxfutil/rust/nxfutild'
-        cargo build --target "${{ env.CARGO_TARGET }}" --release
-        popd        
+    # # Cache nxfutil
+    # - name: 'Cache nxfutil cargo target dir'
+    #   id: cache_nxfutil
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: 'nxfutil/rust/nxfutil/target'
+    #     key: cargo-target-cache-nxfutil 
+
+    # # Build nxfutil
+    # - name: 'Build nxfutil binary'
+    #   shell: bash
+    #   run: |       
+    #     pushd 'nxfutil/rust/nxfutil'
+    #     cargo build --target "${{ env.CARGO_TARGET }}" --release
+    #     popd
+
+    # # Copy nxfutil
+    # - name: 'Copying binary files to docker image directory'
+    #   shell: bash
+    #   run: |
+    #     pushd '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
+    #     cp -v ../../../nxfutil/rust/nxfutil/target/${{ env.CARGO_TARGET }}/release/nxfutil ./nxfutil
+    #     popd   
+
+    # # Cache nxfutild
+    # - name: 'Cache nxfutild cargo target dir'
+    #   id: cache_nxfutild
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: 'nxfutil/rust/nxfutild/target'
+    #     key: cargo-target-cache-nxfutild    
+
+    # # Build nxfutild
+    # - name: 'Build nxfutild binary'
+    #   shell: bash
+    #   run: |       
+    #     pushd 'nxfutil/rust/nxfutild'
+    #     cargo build --target "${{ env.CARGO_TARGET }}" --release
+    #     popd        
    
-    # Copy nxfutild
-    - name: 'Copying binary files to docker image directory'
-      shell: bash
-      run: |
-        pushd '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
-        cp -v ../../../nxfutil/rust/nxfutild/target/${{ env.CARGO_TARGET }}/release/nxfutild ./nxfutild
-        popd        
+    # # Copy nxfutild
+    # - name: 'Copying binary files to docker image directory'
+    #   shell: bash
+    #   run: |
+    #     pushd '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
+    #     cp -v ../../../nxfutil/rust/nxfutild/target/${{ env.CARGO_TARGET }}/release/nxfutild ./nxfutild
+    #     popd        
 
     # Deployment
     - name: 'Build and push images'
