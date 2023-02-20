@@ -75,22 +75,6 @@ jobs:
         username: ${{ steps.keyVaultSecrets.outputs.azure-registry-username }}
         password: ${{ steps.keyVaultSecrets.outputs.azure-registry-password }}
 
-    # Cache
-    - name: 'Cache nxfutil cargo target dir'
-      id: cache_nxfutil
-      uses: actions/cache@v3
-      with:
-        path: './nxfutil/rust/nxfutil/target'
-        key: cargo-target-cache-nxfutil 
-
-    # Cache
-    - name: 'Cache nxfutild cargo target dir'
-      id: cache_nxfutild
-      uses: actions/cache@v3
-      with:
-        path: './nxfutil/rust/nxfutild/target'
-        key: cargo-target-cache-nxfutild        
-
     # Update / Install Rust
     - name: 'Update / install rust'
       uses: actions-rs/toolchain@v1
@@ -101,7 +85,15 @@ jobs:
         default: true
         override: true
 
-    # Build CLI
+    # Cache nxfutil
+    - name: 'Cache nxfutil cargo target dir'
+      id: cache_nxfutil
+      uses: actions/cache@v3
+      with:
+        path: './nxfutil/rust/nxfutil/target'
+        key: cargo-target-cache-nxfutil 
+
+    # Build nxfutil
     - name: 'Build nxfutil binary'
       shell: bash
       run: |       
@@ -109,6 +101,23 @@ jobs:
         cargo build --target "${{ env.CARGO_TARGET }}" --release
         popd
 
+    # Copy nxfutil
+    - name: 'Copying binary files to docker image directory'
+      shell: bash
+      run: |
+        pushd '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
+        cp -v ../../../nxfutil/rust/nxfutil/target/${{ env.CARGO_TARGET }}/release/nxfutil ./nxfutil
+        popd   
+
+    # Cache nxfutild
+    - name: 'Cache nxfutild cargo target dir'
+      id: cache_nxfutild
+      uses: actions/cache@v3
+      with:
+        path: './nxfutil/rust/nxfutild/target'
+        key: cargo-target-cache-nxfutild    
+
+    # Build nxfutild
     - name: 'Build nxfutild binary'
       shell: bash
       run: |       
@@ -116,13 +125,12 @@ jobs:
         cargo build --target "${{ env.CARGO_TARGET }}" --release
         popd        
    
-    # Copy files 
+    # Copy nxfutild
     - name: 'Copying binary files to docker image directory'
       shell: bash
       run: |
         pushd '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
-        cp -v ./nxfutil/rust/nxfutil/target/${{ env.CARGO_TARGET }}/release/nxfutil ./nxfutil
-        cp -v ./nxfutil/rust/nxfutild/target/${{ env.CARGO_TARGET }}/release/nxfutild ./nxfutild
+        cp -v ../../../nxfutil/rust/nxfutild/target/${{ env.CARGO_TARGET }}/release/nxfutild ./nxfutild
         popd        
 
     # Deployment
