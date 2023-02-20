@@ -16,8 +16,6 @@ env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure/functions/rust'
   RUST_BACKTRACE: 'full'
   CARGO_TARGET: 'x86_64-unknown-linux-gnu'
-  # OPENSSL_LIB_DIR: '/usr/lib/x86_64-linux-gnu'
-  # OPENSSL_INCLUDE_DIR: '/usr/include/openssl'
 
   HANDLER_BIN_NAME: 'handler'
   HANDLER_SOURCE_PATH: 'azure/functions/rust'  
@@ -74,6 +72,8 @@ jobs:
 
   build_and_publish:
     runs-on: ubuntu-latest
+    needs:
+      - rust_build_handler
     steps:
     # Inputs
     - name: 'Show inputs'
