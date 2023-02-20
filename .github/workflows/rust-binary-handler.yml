@@ -58,4 +58,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: '${{ env.BIN_NAME }}'
-        path: '${{ env.SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/${{ env.BIN_NAME }}'
+        path: '${{ env.SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.BIN_NAME }}'
