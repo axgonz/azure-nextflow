@@ -123,7 +123,6 @@ jobs:
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         mkdir -p ./output/nxfutil
         cp -v ./nxfutil/function.json ./output/nxfutil/function.json
-        cp -v ./target/${{ env.CARGO_TARGET }}/release/handler ./output/handler
         cp -v ./host.json ./output/host.json
         cp -v ./.funcignore ./output/.funcignore
         popd
