@@ -18,6 +18,8 @@ env:
   CARGO_TARGET: 'x86_64-unknown-linux-gnu'
   # OPENSSL_LIB_DIR: '/usr/lib/x86_64-linux-gnu'
   # OPENSSL_INCLUDE_DIR: '/usr/include/openssl'
+  HANDLER_BIN_NAME: 'handler'
+  HANDLER_SOURCE_PATH: 'azure/functions/rust'    
 
 jobs:
   build_and_publish:
@@ -106,6 +108,13 @@ jobs:
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         cargo build --target "${{ env.CARGO_TARGET }}" --release
         popd
+
+    # Archive
+    - name: Archive binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: '${{ env.HANDLER_BIN_NAME }}'
+        path: '${{ env.HANDLER_SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.HANDLER_BIN_NAME }}'        
    
     # Move files 
     - name: 'Select only required files for FuncApp'
@@ -118,6 +127,13 @@ jobs:
         cp -v ./host.json ./output/host.json
         cp -v ./.funcignore ./output/.funcignore
         popd
+
+    # Download
+    - name: Download binary
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ env.HANDLER_BIN_NAME }}
+        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'        
 
     # Deployment
     - name: 'Run Azure Functions Action'
