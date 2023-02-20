@@ -34,15 +34,6 @@ jobs:
       AZURE_RESOURCEGROUP_NAME: ${{ inputs.AZURE_RESOURCEGROUP_NAME }}
     secrets: inherit
 
-  rustBinaryHandler:
-    uses: ./.github/workflows/rust-binary-handler.yml   
-    
-  rustBinaryNxfutil:
-    uses: ./.github/workflows/rust-binary-nxfutil.yml
-
-  rustBinaryNxfutild:
-    uses: ./.github/workflows/rust-binary-nxfutild.yml    
-
   dockerImagesUbuntu:
     needs: azureTemplates
     uses: ./.github/workflows/docker-images-ubuntu.yml
