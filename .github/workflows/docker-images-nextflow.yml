@@ -90,7 +90,7 @@ jobs:
       id: cache_nxfutil
       uses: actions/cache@v3
       with:
-        path: './nxfutil/rust/nxfutil/target'
+        path: 'nxfutil/rust/nxfutil/target'
         key: cargo-target-cache-nxfutil 
 
     # Build nxfutil
@@ -114,7 +114,7 @@ jobs:
       id: cache_nxfutild
       uses: actions/cache@v3
       with:
-        path: './nxfutil/rust/nxfutild/target'
+        path: 'nxfutil/rust/nxfutild/target'
         key: cargo-target-cache-nxfutild    
 
     # Build nxfutild
