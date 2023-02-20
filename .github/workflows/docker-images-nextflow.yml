@@ -118,6 +118,9 @@ jobs:
 
   validate_and_push:
     runs-on: ubuntu-latest
+    needs: 
+      - rust_build_nxfutil
+      - rust_build_nxfutild
     steps:
     # Inputs
     - name: 'Show inputs'
