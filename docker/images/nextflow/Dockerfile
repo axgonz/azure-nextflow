@@ -28,7 +28,7 @@ RUN mkdir /.nextflow \
 ADD nxfutil /.nextflow/nxfutil
 ADD nxfutild /.nextflow/nxfutild
 RUN cd /.nextflow \
-    && chmod +x ./nxfutil
+    && chmod +x ./nxfutil \
     && chmod +x ./nxfutild
 
 # Run pipeline
