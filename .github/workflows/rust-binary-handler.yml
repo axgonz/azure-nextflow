@@ -15,7 +15,10 @@ env:
   
 jobs:
   validate_and_push:
-    runs-on: ubuntu-latest
+    # Azure functions does not yet support openssl.3
+    #  ubuntu-latest uses openssl.3 so we need to 
+    #  downgrade runner to 20.04.
+    runs-on: ubuntu-20.04
     steps:
     # Variables
     - name: 'Show variables'
