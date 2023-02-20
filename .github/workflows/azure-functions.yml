@@ -20,12 +20,14 @@ env:
   HANDLER_BIN_NAME: 'handler'
   HANDLER_SOURCE_PATH: 'azure/functions/rust'  
 
+  # Azure functions does not yet support openssl.3
+  #  ubuntu-latest uses openssl.3 so we need to 
+  #  downgrade runner to 20.04.
+  RUNS_ON: ubuntu-20.04
+
 jobs:
   rust_build_handler:
-    # Azure functions does not yet support openssl.3
-    #  ubuntu-latest uses openssl.3 so we need to 
-    #  downgrade runner to 20.04.
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.RUNS_ON }} 
     steps:
     # Variables
     - name: 'Show variables'
@@ -71,7 +73,7 @@ jobs:
         path: '${{ env.HANDLER_SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.HANDLER_BIN_NAME }}'
 
   build_and_publish:
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.RUNS_ON }} 
     needs:
       - rust_build_handler
     steps:
