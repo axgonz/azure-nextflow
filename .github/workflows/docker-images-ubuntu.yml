@@ -77,23 +77,11 @@ jobs:
     - name: 'Build and push images'
       shell: bash
       run: |
-        pushd './${{ env.DOCKER_IMAGES_PATH }}'
-        
-        pushd ubuntu
+        pushd '${{ env.DOCKER_IMAGES_PATH }}/ubuntu'
         docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
         docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:${{ github.sha }}
         docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:latest
         docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/ubuntu:latest
-        popd
-
-        cp ../../nxfutil/python/* nextflow/
-        pushd nextflow
-        docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
-        docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
-        docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:latest
-        docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:latest
-        popd
-
         popd
 
     # Logout

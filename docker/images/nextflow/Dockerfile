@@ -16,9 +16,7 @@ ENV AZ_KEY_VAULT_NAME="kv718"
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl \
     default-jre \
-    git \
-    python3 \
-    pip
+    git 
 
 # Install nextflow
 RUN mkdir /.nextflow \
@@ -26,17 +24,12 @@ RUN mkdir /.nextflow \
     && curl -s https://get.nextflow.io | bash \
     && chmod +x nextflow
 
-# Install python modules
-RUN pip install requests \
-    && pip install argparse \
-    && pip install azure-identity \
-    && pip install azure-keyvault-secrets
-
 # Install nxfutil
-ADD nxfutil.py /.nextflow/nxfutil.py
 ADD nxfutil /.nextflow/nxfutil
+ADD nxfutild /.nextflow/nxfutild
 RUN cd /.nextflow \
     && chmod +x ./nxfutil
+    && chmod +x ./nxfutild
 
 # Run pipeline
 CMD cd /.nextflow \

@@ -1,0 +1,143 @@
+name: Build and push Docker images
+
+permissions:
+      id-token: write
+      contents: read
+
+on:
+  workflow_call:
+    inputs:
+      AZURE_KEYVAULT_NAME:
+        type: string
+        description: 'Azure Key Vault name'
+        required: true
+
+env:
+  DOCKER_IMAGES_PATH: './docker/images'
+  RUST_BACKTRACE: 'full'
+  CARGO_TARGET: 'x86_64-unknown-linux-gnu'
+  
+jobs:
+  validate_and_push:
+    runs-on: ubuntu-latest
+    steps:
+    # Inputs
+    - name: 'Show inputs'
+      run: |
+        echo AZURE_KEYVAULT_NAME : ${{ inputs.AZURE_KEYVAULT_NAME }}
+
+    # Variables
+    - name: 'Show variables'
+      run: |
+        echo DOCKER_IMAGES_PATH : ${{ env.DOCKER_IMAGES_PATH }} 
+
+    # Prase AZURE_MSI secret
+    - name: Prase AZURE_MSI secret
+      id: msiPrincipal
+      env:
+        SECRET: ${{ secrets.AZURE_MSI }}
+      run: |
+        clientId=$(echo $SECRET | jq -r '.["clientId"]')
+        tenantId=$(echo $SECRET | jq -r '.["tenantId"]')
+        subscriptionId=$(echo $SECRET | jq -r '.["id"] | split("/")[2]')
+        echo "::add-mask::$clientId"
+        echo "::add-mask::$tenantId"
+        echo "::add-mask::$subscriptionId"
+        echo clientId=$clientId >> $GITHUB_OUTPUT
+        echo tenantId=$tenantId >> $GITHUB_OUTPUT
+        echo subscriptionId=$subscriptionId >> $GITHUB_OUTPUT
+
+    # Login
+    - name: 'Azure login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ steps.msiPrincipal.outputs.clientId }}
+        tenant-id: ${{ steps.msiPrincipal.outputs.tenantId }}
+        subscription-id: ${{ steps.msiPrincipal.outputs.subscriptionId }}
+
+    # Checkout
+    - name: 'Checkout repository branch'
+      uses: actions/checkout@v2                 
+    
+    # Key Vault secrets
+    - name: 'Get secrets from Key Vault' 
+      id: keyVaultSecrets
+      uses: Azure/get-keyvault-secrets@v1
+      with: 
+        keyvault: ${{ inputs.AZURE_KEYVAULT_NAME }}
+        secrets: 'azure-registry-server, azure-registry-username, azure-registry-password'
+
+    # ACR login 
+    - name: 'Login to Container Registry'
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}
+        username: ${{ steps.keyVaultSecrets.outputs.azure-registry-username }}
+        password: ${{ steps.keyVaultSecrets.outputs.azure-registry-password }}
+
+    # Cache
+    - name: 'Cache cargo target dir'
+      id: cache_nxfutil
+      uses: actions/cache@v3
+      with:
+        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
+        key: cargo-target-cache-nxfutil 
+
+    # Cache
+    - name: 'Cache cargo target dir'
+      id: cache_nxfutild
+      uses: actions/cache@v3
+      with:
+        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
+        key: cargo-target-cache-nxfutild        
+
+    # Update / Install Rust
+    - name: 'Update / install rust'
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        target: ${{ env.CARGO_TARGET }}
+        toolchain: stable
+        default: true
+        override: true
+
+    # Build CLI
+    - name: 'Build nxfutil binary'
+      shell: bash
+      run: |       
+        pushd 'nxfutil/rust/nxfutil'
+        cargo build --target "${{ env.CARGO_TARGET }}" --release
+        popd
+
+    - name: 'Build nxfutild binary'
+      shell: bash
+      run: |       
+        pushd 'nxfutil/rust/nxfutild'
+        cargo build --target "${{ env.CARGO_TARGET }}" --release
+        popd        
+   
+    # Copy files 
+    - name: 'Copying binary files to docker image directory'
+      shell: bash
+      run: |
+        pushd '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
+        cp -v nxfutil/rust/nxfutil/target/${{ env.CARGO_TARGET }}/release/nxfutil ./
+        cp -v nxfutil/rust/nxfutild/target/${{ env.CARGO_TARGET }}/release/nxfutild ./
+        popd        
+
+    # Deployment
+    - name: 'Build and push images'
+      shell: bash
+      run: |
+        pushd '${{ env.DOCKER_IMAGES_PATH }}/nextflow'
+        docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
+        docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:${{ github.sha }}
+        docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:latest
+        docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nextflow:latest
+        popd
+
+    # Logout
+    - name: 'Azure logout'
+      run: |
+        az logout
+      if: always()

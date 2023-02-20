@@ -34,12 +34,19 @@ jobs:
       AZURE_RESOURCEGROUP_NAME: ${{ inputs.AZURE_RESOURCEGROUP_NAME }}
     secrets: inherit
 
-  dockerImages:
+  dockerImagesUbuntu:
     needs: azureTemplates
-    uses: ./.github/workflows/docker-images.yml
+    uses: ./.github/workflows/docker-images-ubuntu.yml
     with:
       AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit
+
+  dockerImagesNextflow:
+    needs: azureTemplates
+    uses: ./.github/workflows/docker-images-nextflow.yml
+    with:
+      AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
+    secrets: inherit    
 
   azureFunctions:
     needs: azureTemplates
