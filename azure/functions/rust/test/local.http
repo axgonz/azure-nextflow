@@ -5,7 +5,9 @@
 @host = localhost:7071
 
 GET http://{{host}}/api/nxfutil HTTP/1.1
+###
 
+GET http://{{host}}/api/nxfutil_status HTTP/1.1
 ###
 
 POST http://{{host}}/api/nxfutil?whatif=true HTTP/1.1
@@ -17,7 +19,17 @@ content-type: application/json
     "parameters_uri": "",
     "auto_delete": true
 }
+###
 
+POST http://{{host}}/api/nxfutil HTTP/1.1
+content-type: application/json
+
+{
+    "config_uri": "",
+    "pipeline_uri": "",
+    "parameters_uri": "",
+    "auto_delete": true
+}
 ###
 
 POST http://{{host}}/api/nxfutil?whatif=true HTTP/1.1
@@ -28,5 +40,4 @@ content-type: application/json
     "pipeline_uri": "https://raw.githubusercontent.com/{{org}}/{{repo}}/{{branch}}/nextflow/pipelines/{{project}}/pipeline.nf",
     "parameters_uri": "https://raw.githubusercontent.com/{{org}}/{{repo}}/{{branch}}/nextflow/pipelines/{{project}}/parameters.json",
     "auto_delete": true
-}
 }

@@ -146,6 +146,35 @@ az_funcAppName="nxfutil"
 curl -X POST "https://$az_funcAppName.azurewebsites.net/api/nxfutil?whatif=true" -H 'Content-Type: application/json' -d '{"config_uri":"", "pipeline_uri":"", "parameters_uri":""}'
 ```
 
+Progress of the nextflow job can be obtained through `.../api/nxfutil_status`. This will peak at the storage queue and summarize the results. 
+
+> Important: If no process is dequeueing the messages from the storage queue, only the oldest 32 messages can be summarized.  
+
+``` bash
+az_funcAppName="myFuncAppName"
+
+curl --get "https://$az_funcAppName.azurewebsites.net/api/nxfutil_status"
+
+# returns
+# [
+#  {
+#   "event": "completed",
+#   "runId": "d58d0af4-1373-4dc2-b61d-e8ee06d18849",
+#   "runName": "maniac_easley",
+#   "utcTime": "2023-02-21T21:42:15Z",
+#   "metadata": {
+#     "parameters": {
+#       "dispatcher": "nextflow-20230220-8010e3cc-130f-4b86-838b-5572e69266d1"
+#     },
+#     "workflow": {
+#       "errorMessage": null,
+#       "errorReport": null
+#     }
+#   }
+#  }
+# ]
+```
+
 ## Documentation
 
 ### [Azure infrastructure](./docs/AzureInfrastructure.md)
