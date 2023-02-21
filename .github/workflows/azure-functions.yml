@@ -1,4 +1,4 @@
-name: Build and publish Rust functions OLD
+name: Build and publish Rust functions
 
 permissions:
       id-token: write
