@@ -27,12 +27,16 @@ impl AppServer {
         }
     }
     async fn send_message_to_queue(Json(req_payload): Json<Value>, server: &AppServer) {
+        if !(req_payload["event"] == "started") && !(req_payload["event"] == "completed") {
+            println!("[nxfutild][az-storage-queues] Ignoring message {:#?}", req_payload["event"]);
+            return
+        }
         match server.az_storage_queues.queue_client.put_message(req_payload.to_string()).await {
             Ok(_) => {
-                println!("[nxfutild][az-storage-queues] Sending message...Ok");
+                println!("[nxfutild][az-storage-queues] Sending message {:#?}...Ok", req_payload["event"]);
             },
             Err(error) => {
-                println!("[nxfutild][az-storage-queues] Sending message...Err");
+                println!("[nxfutild][az-storage-queues] Sending message {:#?}...Err", req_payload["event"]);
                 println!("[nxfutild]{}", error)
             }        
         }
