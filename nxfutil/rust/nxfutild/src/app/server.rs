@@ -18,10 +18,10 @@ impl AppServer {
     async fn init(server: &AppServer) {
         match server.az_storage_queues.queue_client.create().await {
             Ok(_) => {
-                println!("[nxfutild][az-storage-queues] Creating queue if not exists {:#?}...Ok", server.variables.fc_name);
+                println!("[nxfutild][az-storage-queues] Creating queue if not exists {:#?}...Ok", server.variables.q_name);
             },
             Err(error) => {
-                println!("[nxfutild][az-storage-queues] Creating queue if not exists {:#?}...Err", server.variables.fc_name);
+                println!("[nxfutild][az-storage-queues] Creating queue if not exists {:#?}...Err", server.variables.q_name);
                 panic!("{}", error)
             }
         }

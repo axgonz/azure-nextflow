@@ -6,7 +6,6 @@ include!("services/az-identity.rs");
 include!("services/az-security-keyvault.rs");
 
 use std::{
-    io,
     io::Write,
     env,
     time::Duration,
@@ -105,7 +104,9 @@ async fn main() {
         "-w",
         "az://batch/work",
         "-with-weblog",
-        "http://localhost:3000/api/nxfutild"
+        "http://localhost:3000/api/nxfutild",
+        "--dispatcher",
+        server.variables.ci_name.as_str()
     ]);
     if nextflow_exit_code > 0 {
         //ToDo send_message to queue before exiting.

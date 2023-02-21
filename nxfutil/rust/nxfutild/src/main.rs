@@ -11,8 +11,6 @@ use axum::{
 };
 
 use std::{
-    io,
-    io::Write,
     env,
     net::SocketAddr
 };

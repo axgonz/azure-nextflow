@@ -28,17 +28,15 @@ impl AppRouter {
         let server: AppServer = AppServer::new(variables, secrets, az_identity);
         AppServer::init(&server).await;
 
-        let api_root = format!("api/{}", server.variables.fc_name);
-
         // https://docs.rs/axum/latest/axum/
         AppRouter {
             app_router: Router::new()
                 .route(
-                    format!("/{}", api_root).as_str(), 
+                    "/api/nxfutild",
                     get(Self::api_root_get)
                 )
                 .route(
-                    format!("/{}", api_root).as_str(), 
+                    "/api/nxfutild",
                     post({
                         move |body| Self::api_root_post(body, server.clone())
                     })

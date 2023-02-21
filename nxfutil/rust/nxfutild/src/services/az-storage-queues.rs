@@ -16,7 +16,7 @@ impl AppAzStorageQueues {
         let storage_credentials = StorageCredentials::TokenCredential(credential);
         let queue_service = QueueServiceClient::new(&secrets.st_name, storage_credentials);
         AppAzStorageQueues {
-            queue_client: queue_service.queue_client(&variables.fc_name)
+            queue_client: queue_service.queue_client(&variables.q_name)
         }
     }
 }

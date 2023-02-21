@@ -1,17 +1,20 @@
 //# AppVariables
 #[derive(Debug, Clone)]
 pub struct AppVariables {
-    pub kv_name: String
+    pub kv_name: String,
+    pub ci_name: String
 }
 
 impl AppVariables {
     pub fn new() -> Self {
         Self {
-            kv_name: "".to_string()
+            kv_name: "".to_string(),
+            ci_name: "".to_string()
         }
     }
     pub fn init(variables: &mut AppVariables) {
         variables.kv_name = Self::variable("AZURE_KEYVAULT_NAME");
+        variables.ci_name = Self::variable("NXFUTIL_DISPATCHER");
     }
     pub fn variable(name: &str) -> String {
         match env::var(name) {
