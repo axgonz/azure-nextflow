@@ -5,7 +5,9 @@
 @az_funcName = fcnj6h
 
 GET https://{{az_funcName}}.azurewebsites.net/api/nxfutil HTTP/1.1
+###
 
+GET https://{{az_funcName}}.azurewebsites.net/api/nxfutil_status HTTP/1.1
 ###
 
 POST https://{{az_funcName}}.azurewebsites.net/api/nxfutil?whatif=true HTTP/1.1
@@ -17,7 +19,6 @@ content-type: application/json
     "parameters_uri": "",
     "auto_delete": true
 }
-
 ###
 
 POST https://{{az_funcName}}.azurewebsites.net/api/nxfutil HTTP/1.1
@@ -29,7 +30,6 @@ content-type: application/json
     "parameters_uri": "",
     "auto_delete": true
 }
-
 ###
 
 POST https://{{az_funcName}}.azurewebsites.net/api/nxfutil HTTP/1.1
