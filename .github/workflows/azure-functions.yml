@@ -122,7 +122,9 @@ jobs:
       run: |
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         mkdir -p ./output/nxfutil
+        mkdir -p ./output/nxfutil_status
         cp -v ./nxfutil/function.json ./output/nxfutil/function.json
+        cp -v ./nxfutil_status/function.json ./output/nxfutil_status/function.json
         cp -v ./host.json ./output/host.json
         cp -v ./.funcignore ./output/.funcignore
         popd
