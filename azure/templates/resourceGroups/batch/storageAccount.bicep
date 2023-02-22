@@ -2,6 +2,7 @@ param location string = resourceGroup().location
 param name string
 param batchMsi_objectId string
 param nextflowMsi_objectId string
+param funcMsi_objectId string
 param keyVaultName string
 
 resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
@@ -33,7 +34,7 @@ resource roleDefinition_StorageQueueDataContributor 'Microsoft.Authorization/rol
     name: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
 }
 
-resource batchMsi_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource batchMsi_roleAssignment_Cont 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
     scope: storageAccount
     name: guid(storageAccount.id, batchMsi_objectId, roleDefinition_Contributor.id)
     properties: {
@@ -43,12 +44,22 @@ resource batchMsi_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-0
     }
 }
 
-resource nextflowMsi_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource nextflowMsi_roleAssignment_QueueCont 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
     scope: storageAccount
     name: guid(storageAccount.id, nextflowMsi_objectId, roleDefinition_StorageQueueDataContributor.id)
     properties: {
-        roleDefinitionId: roleDefinition_Contributor.id
+        roleDefinitionId: roleDefinition_StorageQueueDataContributor.id
         principalId: nextflowMsi_objectId
+        principalType: 'ServicePrincipal'
+    }
+}
+
+resource funcMsi_roleAssignment_QueueCont 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+    scope: storageAccount
+    name: guid(storageAccount.id, funcMsi_objectId, roleDefinition_StorageQueueDataContributor.id)
+    properties: {
+        roleDefinitionId: roleDefinition_StorageQueueDataContributor.id
+        principalId: funcMsi_objectId
         principalType: 'ServicePrincipal'
     }
 }
