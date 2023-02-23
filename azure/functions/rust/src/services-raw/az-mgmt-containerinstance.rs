@@ -49,7 +49,7 @@ impl fmt::Display for ProvisioningState {
 pub struct AppAzMgmtContainerInstance {}
 
 impl AppAzMgmtContainerInstance { 
-    async fn deploy_nxfutil_ci(
+    async fn create_nxfutil_ci(
         credential: Arc<DefaultAzureCredential>, 
         variables: &AppVariables,
         secrets: &AppSecrets,
@@ -258,5 +258,99 @@ impl AppAzMgmtContainerInstance {
         };
     
         return (ci_name, deployment_result);
+    }
+    async fn delete_nxfutil_ci(
+        credential: Arc<DefaultAzureCredential>, 
+        variables: &AppVariables,
+        ci_name: &String,
+        what_if: bool
+    ) -> (String, String) {
+        /* Steps to define and build the container instance
+            1. Get the resource group to determine the deployment location
+            2. POST the deployment to ARM
+            3. Wait for the deployment to complete
+        */
+
+        // 1
+        println!("[handler] Retrieving resource group to determine the deployment location");
+        let azure_mgmt_resources = azure_mgmt_resources::Client::builder(credential.clone()).build();
+        let rg_client = azure_mgmt_resources.resource_groups_client();  
+        let rg = match rg_client.get(
+            variables.rg_name.clone(), 
+            variables.sub_id.clone()
+        ).await {
+            Ok(rg) => {
+                println!("[handler] Resource group location is {:#?}", rg.location);
+                rg
+            },
+            Err(error) => {
+                println!("[handler] Error retrieving resource group {:#?}", variables.rg_name);
+                panic!("{}", error)
+            }
+        };
+
+        // 2
+        println!("[handler] Establishing azure_mgmt_containerinstance::Client");
+        let azure_mgmt_containerinstance = azure_mgmt_containerinstance::Client::builder(credential).build();
+        let ci_group_client = azure_mgmt_containerinstance.container_groups_client();
+    
+        if what_if {
+            let deployment_result = ProvisioningState::WhatIf.to_string();
+            return (ci_name.to_string(), deployment_result);
+        }
+    
+        println!("[handler] Submitting container instance deployment");
+        let mut deployment_result = match ci_group_client.delete(
+            variables.sub_id.clone(), 
+            variables.rg_name.clone(), 
+            ci_name.clone()
+        ).await {
+            Ok(ci_group_result) => {
+                println!("[handler] Deployment was submitted without errors");
+                ci_group_result.container_group_properties.properties.provisioning_state.unwrap()
+            },
+            Err(error) => {
+                println!("[handler] Failed to submit deployment. Error {:#?}", error);
+                ProvisioningState::Failed.to_string()
+            }
+        };
+    
+        println!("[handler] Deployment result {:#?}", deployment_result);
+    
+        let mut provisioning = match ProvisioningState::from_str(&deployment_result) {
+            Ok(ProvisioningState::Succeeded) => false,
+            Ok(ProvisioningState::Failed) => false,
+            Ok(ProvisioningState::Canceled) => false,
+            _ => true
+        };  
+    
+        // 3
+        let delay_seconds = 15;
+        let delay_duration = Duration::from_secs(delay_seconds);
+        
+        while provisioning {
+            println!("[handler] Waiting for {:#?} seconds...", delay_seconds);
+            thread::sleep(delay_duration);
+    
+            deployment_result = match ci_group_client.get(
+                variables.sub_id.clone(), 
+                variables.rg_name.clone(), 
+                ci_name.clone()
+            ).await {
+                Ok(ci_group_result) => ci_group_result.container_group_properties.properties.provisioning_state.unwrap(),
+                Err(_) => ProvisioningState::Failed.to_string()
+            };
+    
+            println!("[handler] Deployment result {:#?}", deployment_result);
+    
+            provisioning = match ProvisioningState::from_str(&deployment_result) {
+                Ok(ProvisioningState::Succeeded) => false,
+                Ok(ProvisioningState::Failed) => false,
+                Ok(ProvisioningState::Canceled) => false,
+                _ => true
+            };
+        };
+    
+        return (ci_name.to_string(), deployment_result);
     }
 }

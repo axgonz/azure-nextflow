@@ -15,6 +15,20 @@ pub struct DispatchResponsePayload {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct TerminateResponsePayload {
+    pub sub_id: String,
+    pub rg_name: String,
+    pub ci_name: String,
+    pub provisioning_state: String
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct StatusRequestPayload {
+    pub message_count: u8,
+    pub dequeue: bool
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Parameters {
     pub dispatcher: String
 }

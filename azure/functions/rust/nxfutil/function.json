@@ -5,9 +5,11 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
+      "route": "nxfutil/{ci_name}",
       "methods": [
         "get",
-        "post"
+        "post",
+        "delete"
       ]
     },
     {

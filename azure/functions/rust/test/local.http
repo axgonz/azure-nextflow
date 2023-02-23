@@ -10,6 +10,18 @@ GET http://{{host}}/api/nxfutil HTTP/1.1
 GET http://{{host}}/api/nxfutil_status HTTP/1.1
 ###
 
+POST http://{{host}}/api/nxfutil_status HTTP/1.1
+content-type: application/json
+
+{
+    "message_count": 32,
+    "dequeue": true
+}
+###
+
+DELETE http://{{host}}/api/nxfutil/nextflow-20230220-0920dcd6-e5de-4ec7-bfcb-54e62ed55cbc HTTP/1.1
+###
+
 POST http://{{host}}/api/nxfutil?whatif=true HTTP/1.1
 content-type: application/json
 

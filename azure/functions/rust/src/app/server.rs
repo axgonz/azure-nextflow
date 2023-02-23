@@ -58,4 +58,34 @@ impl AppServer {
 
         return messages
     }
+    async fn get_message_from_queue(count: u8, server: &AppServer) -> Vec<Value> {       
+        if count < 1 {
+            return vec![];
+        }
+        
+        let mut messages: Vec<Value> = vec![]; 
+        match server.az_storage_queues.queue_client.get_messages().number_of_messages(count).await {
+            Ok(response) => {
+                println!("[handler][az-storage-queues] Get messages...Ok");
+                for message in response.messages {
+                    messages.push(serde_json::from_str(&message.message_text).unwrap());
+                    match server.az_storage_queues.queue_client.pop_receipt_client(message).delete().await {
+                        Ok(_) => {
+                            println!("[handler][az-storage-queues] Delete message...Ok");
+                        }
+                        Err(error) => {
+                            println!("[handler][az-storage-queues] Delete message...Err");
+                            println!("{}", error);
+                        }
+                    }
+                }
+            },
+            Err(error) => {
+                println!("[handler][az-storage-queues] Get messages...Err");
+                println!("{}", error);
+            }        
+        };
+
+        return messages
+    }    
 }

@@ -123,6 +123,8 @@ Hello, World!
 
 ## Usage
 
+### api/nxfutil [GET, POST, DELETE]
+
 When the Function App is triggered it will create a new nxfutil Container Instance. See Annex for nxfutil details.
 
 The http trigger requires a json payload to provide the nextflow job with it's required config, pipeline and parameters files. Provide the URI for each file's location.
@@ -146,9 +148,13 @@ az_funcAppName="nxfutil"
 curl -X POST "https://$az_funcAppName.azurewebsites.net/api/nxfutil?whatif=true" -H 'Content-Type: application/json' -d '{"config_uri":"", "pipeline_uri":"", "parameters_uri":""}'
 ```
 
-Progress of the nextflow job can be obtained through `.../api/nxfutil_status`. This will peak at the storage queue and summarize the results. 
+### api/nxfutil_status [GET, POST]
 
-> Important: If no process is dequeueing the messages from the storage queue, only the oldest 32 messages can be summarized.  
+Progress of the nextflow job can be obtained through `.../api/nxfutil_status`. 
+
+**GET** This will peak at the storage queue and summarize the results. 
+
+> Important: If no process is dequeueing the messages from the storage queue, only the oldest 32 messages can be summarized. 
 
 ``` bash
 az_funcAppName="myFuncAppName"
@@ -175,6 +181,16 @@ curl --get "https://$az_funcAppName.azurewebsites.net/api/nxfutil_status"
 # ]
 ```
 
+**POST** This will retrieve messages with the ability to delete (dequeue) them.
+
+
+``` bash
+az_funcAppName="myFuncAppName"
+
+curl -X POST "https://$az_funcAppName.azurewebsites.net/api/nxfutil_status" -H 'Content-Type: application/json' -d '{"message_count": 1, "dequeue": true}'
+
+# returns verbose message 
+```
 ## Documentation
 
 ### [Azure infrastructure](./docs/AzureInfrastructure.md)
