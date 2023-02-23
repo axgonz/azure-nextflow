@@ -1,4 +1,4 @@
-name: Build and push Docker images - ubuntu
+name: Docker - ubuntu
 
 permissions:
       id-token: write

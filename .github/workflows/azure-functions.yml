@@ -1,4 +1,4 @@
-name: Build and publish Azure functions
+name: Az functions
 
 permissions:
       id-token: write

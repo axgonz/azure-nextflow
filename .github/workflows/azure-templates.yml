@@ -1,4 +1,4 @@
-name: Build and deploy Azure templates
+name: Az templates
 
 permissions:
       id-token: write
