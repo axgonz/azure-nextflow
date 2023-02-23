@@ -5,19 +5,25 @@ permissions:
       contents: read
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       AZURE_FUNCTIONAPP_NAME: 
         type: string
         description: 'Azure Function App name'
         required: true
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'azure\functions\rust\src'
+      - 'azure\functions\rust\Cargo.toml'
+      - 'azure\functions\rust\nxfutil*'
+      - 'azure\functions\rust\host.json'
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure/functions/rust'
   RUST_BACKTRACE: 'full'
   CARGO_TARGET: 'x86_64-unknown-linux-gnu'
-  # OPENSSL_LIB_DIR: '/usr/lib/x86_64-linux-gnu'
-  # OPENSSL_INCLUDE_DIR: '/usr/include/openssl'
   HANDLER_BIN_NAME: 'handler'
   HANDLER_SOURCE_PATH: 'azure/functions/rust'    
 
@@ -83,24 +89,7 @@ jobs:
         toolchain: stable
         default: true
         override: true
-
-    # # Upgrade TLS on this build host
-    # - name: 'Upgrade TLS on build host'
-    #   shell: bash
-    #   run: |
-    #     sudo apt-get update
-    #     sudo apt-get install libssl-dev pkg-config
-    #     pushd '${{ env.OPENSSL_LIB_DIR }}'
-    #     echo "----libssl (before)----" && ls -la --full-time libssl.*
-    #     sudo rm libssl.so
-    #     sudo ln -s libssl.so.1.1 libssl.so
-    #     echo "----libssl (after)----" && ls -la --full-time libssl.*    
-    #     echo "----libcrypto (before)----" && ls -la --full-time libcrypto.*
-    #     sudo rm libcrypto.so
-    #     sudo ln -s libcrypto.so.1.1 libcrypto.so
-    #     echo "----libcrypto (after)----" && ls -la --full-time libcrypto.*
-    #     popd        
-
+    
     # Build
     - name: 'Build custom handler binary'
       shell: bash
@@ -124,7 +113,6 @@ jobs:
         mkdir -p output
         cp -rv `find nxfutil* -type d` output/
         cp -v host.json output/
-        cp -v .funcignore output/
         popd
 
     # Download
