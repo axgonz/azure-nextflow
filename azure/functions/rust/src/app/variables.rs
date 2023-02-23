@@ -6,6 +6,7 @@ pub struct AppVariables {
     pub rg_name: String,
     pub kv_name: String,
     pub cr_name: String,
+    pub fn_name: String,
     pub msi_name: String,
     pub msi_client_id: String,
 }
@@ -18,6 +19,7 @@ impl AppVariables {
             rg_name: "".to_string(),
             kv_name: "".to_string(),
             cr_name: "".to_string(),
+            fn_name: "".to_string(),
             msi_name: "".to_string(),
             msi_client_id: "".to_string()
         }
@@ -27,6 +29,7 @@ impl AppVariables {
         variables.rg_name = Self::get("NXFUTIL_AZ_RG_NAME");
         variables.kv_name = Self::get("NXFUTIL_AZ_KV_NAME");
         variables.cr_name = Self::get("NXFUTIL_AZ_CR_NAME");
+        variables.fn_name = Self::get("NXFUTIL_AZ_FA_NAME");
         variables.msi_name = Self::get("NXFUTIL_AZ_MSI_NAME");
         variables.msi_client_id = Self::get("NXFUTIL_AZ_MSI_ID");
     }

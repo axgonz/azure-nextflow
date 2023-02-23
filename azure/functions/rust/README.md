@@ -59,6 +59,7 @@ When developing locally:
             "NXFUTIL_AZ_RG_NAME": "myRgName",
             "NXFUTIL_AZ_KV_NAME": "myKvName",
             "NXFUTIL_AZ_CR_NAME": "myCrName",
+            "NXFUTIL_AZ_FA_NAME": "myFaName",
             "NXFUTIL_AZ_MSI_NAME": "msiName",
             "NXFUTIL_AZ_MSI_ID": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         }

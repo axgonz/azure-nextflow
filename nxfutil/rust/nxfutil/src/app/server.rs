@@ -74,6 +74,27 @@ impl AppServer {
             }
         }
     }
+    async fn web_delete(uri: &String) -> Response {
+        let client = reqwest::Client::new();
+        let response = match client.delete(uri).send().await {
+            Ok(response) => {
+                response
+            }
+            Err(error) => {
+                println!("[reqwest] DELETE {:#?}...Err", uri);
+                panic!("{}", error)
+            }
+        };
+        if response.status() == 200 {
+            println!("[reqwest] GET {:#?}...Ok", uri);
+            return response
+        }
+        else {
+            println!("[reqwest] GET {:#?}...Err", uri);
+            //ToDo send_message to queue before exiting. 
+            panic!("{}", response.status())
+        }
+    }    
     fn nextflow(args: Vec<&str>) -> i32 {
         let mut omit_log = false;
         for arg in &args {

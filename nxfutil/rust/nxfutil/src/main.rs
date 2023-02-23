@@ -38,6 +38,12 @@ struct Cli {
         default_value_t = ("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json".to_string())
     )]
     parameters_uri: String,
+
+    // Try to delete parent container instance once complete
+    #[arg(short = 'd', long, 
+        default_value_t = false
+    )]
+    auto_delete: bool,    
 }
 
 #[tokio::main]
@@ -115,6 +121,12 @@ async fn main() {
         panic!("Nexflow process did not run cleanly");
     };
 
-    println!("[app] Stopping nxfutild service...");
-    nxfutild.kill().expect("Unable to stop nxfutild service.");
+    if args.auto_delete {
+        println!("[app] Auto delete attempt...");
+        AppServer::web_delete(&format!("https://{}.azurewebsites.net/api/nxfutil/{}", server.variables.fn_name, server.variables.ci_name)).await;
+    }
+    else {
+        println!("[app] Stopping nxfutild service...");
+        nxfutild.kill().expect("Unable to stop nxfutild service.");
+    }
 }

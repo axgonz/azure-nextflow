@@ -2,7 +2,8 @@
 pub struct DispatchRequestPayload {
     pub config_uri: String,
     pub pipeline_uri: String,
-    pub parameters_uri: String
+    pub parameters_uri: String,
+    pub auto_delete: bool
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -152,6 +153,9 @@ impl App {
         if !parameters_uri.is_empty() {
             nxfutil_cmd = format!("{} -a {}", nxfutil_cmd, parameters_uri);
         }
+        if req_payload.auto_delete {
+            nxfutil_cmd = format!("{} -d", nxfutil_cmd);
+        }        
         println!("[handler] Generated nextflow cmd is {:#?}", &nxfutil_cmd);
         
         return nxfutil_cmd

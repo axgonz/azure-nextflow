@@ -135,7 +135,8 @@ The http trigger requires a json payload to provide the nextflow job with it's r
 {
     "config_uri": "",
     "pipeline_uri": "",
-    "parameters_uri": ""
+    "parameters_uri": "",
+    "auto_delete": true
 }
 ```
 

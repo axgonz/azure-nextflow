@@ -141,6 +141,11 @@ impl AppAzMgmtContainerInstance {
                                         secure_value: None
                                     },
                                     azure_mgmt_containerinstance::models::EnvironmentVariable {
+                                        name: "AZURE_FUNCAPP_NAME".to_string(),
+                                        value: Some(variables.fn_name.clone()),
+                                        secure_value: None
+                                    },
+                                    azure_mgmt_containerinstance::models::EnvironmentVariable {
                                         name: "NXFUTIL_DISPATCHER".to_string(),
                                         value: Some(ci_name.clone()),
                                         secure_value: None
