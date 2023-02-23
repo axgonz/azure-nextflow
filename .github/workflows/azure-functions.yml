@@ -121,14 +121,10 @@ jobs:
       shell: bash
       run: |
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        mkdir -p ./output/nxfutil
-        mkdir -p ./output/nxfutil_status
-        cp -v ./nxfutil/function.json ./output/nxfutil/function.json
-        cp -v ./nxfutil_dispatch/function.json ./output/nxfutil_dispatch/function.json
-        cp -v ./nxfutil_status/function.json ./output/nxfutil_status/function.json
-        cp -v ./nxfutil_terminate/function.json ./output/nxfutil_terminate/function.json
-        cp -v ./host.json ./output/host.json
-        cp -v ./.funcignore ./output/.funcignore
+        mkdir -p output
+        cp -rv `find nxfutil* -type d` output/
+        cp -v host.json output/
+        cp -v .funcignore output/
         popd
 
     # Download
