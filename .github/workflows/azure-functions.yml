@@ -5,7 +5,7 @@ permissions:
       contents: read
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       AZURE_FUNCTIONAPP_NAME: 
         type: string
@@ -124,7 +124,9 @@ jobs:
         mkdir -p ./output/nxfutil
         mkdir -p ./output/nxfutil_status
         cp -v ./nxfutil/function.json ./output/nxfutil/function.json
+        cp -v ./nxfutil_dispatch/function.json ./output/nxfutil_dispatch/function.json
         cp -v ./nxfutil_status/function.json ./output/nxfutil_status/function.json
+        cp -v ./nxfutil_terminate/function.json ./output/nxfutil_terminate/function.json
         cp -v ./host.json ./output/host.json
         cp -v ./.funcignore ./output/.funcignore
         popd
