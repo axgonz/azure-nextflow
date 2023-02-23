@@ -5,9 +5,10 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "request",
-      "route": "nxfutil",
+      "route": "nxfutil/dispatch",
       "methods": [
-        "get"
+        "get",
+        "post"
       ]
     }, 
     {

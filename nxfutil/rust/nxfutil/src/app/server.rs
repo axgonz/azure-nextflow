@@ -74,9 +74,9 @@ impl AppServer {
             }
         }
     }
-    async fn web_delete(uri: &String) -> Response {
+    async fn web_post(uri: &String, json: &Value) -> Response {
         let client = reqwest::Client::new();
-        let response = match client.delete(uri).send().await {
+        let response = match client.post(uri).json(json).send().await {
             Ok(response) => {
                 response
             }

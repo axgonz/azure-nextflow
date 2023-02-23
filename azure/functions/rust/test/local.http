@@ -4,25 +4,14 @@
 @project = helloWorld
 @host = localhost:7071
 
+### GET root
 GET http://{{host}}/api/nxfutil HTTP/1.1
-###
 
-GET http://{{host}}/api/nxfutil_status HTTP/1.1
-###
+### GET dispatch
+GET http://{{host}}/api/nxfutil/dispatch HTTP/1.1
 
-POST http://{{host}}/api/nxfutil_status HTTP/1.1
-content-type: application/json
-
-{
-    "message_count": 32,
-    "dequeue": true
-}
-###
-
-DELETE http://{{host}}/api/nxfutil/nextflow-20230220-0920dcd6-e5de-4ec7-bfcb-54e62ed55cbc HTTP/1.1
-###
-
-POST http://{{host}}/api/nxfutil?whatif=true HTTP/1.1
+### POST dispatch (whatif)
+POST http://{{host}}/api/nxfutil/dispatch?whatif=true HTTP/1.1
 content-type: application/json
 
 {
@@ -31,9 +20,9 @@ content-type: application/json
     "parameters_uri": "",
     "auto_delete": true
 }
-###
 
-POST http://{{host}}/api/nxfutil HTTP/1.1
+### POST dispatch
+POST http://{{host}}/api/nxfutil/dispatch HTTP/1.1
 content-type: application/json
 
 {
@@ -42,9 +31,9 @@ content-type: application/json
     "parameters_uri": "",
     "auto_delete": true
 }
-###
 
-POST http://{{host}}/api/nxfutil?whatif=true HTTP/1.1
+### POST dispatch 
+POST https://{{host}}/api/nxfutil/dispatch HTTP/1.1
 content-type: application/json
 
 {
@@ -52,4 +41,36 @@ content-type: application/json
     "pipeline_uri": "https://raw.githubusercontent.com/{{org}}/{{repo}}/{{branch}}/nextflow/pipelines/{{project}}/pipeline.nf",
     "parameters_uri": "https://raw.githubusercontent.com/{{org}}/{{repo}}/{{branch}}/nextflow/pipelines/{{project}}/parameters.json",
     "auto_delete": true
+}
+
+### GET terminate
+GET http://{{host}}/api/nxfutil/terminate HTTP/1.1
+
+### POST terminate (whatif)
+POST http://{{host}}/api/nxfutil/terminate?whatif=true HTTP/1.1
+content-type: application/json
+
+{
+    "ci_name": "nextflow-20230220-0920dcd6-e5de-4ec7-bfcb-54e62ed55cbc"
+}
+
+### POST terminate
+POST http://{{host}}/api/nxfutil/terminate HTTP/1.1
+content-type: application/json
+
+{
+    "ci_name": "nextflow-20230220-0920dcd6-e5de-4ec7-bfcb-54e62ed55cbc"
+}
+
+### GET status
+GET http://{{host}}/api/nxfutil/status HTTP/1.1
+
+### POST status
+POST http://{{host}}/api/nxfutil/status HTTP/1.1
+content-type: application/json
+
+{
+    "summary": true,
+    "message_count": 32,
+    "dequeue": false
 }

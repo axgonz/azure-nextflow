@@ -19,6 +19,10 @@ use clap::{
     Parser
 };
 
+use serde_json::{
+    Value,
+};
+
 #[derive(Parser)]
 struct Cli {
     // Uri to nextflow config ('.config') file
@@ -123,7 +127,10 @@ async fn main() {
 
     if args.auto_delete {
         println!("[app] Auto delete attempt...");
-        AppServer::web_delete(&format!("https://{}.azurewebsites.net/api/nxfutil/{}", server.variables.fn_name, server.variables.ci_name)).await;
+        AppServer::web_post(
+            &format!("https://{}.azurewebsites.net/api/nxfutil/terminate", server.variables.fn_name),
+            &serde_json::from_str(&format!("{}",  server.variables.ci_name)).unwrap()
+        ).await;
     }
     else {
         println!("[app] Stopping nxfutild service...");

@@ -47,7 +47,13 @@ impl AppServer {
             Ok(response) => {
                 println!("[handler][az-storage-queues] Peak message...Ok");
                 for message in response.messages {
-                    messages.push(serde_json::from_str(&message.message_text).unwrap());
+                    let mut raw_msg: Value = serde_json::from_str(&message.message_text).unwrap();
+                    let errorMessage: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
+                    let errorReport: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
+                    if errorMessage.is_some() || errorReport.is_some() {
+                        raw_msg["event"]=serde_json::from_str("error").unwrap();
+                    }
+                    messages.push(raw_msg);
                 }
             },
             Err(error) => {
@@ -68,7 +74,13 @@ impl AppServer {
             Ok(response) => {
                 println!("[handler][az-storage-queues] Get messages...Ok");
                 for message in response.messages {
-                    messages.push(serde_json::from_str(&message.message_text).unwrap());
+                    let mut raw_msg: Value = serde_json::from_str(&message.message_text).unwrap();
+                    let errorMessage: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
+                    let errorReport: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
+                    if errorMessage.is_some() || errorReport.is_some() {
+                        raw_msg["event"]=serde_json::from_str("error").unwrap();
+                    }
+                    messages.push(raw_msg);
                     match server.az_storage_queues.queue_client.pop_receipt_client(message).delete().await {
                         Ok(_) => {
                             println!("[handler][az-storage-queues] Delete message...Ok");

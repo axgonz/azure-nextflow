@@ -16,6 +16,11 @@ pub struct DispatchResponsePayload {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct TerminateRequestPayload {
+    pub ci_name: String
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct TerminateResponsePayload {
     pub sub_id: String,
     pub rg_name: String,
@@ -25,6 +30,7 @@ pub struct TerminateResponsePayload {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StatusRequestPayload {
+    pub summary: bool,
     pub message_count: u8,
     pub dequeue: bool
 }
@@ -36,8 +42,7 @@ pub struct Parameters {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Workflow {
-    pub errorMessage: Option<String>,
-    pub errorReport: Option<String>
+    pub errorMessage: Option<String>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -66,11 +71,11 @@ pub struct BaseMessage {
 pub struct App {}
 
 impl App {
-    pub async fn generate_status_update(server: &AppServer) -> Vec<Message>  {
-        let raw_msgs: Vec<Value> = AppServer::peak_message_from_queue(32, server).await;
-        let mut msgs: Vec<Message> = vec![];
+    pub async fn generate_status_update(count: u8, server: &AppServer) -> Vec<Value>  {
+        let raw_msgs: Vec<Value> = AppServer::peak_message_from_queue(count, server).await;
+        let mut msgs: Vec<Value> = vec![];
         let mut msg_ids: Vec<String> = vec![];
-        for raw_msg in raw_msgs.into_iter().rev() {
+        for mut raw_msg in raw_msgs.into_iter().rev() {
             if !(raw_msg["event"] == "started") && !(raw_msg["event"] == "completed") {
                 // Error events are skinny and do not contain error details.
                 // All other events are too verbose.
@@ -79,13 +84,20 @@ impl App {
             if !msg_ids.contains(&raw_msg["runId"].to_string()) {
                 msg_ids.push(raw_msg["runId"].to_string());
 
-                let mut msg: Message = serde_json::from_value(raw_msg.clone()).unwrap();
-                if msg.metadata.workflow.errorMessage.is_some() || 
-                    msg.metadata.workflow.errorReport.is_some() {
-                    msg.event = "error".to_string();
-                }  
+                let errorMessage: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
+                let errorReport: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
+
+                if errorMessage.is_none() && errorReport.is_some() {
+                    raw_msg["metadata"]["workflow"]["errorMessage"] = raw_msg["metadata"]["workflow"]["errorReport"].clone()
+                }
+
+                // Cast to strict type Message to drop unwanted properties
+                let msg: Message = serde_json::from_value(raw_msg).unwrap();
+
+                // Cast back to Value to satisfy return type
+                let raw_msg: Value = serde_json::from_str(&serde_json::to_string(&msg).unwrap()).unwrap();
                 
-                msgs.push(msg);
+                msgs.push(raw_msg);
             }
         }
         return msgs

@@ -1,8 +1,7 @@
 use axum::{
     Router,
-    routing::{get, post, delete},
+    routing::{get, post},
     extract::Query,
-    extract::Path,
     response::IntoResponse, 
     http::StatusCode,
     Json
@@ -47,39 +46,53 @@ impl AppRouter {
                     get(Self::api_root_get)
                 )
                 .route(
-                    "/api/nxfutil", 
+                    "/api/nxfutil/dispatch", 
+                    get(Self::api_dispatch_get)
+                )
+                .route(
+                    "/api/nxfutil/dispatch", 
                     post({
                         let server = server.clone();
-                        move |query, body| Self::api_root_post(query, body, server)
+                        move |query, body| Self::api_dispatch_post(query, body, server)
                     })
                 )
                 .route(
-                    "/api/nxfutil/:ci_name", 
-                    delete({
-                        let server = server.clone();
-                        move |query, path| Self::api_root_delete(query, path, server)
-                    })
-                )                    
+                    "/api/nxfutil/terminate", 
+                    get(Self::api_terminate_get)
+                )
                 .route(
-                    "/api/nxfutil_status",
-                    get({
+                    "/api/nxfutil/terminate", 
+                    post({
                         let server = server.clone();
-                        move || Self::api_status_get(server)
+                        move |query, body| Self::api_terminate_post(query, body, server)
                     })
-                ) 
+                )
                 .route(
-                    "/api/nxfutil_status", 
+                    "/api/nxfutil/status",
+                    get(Self::api_status_get)
+                )
+                .route(
+                    "/api/nxfutil/status", 
                     post({
                         let server = server.clone();
                         move |body| Self::api_status_post(body, server)
                     })
-                )                      
+                )
         }
     }
     async fn api_root_get() -> impl IntoResponse {
-        return (StatusCode::OK, "Hello World!")
+        return (StatusCode::OK, "Hello World!\n\nGET api/nxfutil/dispatch\nGET api/nxfutil/terminate\nGET api/nxfutil/status")
     }
-    async fn api_root_post(
+    async fn api_dispatch_get() -> impl IntoResponse {
+        let help = DispatchRequestPayload {
+            config_uri: "String".to_string(),
+            pipeline_uri: "String".to_string(),
+            parameters_uri: "String".to_string(),
+            auto_delete: true
+        };
+        return (StatusCode::OK, Json(help))
+    }    
+    async fn api_dispatch_post(
         Query(url_params): Query<HashMap<String, String>>,
         Json(req_payload): Json<DispatchRequestPayload>, 
         server: AppServer
@@ -126,12 +139,18 @@ impl AppRouter {
 
         return (StatusCode::OK, Json(res_payload))
     }
-    async fn api_root_delete(
+    async fn api_terminate_get() -> impl IntoResponse {
+        let help = TerminateRequestPayload {
+            ci_name: "String".to_string()
+        };
+        return (StatusCode::OK, Json(help))
+    }        
+    async fn api_terminate_post(
         Query(url_params): Query<HashMap<String, String>>,
-        Path(ci_name): Path<String>,
+        Json(req_payload): Json<TerminateRequestPayload>, 
         server: AppServer
     ) -> impl IntoResponse {
-        println!("{:#?}", &ci_name);
+        println!("{:#?}", &req_payload);
 
         println!("[handler] Checking url arguments for `whatif`");
         let what_if: bool = match url_params.get("whatif") {
@@ -153,7 +172,7 @@ impl AppRouter {
         let deployment = AppAzMgmtContainerInstance::delete_nxfutil_ci(
             server.az_identity.credential.clone(), 
             &server.variables, 
-            &ci_name,
+            &req_payload.ci_name,
             what_if
         ).await;
 
@@ -168,22 +187,39 @@ impl AppRouter {
 
         return (StatusCode::OK, Json(res_payload))
     }    
-    async fn api_status_get(
-        server: AppServer
-    ) -> impl IntoResponse {
-        return (StatusCode::OK, Json(App::generate_status_update(&server).await))
+    async fn api_status_get() -> impl IntoResponse {
+        let help = StatusRequestPayload {
+            summary: true,
+            message_count: 1,
+            dequeue: true
+        };
+        return (StatusCode::OK, Json(help))
     }
     async fn api_status_post(
         req_payload: Json<StatusRequestPayload>, 
         server: AppServer
     ) -> impl IntoResponse {
-        let mut messages: Vec<Value> = vec![];
+        println!("{:#?}", &req_payload);
+        if req_payload.summary {
+            return (StatusCode::OK, 
+                Json(serde_json::Value::Array(
+                    App::generate_status_update(32, &server).await
+                ))                
+            );
+        }
         if req_payload.dequeue {
-            messages = AppServer::get_message_from_queue(req_payload.message_count, &server).await
+            return (StatusCode::OK, 
+                Json(serde_json::Value::Array(
+                    AppServer::get_message_from_queue(req_payload.message_count, &server).await
+                ))
+            );
         }
         else {
-            messages = AppServer::peak_message_from_queue(req_payload.message_count, &server).await
+            return (StatusCode::OK, 
+                Json(serde_json::Value::Array(
+                    AppServer::peak_message_from_queue(req_payload.message_count, &server).await
+                ))
+            );
         }
-        return (StatusCode::OK, Json(serde_json::Value::Array(messages)))
     }      
 }
