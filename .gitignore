@@ -411,3 +411,8 @@ azure/functions/rust/test/azure.http
 
 # Docker images artifacts
 docker/images/nextflow/nxfutil*
+
+# nxfutil downloads
+nxfutil/rust/nxfutil/nextflow.config
+nxfutil/rust/nxfutil/pipeline.nf
+nxfutil/rust/nxfutil/parameters.json
