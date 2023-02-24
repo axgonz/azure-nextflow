@@ -119,10 +119,7 @@ async fn main() {
         server.variables.ci_name.as_str()
     ]);
     if nextflow_exit_code > 0 {
-        //ToDo send_message to queue before exiting.
-        println!("[app] Stopping nxfutild service...");
-        nxfutild.kill().expect("Unable to stop nxfutild service.");
-        panic!("Nexflow process did not run cleanly");
+        println!("Nexflow process did not run cleanly");
     };
 
     println!("[app] Stopping nxfutild service...");
