@@ -47,13 +47,8 @@ impl AppServer {
             Ok(response) => {
                 println!("[handler][az-storage-queues] Peak message...Ok");
                 for message in response.messages {
-                    let mut raw_msg: Value = serde_json::from_str(&message.message_text).unwrap();
-                    let errorMessage: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
-                    let errorReport: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
-                    if errorMessage.is_some() || errorReport.is_some() {
-                        raw_msg["event"]=serde_json::from_str("error").unwrap();
-                    }
-                    messages.push(raw_msg);
+                    let raw_msg: Value = serde_json::from_str(&message.message_text).unwrap();
+                    messages.push(Self::clean_nextflow_message(&raw_msg));
                 }
             },
             Err(error) => {
@@ -68,19 +63,13 @@ impl AppServer {
         if count < 1 {
             return vec![];
         }
-        
         let mut messages: Vec<Value> = vec![]; 
         match server.az_storage_queues.queue_client.get_messages().number_of_messages(count).await {
             Ok(response) => {
                 println!("[handler][az-storage-queues] Get messages...Ok");
                 for message in response.messages {
-                    let mut raw_msg: Value = serde_json::from_str(&message.message_text).unwrap();
-                    let errorMessage: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
-                    let errorReport: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
-                    if errorMessage.is_some() || errorReport.is_some() {
-                        raw_msg["event"]=serde_json::from_str("error").unwrap();
-                    }
-                    messages.push(raw_msg);
+                    let raw_msg: Value = serde_json::from_str(&message.message_text).unwrap();
+                    messages.push(Self::clean_nextflow_message(&raw_msg));
                     match server.az_storage_queues.queue_client.pop_receipt_client(message).delete().await {
                         Ok(_) => {
                             println!("[handler][az-storage-queues] Delete message...Ok");
@@ -97,7 +86,18 @@ impl AppServer {
                 println!("{}", error);
             }        
         };
-
         return messages
     }    
+    fn clean_nextflow_message(raw_msg: &Value) -> Value {
+        let errorMessage: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
+        let errorReport: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
+        if errorMessage.is_some() || errorReport.is_some() {
+            let mut clean_msg = raw_msg.clone();
+            clean_msg["event"]="error".to_string().into();
+            return clean_msg
+        }
+        else {
+            return raw_msg.clone()
+        }
+    }
 }

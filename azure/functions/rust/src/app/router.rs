@@ -203,7 +203,7 @@ impl AppRouter {
         if req_payload.summary {
             return (StatusCode::OK, 
                 Json(serde_json::Value::Array(
-                    App::generate_status_update(32, &server).await
+                    App::generate_status_update(req_payload.message_count, req_payload.dequeue, &server).await
                 ))                
             );
         }

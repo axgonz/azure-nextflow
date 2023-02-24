@@ -176,7 +176,7 @@ Will show the json payload required for the corresponding POST method.
 
 Will return the progress of the nextflow job by dumping messages from the nextflow storage queue. 
 
-- Use `summary=true` to peak and show only the latest event from a given nextflow job; this will ignore `message_count` and `dequeue`. 
+- Use `summary=true` to show only the latest event from a given nextflow job id. 
 - Use `dequeue=true` to delete the messages as they are read.
 
 > Important: If no process is dequeueing the messages from the storage queue, only the oldest 32 messages can be summarized. 

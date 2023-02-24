@@ -71,12 +71,19 @@ pub struct BaseMessage {
 pub struct App {}
 
 impl App {
-    pub async fn generate_status_update(count: u8, server: &AppServer) -> Vec<Value>  {
-        let raw_msgs: Vec<Value> = AppServer::peak_message_from_queue(count, server).await;
+    pub async fn generate_status_update(count: u8, dequeue: bool, server: &AppServer) -> Vec<Value>  {
+        let raw_msgs: Vec<Value>;
+        if dequeue {
+            raw_msgs = AppServer::get_message_from_queue(count, server).await;
+        } else {
+            raw_msgs = AppServer::peak_message_from_queue(count, server).await;
+        }
         let mut msgs: Vec<Value> = vec![];
         let mut msg_ids: Vec<String> = vec![];
         for mut raw_msg in raw_msgs.into_iter().rev() {
-            if !(raw_msg["event"] == "started") && !(raw_msg["event"] == "completed") {
+            if !(raw_msg["event"] == "started") && 
+                !(raw_msg["event"] == "completed") && 
+                !(raw_msg["event"] == "error") {
                 // Error events are skinny and do not contain error details.
                 // All other events are too verbose.
                 continue
