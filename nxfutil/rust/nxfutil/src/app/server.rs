@@ -1,5 +1,6 @@
 use reqwest::{
-    Response
+    Response,
+    Error
 };
 
 #[derive(Clone)]
@@ -74,26 +75,18 @@ impl AppServer {
             }
         }
     }
-    async fn web_post(uri: &String, json: &Value) -> Response {
+    async fn web_post(uri: &String, json: &Value) -> Result<Response, Error> {
         let client = reqwest::Client::new();
-        let response = match client.post(uri).json(json).send().await {
+        match client.post(uri).json(json).send().await {
             Ok(response) => {
-                response
+                println!("[reqwest] POST {:#?}...Ok", uri);
+                return Ok(response)
             }
             Err(error) => {
-                println!("[reqwest] DELETE {:#?}...Err", uri);
-                panic!("{}", error)
+                println!("[reqwest] POST {:#?}...Err", uri);
+                return Err(error)
             }
         };
-        if response.status() == 200 {
-            println!("[reqwest] GET {:#?}...Ok", uri);
-            return response
-        }
-        else {
-            println!("[reqwest] GET {:#?}...Err", uri);
-            //ToDo send_message to queue before exiting. 
-            panic!("{}", response.status())
-        }
     }    
     fn nextflow(args: Vec<&str>) -> i32 {
         let mut omit_log = false;

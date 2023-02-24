@@ -125,15 +125,37 @@ async fn main() {
         panic!("Nexflow process did not run cleanly");
     };
 
+    println!("[app] Stopping nxfutild service...");
+    nxfutild.kill().expect("Unable to stop nxfutild service.");
+
     if args.auto_delete {
         println!("[app] Auto delete attempt...");
-        AppServer::web_post(
-            &format!("https://{}.azurewebsites.net/api/nxfutil/terminate", server.variables.fn_name),
-            &serde_json::from_str(&format!("{}",  server.variables.ci_name)).unwrap()
-        ).await;
-    }
-    else {
-        println!("[app] Stopping nxfutild service...");
-        nxfutild.kill().expect("Unable to stop nxfutild service.");
+
+        let uri: String = format!("https://{}.azurewebsites.net/api/nxfutil/terminate", server.variables.fn_name);
+        let json: Value = serde_json::from_str(&format!("{{\"ci_name\": \"{}\"}}", server.variables.ci_name)).unwrap();
+
+        let mut status = 0;
+        let mut retry = 5;
+        let delay_seconds = 2;
+        let delay_duration = Duration::from_secs(delay_seconds);
+       
+        while status != 200 {
+            if retry == 0 {
+                panic!("Unable to auto delete.");
+            };
+            match AppServer::web_post(&uri, &json).await {
+                Ok(response) => {
+                    let body: Value = response.json().await.unwrap();
+                    println!("{}", body);
+                    status = 200
+                }
+                Err(error) => {
+                    println!("{}", error);
+                    status = 400
+                }
+            };
+            thread::sleep(delay_duration);
+            retry -= 1;
+        }
     }
 }
