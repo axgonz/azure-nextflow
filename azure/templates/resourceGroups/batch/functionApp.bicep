@@ -7,6 +7,7 @@ param NXFUTIL_AZ_SUB_ID string
 param NXFUTIL_AZ_RG_NAME string
 param NXFUTIL_AZ_KV_NAME string
 param NXFUTIL_AZ_CR_NAME string
+param NXFUTIL_AZ_FA_NAME string
 param NXFUTIL_AZ_MSI_NAME string
 param NXFUTIL_AZ_MSI_ID string
 param AZURE_CLIENT_ID string
@@ -91,6 +92,10 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                     name: 'NXFUTIL_AZ_CR_NAME'
                     value: NXFUTIL_AZ_CR_NAME
                 }
+                {
+                    name: 'NXFUTIL_AZ_CR_NAME'
+                    value: NXFUTIL_AZ_FA_NAME
+                }                
                 {
                     name: 'NXFUTIL_AZ_MSI_NAME'
                     value: NXFUTIL_AZ_MSI_NAME
