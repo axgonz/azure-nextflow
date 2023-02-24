@@ -93,7 +93,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                     value: NXFUTIL_AZ_CR_NAME
                 }
                 {
-                    name: 'NXFUTIL_AZ_CR_NAME'
+                    name: 'NXFUTIL_AZ_FA_NAME'
                     value: NXFUTIL_AZ_FA_NAME
                 }                
                 {
