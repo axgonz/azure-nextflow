@@ -6,13 +6,13 @@
 
 
 ### GET root
-GET http://{{host}}/api/nxfutil HTTP/1.1
+GET https://{{host}}/api/nxfutil HTTP/1.1
 
 ### GET dispatch
-GET http://{{host}}/api/nxfutil/dispatch HTTP/1.1
+GET https://{{host}}/api/nxfutil/dispatch HTTP/1.1
 
 ### POST dispatch (whatif)
-POST http://{{host}}/api/nxfutil/dispatch?whatif=true HTTP/1.1
+POST https://{{host}}/api/nxfutil/dispatch?whatif=true HTTP/1.1
 content-type: application/json
 
 {
@@ -23,7 +23,7 @@ content-type: application/json
 }
 
 ### POST dispatch
-POST http://{{host}}/api/nxfutil/dispatch HTTP/1.1
+POST https://{{host}}/api/nxfutil/dispatch HTTP/1.1
 content-type: application/json
 
 {
@@ -45,10 +45,10 @@ content-type: application/json
 }
 
 ### GET terminate
-GET http://{{host}}/api/nxfutil/terminate HTTP/1.1
+GET https://{{host}}/api/nxfutil/terminate HTTP/1.1
 
 ### POST terminate (whatif)
-POST http://{{host}}/api/nxfutil/terminate?whatif=true HTTP/1.1
+POST https://{{host}}/api/nxfutil/terminate?whatif=true HTTP/1.1
 content-type: application/json
 
 {
@@ -56,7 +56,7 @@ content-type: application/json
 }
 
 ### POST terminate
-POST http://{{host}}/api/nxfutil/terminate HTTP/1.1
+POST https://{{host}}/api/nxfutil/terminate HTTP/1.1
 content-type: application/json
 
 {
@@ -64,10 +64,10 @@ content-type: application/json
 }
 
 ### GET status
-GET http://{{host}}/api/nxfutil/status HTTP/1.1
+GET https://{{host}}/api/nxfutil/status HTTP/1.1
 
 ### POST status
-POST http://{{host}}/api/nxfutil/status HTTP/1.1
+POST https://{{host}}/api/nxfutil/status HTTP/1.1
 content-type: application/json
 
 {
