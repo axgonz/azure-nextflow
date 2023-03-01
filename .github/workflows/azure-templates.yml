@@ -5,7 +5,7 @@ permissions:
       contents: read
       
 on: 
-  workflow_call:
+  workflow_dispatch:
     inputs:
       AZURE_LOCATION: 
         type: string
