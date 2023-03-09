@@ -103,6 +103,7 @@ jobs:
       uses: Azure/cli@1.0.4
       with:
         inlineScript: |
+          az config set bicep.use_binary_from_path=false
           az --version
           az deployment sub validate \
             --name 'github-${{ github.run_number }}' \
@@ -117,6 +118,7 @@ jobs:
       uses: Azure/cli@1.0.4
       with:
         inlineScript: |
+          az config set bicep.use_binary_from_path=false
           az --version
           deployment=$(az deployment sub create \
             --name 'github-${{ github.run_number }}' \
