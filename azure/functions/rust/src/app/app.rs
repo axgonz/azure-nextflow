@@ -87,6 +87,8 @@ impl App {
         }
         let mut msgs: Vec<Value> = vec![];
         let mut msg_ids: Vec<String> = vec![];
+
+        // Iterate in reverse order to create summary
         for mut raw_msg in raw_msgs.into_iter().rev() {
             if !(raw_msg["event"] == "started") && 
                 !(raw_msg["event"] == "completed") && 
@@ -114,7 +116,13 @@ impl App {
                 msgs.push(raw_msg);
             }
         }
-        return msgs
+
+        // Undo reverse ordering needed above
+        let mut msgs_in_order: Vec<Value> = vec![];
+        for item in msgs.iter().rev() {
+            msgs_in_order.push(item.clone());
+        }
+        return msgs_in_order
     }
     pub fn generate_nxfutil_cmd(req_payload: DispatchRequestPayload, url_params: HashMap<String, String>) -> String {
         /* nxfutil options for specifying 'config', 'pipeline' and 'parameters' files can
