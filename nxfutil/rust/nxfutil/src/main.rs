@@ -26,6 +26,7 @@ use serde_json::{
 async fn main() {
     let args = Cli::parse();
 
+    //  Prase --parameters_json as JSON string
     let nextflow_params: Vec<NextflowParam> = match args.parameters_json {
         Some(value) => {
             match serde_json::from_str(&value) {
@@ -33,7 +34,7 @@ async fn main() {
                     value
                 }
                 Err(_) => {
-                    let nf_param: NextflowParam = match serde_json::from_str(&value) {
+                    let nextflow_param: NextflowParam = match serde_json::from_str(&value) {
                         Ok(value) => {
                             value
                         }
@@ -42,7 +43,7 @@ async fn main() {
                             panic!("{}", error);
                         }
                     };
-                    vec![nf_param]
+                    vec![nextflow_param]
                 }
             }
         }
@@ -51,22 +52,26 @@ async fn main() {
         }
     };  
 
+    // Coerce types for passing to std::process::Command
     let mut nextflow_param_strings: Vec<String> = vec![];
     for param in nextflow_params {
-        nextflow_param_strings.push(format!("--{}", param.name));
-        nextflow_param_strings.push(format!("{}", param.value));
+        let name: String = format!("--{}", param.name);
+        let value: String = match param.value.as_str() {
+            Some(value) => format!("{}", value),
+            None => format!("{}", param.value.to_string())
+        };
+        nextflow_param_strings.push(name);
+        nextflow_param_strings.push(value);
     }
 
+    // Push on nxfutil args for ease of logging 
     nextflow_param_strings.push(String::from("--nxfutilConfigUri"));
     nextflow_param_strings.push(format!("{}", args.config_uri));
-
     nextflow_param_strings.push(String::from("--nxfutilPipelineUri"));
     nextflow_param_strings.push(format!("{}", args.pipeline_uri));
-
     nextflow_param_strings.push(String::from("--nxfutilParametersUri"));
     nextflow_param_strings.push(format!("{}", args.parameters_uri));
-
-    nextflow_param_strings.push(format!("--nxfutilAutoDelete"));
+    nextflow_param_strings.push(String::from("--nxfutilAutoDelete"));
     nextflow_param_strings.push(format!("{}", args.auto_delete));
 
     let az_identity = AppAzIdentity::new();
