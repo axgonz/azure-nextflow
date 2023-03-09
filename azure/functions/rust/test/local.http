@@ -18,6 +18,12 @@ content-type: application/json
     "config_uri": "",
     "pipeline_uri": "",
     "parameters_uri": "",
+    "parameters_json": [
+        {
+            "name": "foo",
+            "value": "bar"
+        }
+    ],
     "auto_delete": true
 }
 

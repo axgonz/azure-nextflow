@@ -5,6 +5,9 @@ include!("app/config-parser.rs");
 include!("services/az-identity.rs");
 include!("services/az-security-keyvault.rs");
 
+mod args;
+use args::*;
+
 use std::{
     io::Write,
     env,
@@ -15,44 +18,56 @@ use std::{
     fs
 };
 
-use clap::{
-    Parser
-};
-
 use serde_json::{
     Value,
 };
 
-#[derive(Parser)]
-struct Cli {
-    // Uri to nextflow config ('.config') file
-    #[arg(short = 'c', long, 
-        default_value_t = ("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/nextflow.config".to_string())
-    )]
-    config_uri: String,
-
-    // Uri to nextflow pipeline ('.nf') file
-    #[arg(short = 'p', long, 
-        default_value_t = ("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/pipeline.nf".to_string())
-    )]
-    pipeline_uri: String,
-    
-    // Uri to nextflow parameters ('.json') file
-    #[arg(short = 'a', long, 
-        default_value_t = ("https://raw.githubusercontent.com/axgonz/azure-nextflow/main/nextflow/pipelines/helloWorld/parameters.json".to_string())
-    )]
-    parameters_uri: String,
-
-    // Try to delete parent container instance once complete
-    #[arg(short = 'd', long, 
-        default_value_t = false
-    )]
-    auto_delete: bool,    
-}
-
 #[tokio::main]
 async fn main() {
     let args = Cli::parse();
+
+    let nextflow_params: Vec<NextflowParam> = match args.parameters_json {
+        Some(value) => {
+            match serde_json::from_str(&value) {
+                Ok(value) => {
+                    value
+                }
+                Err(_) => {
+                    let nf_param: NextflowParam = match serde_json::from_str(&value) {
+                        Ok(value) => {
+                            value
+                        }
+                        Err(error) => {
+                            println!("Unable to parse --params as serialized JSON string.");
+                            panic!("{}", error);
+                        }
+                    };
+                    vec![nf_param]
+                }
+            }
+        }
+        None => {
+            vec![]
+        }
+    };  
+
+    let mut nextflow_param_strings: Vec<String> = vec![];
+    for param in nextflow_params {
+        nextflow_param_strings.push(format!("--{}", param.name));
+        nextflow_param_strings.push(format!("{}", param.value));
+    }
+
+    nextflow_param_strings.push(String::from("--nxfutilConfigUri"));
+    nextflow_param_strings.push(format!("{}", args.config_uri));
+
+    nextflow_param_strings.push(String::from("--nxfutilPipelineUri"));
+    nextflow_param_strings.push(format!("{}", args.pipeline_uri));
+
+    nextflow_param_strings.push(String::from("--nxfutilParametersUri"));
+    nextflow_param_strings.push(format!("{}", args.parameters_uri));
+
+    nextflow_param_strings.push(format!("--nxfutilAutoDelete"));
+    nextflow_param_strings.push(format!("{}", args.auto_delete));
 
     let az_identity = AppAzIdentity::new();
 
@@ -62,7 +77,7 @@ async fn main() {
     let mut secrets = AppSecrets::new(az_identity.credential.clone(), &variables);
     AppSecrets::init(&mut secrets).await;
 
-    let mut server: AppServer = AppServer::new(variables, secrets, az_identity);
+    let server: AppServer = AppServer::new(variables, secrets, az_identity);
 
     println!("[app] Downloading nextflow files (.config, .nf, .json)...");
     AppServer::web_download(&args.config_uri.to_string(), &"nextflow.config".to_string()).await;
@@ -105,8 +120,8 @@ async fn main() {
     }
     println!("[app] Service nxfutild is responding with {:#?}", status);
 
-    println!("[app] Handing over to nextflow...");
-    nextflow_exit_code = AppServer::nextflow(vec![
+    println!("[app] Injecting --params into nextflow command...");
+    let mut nextflow_cmd = vec![
         "run",
         "pipeline.nf",
         "-params-file",
@@ -117,7 +132,11 @@ async fn main() {
         "http://localhost:3000/api/nxfutild",
         "--dispatcher",
         server.variables.ci_name.as_str()
-    ]);
+    ];    
+    nextflow_cmd.append(&mut nextflow_param_strings.iter().map(String::as_ref).collect());
+
+    println!("[app] Handing over to nextflow...");
+    nextflow_exit_code = AppServer::nextflow(nextflow_cmd);
     if nextflow_exit_code > 0 {
         println!("Nexflow process did not run cleanly");
     };

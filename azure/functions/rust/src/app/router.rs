@@ -88,6 +88,10 @@ impl AppRouter {
             config_uri: "String".to_string(),
             pipeline_uri: "String".to_string(),
             parameters_uri: "String".to_string(),
+            parameters_json: Some(vec![NextflowParam {
+                name: "String".to_string(),
+                value: "Value".into(),
+            }]),
             auto_delete: true
         };
         return (StatusCode::OK, Json(help))

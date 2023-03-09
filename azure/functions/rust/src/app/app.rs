@@ -1,8 +1,15 @@
 #[derive(Debug, Deserialize, Serialize)]
+pub struct NextflowParam {
+    pub name: String,
+    pub value: Value,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct DispatchRequestPayload {
     pub config_uri: String,
     pub pipeline_uri: String,
     pub parameters_uri: String,
+    pub parameters_json: Option<Vec<NextflowParam>>,
     pub auto_delete: bool
 }
 
@@ -174,8 +181,14 @@ impl App {
         }
         if req_payload.auto_delete {
             nxfutil_cmd = format!("{} -d", nxfutil_cmd);
-        }        
-        println!("[handler] Generated nextflow cmd is {:#?}", &nxfutil_cmd);
+        }
+        match req_payload.parameters_json {
+            Some(value) => {
+                nxfutil_cmd = format!("{} -j '{}'", nxfutil_cmd, serde_json::to_string(&value).unwrap());
+            }
+            None => {}
+        };
+        println!("[handler] Generated nextflow cmd is {}", &nxfutil_cmd);
         
         return nxfutil_cmd
     }

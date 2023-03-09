@@ -1029,6 +1029,7 @@ dependencies = [
  "clap",
  "regex",
  "reqwest",
+ "serde",
  "serde_json",
  "tokio",
 ]
