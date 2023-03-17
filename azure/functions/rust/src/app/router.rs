@@ -7,6 +7,11 @@ use axum::{
     Json
 };
 
+use tower_http::cors::{
+    Any, 
+    CorsLayer
+};
+
 use serde::{
     Deserialize, 
     Serialize
@@ -37,6 +42,11 @@ impl AppRouter {
     
         let server: AppServer = AppServer::new(variables, secrets, az_identity);
         AppServer::init(&server).await;
+
+        // Allow * for cors as Azure Functions will do the filtering for us!
+        let cors = CorsLayer::new()
+            .allow_methods(Any)
+            .allow_origin(Any);
 
         // https://docs.rs/axum/latest/axum/
         AppRouter {
@@ -78,6 +88,7 @@ impl AppRouter {
                         move |body| Self::api_status_post(body, server)
                     })
                 )
+                .layer(cors)
         }
     }
     async fn api_root_get() -> impl IntoResponse {
