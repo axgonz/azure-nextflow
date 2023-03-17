@@ -9,7 +9,11 @@ use axum::{
 
 use tower_http::cors::{
     Any, 
-    CorsLayer
+    CorsLayer,
+};
+
+use tower_http::trace::{
+    TraceLayer
 };
 
 use serde::{
@@ -88,7 +92,8 @@ impl AppRouter {
                         move |body| Self::api_status_post(body, server)
                     })
                 )
-                .layer(cors)
+                .layer(CorsLayer::permissive())
+                .layer(TraceLayer::new_for_http())
         }
     }
     async fn api_root_get() -> impl IntoResponse {
