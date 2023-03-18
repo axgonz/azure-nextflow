@@ -176,16 +176,6 @@ jobs:
         username: ${{ steps.keyVaultSecrets.outputs.azure-registry-username }}
         password: ${{ steps.keyVaultSecrets.outputs.azure-registry-password }}
 
-    # Update / Install Rust
-    - name: 'Update / install rust'
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        target: ${{ env.CARGO_TARGET }}
-        toolchain: stable
-        default: true
-        override: true
-
     # Download
     - name: Download binary
       uses: actions/download-artifact@v3
