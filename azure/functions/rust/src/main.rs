@@ -27,7 +27,7 @@ async fn main() {
     };
 
     // Define the function address, this will be a binary on azure functions listen on localhost.
-    let addr = SocketAddr::from(([127, 0, 0, 1], port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
     // Define our service with routes, any shared state and/or middleware (aka. exceptions), etc.
     let app = AppRouter::new().await.app_router;

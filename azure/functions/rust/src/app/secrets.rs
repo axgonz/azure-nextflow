@@ -32,6 +32,7 @@ impl AppSecrets {
             }
             Err(error) => {
                 println!("[handler][az-security-keyvault] Requesting key vault secret {:#?}...Err", name);
+                println!("{:#?}", error);
                 panic!("{}", error)
             }
         }
