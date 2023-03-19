@@ -12,6 +12,13 @@ use tower_http::cors::{
     CorsLayer,
 };
 
+use http::{
+    Request, 
+    Response, 
+    Method, 
+    header
+};
+
 use serde::{
     Deserialize, 
     Serialize
@@ -32,6 +39,8 @@ struct AppRouter {
 
 impl AppRouter {   
     async fn new() -> Self {
+        println!("[handler] CORS are set to CorsLayer::very_permissive()");
+        
         let az_identity = AppAzIdentity::new();
 
         let mut variables = AppVariables::new();
@@ -83,7 +92,7 @@ impl AppRouter {
                         move |body| Self::api_status_post(body, server)
                     })
                 )
-                .layer(CorsLayer::permissive())
+                .layer(CorsLayer::very_permissive())
         }
     }
     async fn api_root_get() -> impl IntoResponse {

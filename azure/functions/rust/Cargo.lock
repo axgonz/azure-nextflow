@@ -691,6 +691,7 @@ dependencies = [
  "azure_storage",
  "azure_storage_queues",
  "chrono",
+ "http",
  "serde",
  "serde_json",
  "strum",
