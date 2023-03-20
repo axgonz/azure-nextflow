@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y \
 # Install Azure Cli
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
+# Update certificates
+RUN apt-get install ca-certificates -y && update-ca-certificates
+
 # Install handler
 RUN mkdir /.nxfutil
 ADD handler /.nxfutil/handler
