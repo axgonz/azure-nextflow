@@ -1,92 +1,63 @@
+use az_app_identity::*;
+
+use crate::app::variables::*;
+use crate::services::az_storage_queues::*;
+use crate::models::api::*;
+use crate::models::nextflow_message::*;
+
+use actix_web::web::Json;
+use serde_json::Value;
+
 #[derive(Clone)]
-pub struct AppServer {
-    variables: AppVariables,
-    az_identity: AppAzIdentity,
-    az_storage_queues: AppAzStorageQueues
-}
+pub struct AppServer {}
 
 impl AppServer {
-    fn new(variables: AppVariables, az_identity: AppAzIdentity) -> Self {
-        Self {
-            az_storage_queues: AppAzStorageQueues::new(az_identity.credential.clone(), &variables),
-            az_identity: az_identity,
-            variables: variables,
-        }
-    }
-    async fn init(server: &AppServer) {
-        match server.az_storage_queues.queue_client.create().await {
-            Ok(_) => {
-                println!("[handler][az-storage-queues] Creating queue if not exists {:#?}...Ok", server.variables.q_name);
-            },
-            Err(error) => {
-                println!("[handler][az-storage-queues] Creating queue if not exists {:#?}...Err", server.variables.q_name);
-                panic!("{}", error)
-            }
-        }
-    }
-    #[allow(dead_code)]
-    async fn send_message_to_queue(Json(req_payload): Json<Value>, server: &AppServer) {
-        match server.az_storage_queues.queue_client.put_message(req_payload.to_string()).await {
-            Ok(_) => {
-                println!("[handler][az-storage-queues] Sending message...Ok");
-            },
-            Err(error) => {
-                println!("[handler][az-storage-queues] Sending message...Err");
-                println!("{}", error)
-            }        
-        }
-    }
-    async fn peak_message_from_queue(count: u8, server: &AppServer) -> Vec<Value> {       
-        if count < 1 {
-            return vec![];
+    pub fn generate_nxfutil_cmd(req_payload: Json<DispatchRequestPayload>) -> String {
+        println!("[handler] Checking RequestPayload for `config_uri`");
+        let mut config_uri = "".to_string();
+        if !req_payload.config_uri.is_empty() {
+            println!("[handler] Found 'config_uri' in RequestPayload {:#?}", req_payload.config_uri);
+            config_uri = req_payload.config_uri.clone();
         }
         
-        let mut messages: Vec<Value> = vec![]; 
-        match server.az_storage_queues.queue_client.peek_messages().number_of_messages(count).await {
-            Ok(response) => {
-                println!("[handler][az-storage-queues] Peak message...Ok");
-                for message in response.messages {
-                    let raw_msg: Value = serde_json::from_str(&message.message_text).unwrap();
-                    messages.push(Self::clean_nextflow_message(&raw_msg));
-                }
-            },
-            Err(error) => {
-                println!("[handler][az-storage-queues] Peak message...Err");
-                println!("{}", error);
-            }        
-        };
-
-        return messages
-    }
-    async fn get_message_from_queue(count: u8, server: &AppServer) -> Vec<Value> {       
-        if count < 1 {
-            return vec![];
+        println!("[handler] Checking RequestPayload for `pipeline_uri`");
+        let mut pipeline_uri = "".to_string();
+        if !req_payload.pipeline_uri.is_empty() {
+            println!("[handler] Found 'pipeline_uri' in RequestPayload {:#?}", req_payload.pipeline_uri);
+            pipeline_uri = req_payload.pipeline_uri.clone();
         }
-        let mut messages: Vec<Value> = vec![]; 
-        match server.az_storage_queues.queue_client.get_messages().number_of_messages(count).await {
-            Ok(response) => {
-                println!("[handler][az-storage-queues] Get messages...Ok");
-                for message in response.messages {
-                    let raw_msg: Value = serde_json::from_str(&message.message_text).unwrap();
-                    messages.push(Self::clean_nextflow_message(&raw_msg));
-                    match server.az_storage_queues.queue_client.pop_receipt_client(message).delete().await {
-                        Ok(_) => {
-                            println!("[handler][az-storage-queues] Delete message...Ok");
-                        }
-                        Err(error) => {
-                            println!("[handler][az-storage-queues] Delete message...Err");
-                            println!("{}", error);
-                        }
-                    }
-                }
-            },
-            Err(error) => {
-                println!("[handler][az-storage-queues] Get messages...Err");
-                println!("{}", error);
-            }        
+
+        println!("[handler] Checking RequestPayload for `parameters_uri`");
+        let mut parameters_uri = "".to_string();
+        if !req_payload.parameters_uri.is_empty() {
+            println!("[handler] Found 'parameters_uri' in RequestPayload {:#?}", req_payload.parameters_uri);
+            parameters_uri = req_payload.parameters_uri.clone();
+        }
+
+        let mut nxfutil_cmd: String = "nxfutil".to_string();
+        if !config_uri.is_empty() {
+            nxfutil_cmd = format!("{} -c {}", nxfutil_cmd, config_uri);
+        }
+        if !pipeline_uri.is_empty() {
+            nxfutil_cmd = format!("{} -p {}", nxfutil_cmd, pipeline_uri);
+        }
+        if !parameters_uri.is_empty() {
+            nxfutil_cmd = format!("{} -a {}", nxfutil_cmd, parameters_uri);
+        }
+        if req_payload.auto_delete {
+            nxfutil_cmd = format!("{} -d", nxfutil_cmd);
+        }
+        match req_payload.parameters_json.clone() {
+            Some(value) => {
+                nxfutil_cmd = format!("{} -j '{}'", nxfutil_cmd, serde_json::to_string(&value).unwrap());
+            }
+            None => {}
         };
-        return messages
-    }    
+        println!("[handler] Generated nextflow cmd is {}", &nxfutil_cmd);
+        
+        return nxfutil_cmd
+    }
+
     fn clean_nextflow_message(raw_msg: &Value) -> Value {
         let error_message: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
         let error_report: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
@@ -98,5 +69,80 @@ impl AppServer {
         else {
             return raw_msg.clone()
         }
+    }
+
+    pub async fn get_status_message(
+        credential: Arc<DefaultAzureCredential>, 
+        variables: &AppVariables,
+        count: u8, 
+        dequeue: bool
+    ) -> Vec<Value>  {
+        if dequeue {
+            AppAzStorageQueue::get_message_from_queue(
+                credential,
+                variables,
+                count
+            ).await
+                .iter()
+                .map(|msg| Self::clean_nextflow_message(msg))
+                .collect()
+        } else {
+            AppAzStorageQueue::peak_message_from_queue(
+                credential,
+                variables,
+                count
+            ).await
+                .iter()
+                .map(|msg| Self::clean_nextflow_message(msg))
+                .collect()
+        }
+    }  
+
+    pub async fn get_status_summary(
+        credential: Arc<DefaultAzureCredential>, 
+        variables: &AppVariables,
+        count: u8, 
+        dequeue: bool
+    ) -> Vec<Value>  {
+        let raw_msgs: Vec<Value>;
+        raw_msgs = Self::get_status_message(credential, variables, count, dequeue).await;
+        let mut msgs: Vec<Value> = vec![];
+        let mut msg_ids: Vec<String> = vec![];
+
+        // Iterate in reverse order to create summary
+        for mut raw_msg in raw_msgs.into_iter().rev() {
+            if !(raw_msg["event"] == "started") && 
+                !(raw_msg["event"] == "completed") && 
+                !(raw_msg["event"] == "error") {
+                // Error events are skinny and do not contain error details.
+                // All other events are too verbose.
+                continue
+            }
+            if !msg_ids.contains(&raw_msg["runId"].to_string()) {
+                msg_ids.push(raw_msg["runId"].to_string());
+
+                let error_message: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
+                let error_report: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
+
+                if error_message.is_none() && error_report.is_some() {
+                    raw_msg["metadata"]["workflow"]["errorMessage"] = raw_msg["metadata"]["workflow"]["errorReport"].clone()
+                }
+
+                // Cast to strict type Message to drop unwanted properties
+                let msg: Message = serde_json::from_value(raw_msg).unwrap();
+
+                // Cast back to Value to satisfy return type
+                let raw_msg: Value = serde_json::from_str(&serde_json::to_string(&msg).unwrap()).unwrap();
+                
+                msgs.push(raw_msg);
+            }
+        }
+
+        // Undo reverse ordering needed above
+        let mut msgs_in_order: Vec<Value> = vec![];
+        for item in msgs.iter().rev() {
+            msgs_in_order.push(item.clone());
+        }
+        return msgs_in_order
     }
 }

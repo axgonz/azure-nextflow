@@ -1,3 +1,7 @@
+use az_app_identity::*;
+
+use crate::app::variables::*;
+
 use azure_mgmt_resources;
 
 use azure_mgmt_containerinstance::{
@@ -55,7 +59,7 @@ impl fmt::Display for ProvisioningState {
 pub struct AppAzMgmtContainerInstance {}
 
 impl AppAzMgmtContainerInstance { 
-    async fn create_nxfutil_ci(
+    pub async fn create_nxfutil_ci(
         credential: Arc<DefaultAzureCredential>, 
         variables: &AppVariables,
         nxfutil_cmd: &String,
@@ -90,15 +94,15 @@ impl AppAzMgmtContainerInstance {
         let azure_mgmt_resources = azure_mgmt_resources::Client::builder(credential.clone()).build();
         let rg_client = azure_mgmt_resources.resource_groups_client();  
         let rg = match rg_client.get(
-            variables.rg_name.clone(), 
-            variables.sub_id.clone()
+            variables.nxfutil_az_rg_name.clone(), 
+            variables.nxfutil_az_sub_id.clone()
         ).await {
             Ok(rg) => {
                 println!("[handler] Resource group location is {:#?}", rg.location);
                 rg
             },
             Err(error) => {
-                println!("[handler] Error retrieving resource group {:#?}", variables.rg_name);
+                println!("[handler] Error retrieving resource group {:#?}", variables.nxfutil_az_rg_name);
                 panic!("{}", error)
             }
         };
@@ -106,9 +110,9 @@ impl AppAzMgmtContainerInstance {
         // 3
         println!("[handler] Defining the container instance user assigned identity");
         let ci_user_assigned_identity_id = format!("/subscriptions/{}/resourcegroups/{}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{}",
-            variables.sub_id,
-            variables.rg_name,
-            variables.msi_name
+            variables.nxfutil_az_sub_id,
+            variables.nxfutil_az_rg_name,
+            variables.nxfutil_az_msi_name
         );
 
         let ci_user_assigned_identities_json = serde_json::from_str(format!(
@@ -132,7 +136,7 @@ impl AppAzMgmtContainerInstance {
                         name: ci_name.clone(), 
                         properties: {
                             ContainerProperties { 
-                                image: format!("{}.azurecr.io/default/nextflow:latest", variables.cr_name),
+                                image: format!("{}.azurecr.io/default/nextflow:latest", variables.nxfutil_az_cr_name),
                                 command: vec![
                                     "/bin/bash".to_string(), 
                                     "-c".to_string(), 
@@ -140,23 +144,23 @@ impl AppAzMgmtContainerInstance {
                                 ], 
                                 environment_variables: vec![
                                     EnvironmentVariable {
+                                        name: "NXFUTIL_DISPATCHER".to_string(),
+                                        value: Some(ci_name.clone()),
+                                        secure_value: None
+                                    },
+                                    EnvironmentVariable {
+                                        name: "NXFUTIL_API_FQDN".to_string(),
+                                        value: Some(variables.nxfutil_api_fqdn.clone()),
+                                        secure_value: None
+                                    },                                    
+                                    EnvironmentVariable {
                                         name: "AZURE_CLIENT_ID".to_string(),
-                                        value: Some(variables.msi_client_id.clone()),
+                                        value: Some(variables.nxfutil_az_msi_id.clone()),
                                         secure_value: None
                                     },
                                     EnvironmentVariable {
                                         name: "AZURE_KEYVAULT_NAME".to_string(),
-                                        value: Some(variables.kv_name.clone()),
-                                        secure_value: None
-                                    },
-                                    EnvironmentVariable {
-                                        name: "AZURE_FUNCAPP_NAME".to_string(),
-                                        value: Some(variables.fn_name.clone()),
-                                        secure_value: None
-                                    },
-                                    EnvironmentVariable {
-                                        name: "NXFUTIL_DISPATCHER".to_string(),
-                                        value: Some(ci_name.clone()),
+                                        value: Some(variables.nxfutil_az_kv_name.clone()),
                                         secure_value: None
                                     }
                                 ], 
@@ -177,7 +181,7 @@ impl AppAzMgmtContainerInstance {
                         }
                     }], 
                     image_registry_credentials: vec![ImageRegistryCredential {
-                        server: format!("{}.azurecr.io", variables.cr_server),
+                        server: format!("{}.azurecr.io", variables.nxfutil_az_cr_name),
                         username: None,
                         password: None,
                         identity: Some(ci_user_assigned_identity_id), 
@@ -220,8 +224,8 @@ impl AppAzMgmtContainerInstance {
     
         println!("[handler] Submitting container instance deployment");
         let mut deployment_result = match ci_group_client.create_or_update(
-            variables.sub_id.clone(), 
-            variables.rg_name.clone(), 
+            variables.nxfutil_az_sub_id.clone(), 
+            variables.nxfutil_az_rg_name.clone(), 
             ci_name.clone(),
             ci_group
         ).await {
@@ -253,8 +257,8 @@ impl AppAzMgmtContainerInstance {
             thread::sleep(delay_duration);
     
             deployment_result = match ci_group_client.get(
-                variables.sub_id.clone(), 
-                variables.rg_name.clone(), 
+                variables.nxfutil_az_sub_id.clone(), 
+                variables.nxfutil_az_rg_name.clone(), 
                 ci_name.clone()
             ).await {
                 Ok(ci_group_result) => ci_group_result.container_group_properties.properties.provisioning_state.unwrap(),
@@ -273,7 +277,8 @@ impl AppAzMgmtContainerInstance {
     
         return (ci_name, deployment_result);
     }
-    async fn delete_nxfutil_ci(
+    
+    pub async fn delete_nxfutil_ci(
         credential: Arc<DefaultAzureCredential>, 
         variables: &AppVariables,
         ci_name: &String,
@@ -296,8 +301,8 @@ impl AppAzMgmtContainerInstance {
     
         println!("[handler] Submitting container instance deployment");
         let mut deployment_result = match ci_group_client.delete(
-            variables.sub_id.clone(), 
-            variables.rg_name.clone(), 
+            variables.nxfutil_az_sub_id.clone(), 
+            variables.nxfutil_az_rg_name.clone(), 
             ci_name.clone()
         ).await {
             Ok(ci_group_result) => {
@@ -328,8 +333,8 @@ impl AppAzMgmtContainerInstance {
             thread::sleep(delay_duration);
     
             deployment_result = match ci_group_client.get(
-                variables.sub_id.clone(), 
-                variables.rg_name.clone(), 
+                variables.nxfutil_az_sub_id.clone(), 
+                variables.nxfutil_az_rg_name.clone(), 
                 ci_name.clone()
             ).await {
                 Ok(ci_group_result) => ci_group_result.container_group_properties.properties.provisioning_state.unwrap(),
