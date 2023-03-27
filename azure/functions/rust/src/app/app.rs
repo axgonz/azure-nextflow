@@ -47,6 +47,7 @@ pub struct Parameters {
     pub dispatcher: String
 }
 
+#[allow(non_snake_case)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Workflow {
     pub errorMessage: Option<String>
@@ -58,6 +59,7 @@ pub struct Metadata {
     pub workflow: Workflow
 }
 
+#[allow(non_snake_case)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Message {
     pub event: String,
@@ -67,6 +69,7 @@ pub struct Message {
     pub metadata: Metadata,
 }
 
+#[allow(non_snake_case)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BaseMessage {
     pub event: String,
@@ -100,10 +103,10 @@ impl App {
             if !msg_ids.contains(&raw_msg["runId"].to_string()) {
                 msg_ids.push(raw_msg["runId"].to_string());
 
-                let errorMessage: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
-                let errorReport: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
+                let error_message: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
+                let error_report: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
 
-                if errorMessage.is_none() && errorReport.is_some() {
+                if error_message.is_none() && error_report.is_some() {
                     raw_msg["metadata"]["workflow"]["errorMessage"] = raw_msg["metadata"]["workflow"]["errorReport"].clone()
                 }
 

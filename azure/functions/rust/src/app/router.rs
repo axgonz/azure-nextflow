@@ -12,13 +12,6 @@ use tower_http::cors::{
     CorsLayer,
 };
 
-use http::{
-    Request, 
-    Response, 
-    Method, 
-    header
-};
-
 use serde::{
     Deserialize, 
     Serialize
@@ -39,18 +32,21 @@ struct AppRouter {
 
 impl AppRouter {   
     async fn new() -> Self {
-        println!("[handler] CORS are set to CorsLayer::very_permissive()");
+        println!("[handler] CORS are set to CorsLayer::custom_permissive()");
         
         let az_identity = AppAzIdentity::new();
 
         let mut variables = AppVariables::new();
         AppVariables::init(&mut variables);
-    
-        let mut secrets = AppSecrets::new(az_identity.credential.clone(), &variables);
-        AppSecrets::init(&mut secrets).await;
-    
-        let server: AppServer = AppServer::new(variables, secrets, az_identity);
+      
+        let server: AppServer = AppServer::new(variables, az_identity);
         AppServer::init(&server).await;
+
+        // Allow * for cors as Azure Functions will do the filtering for us!
+        let cors = CorsLayer::new()
+            .allow_methods(Any)
+            .allow_origin(Any)
+            .allow_headers(Any);
 
         // https://docs.rs/axum/latest/axum/
         AppRouter {
@@ -92,7 +88,7 @@ impl AppRouter {
                         move |body| Self::api_status_post(body, server)
                     })
                 )
-                .layer(CorsLayer::very_permissive())
+                .layer(cors)
         }
     }
     async fn api_root_get() -> impl IntoResponse {
@@ -140,8 +136,7 @@ impl AppRouter {
         println!("[handler] Creating nextflow container instance");
         let deployment = AppAzMgmtContainerInstance::create_nxfutil_ci(
             server.az_identity.credential.clone(), 
-            &server.variables, 
-            &server.secrets, 
+            &server.variables,
             &nxfutil_cmd, 
             what_if
         ).await;

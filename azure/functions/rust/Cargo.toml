@@ -17,11 +17,15 @@ uuid            = "1.2.2"
 tower-http      = { version = "0.4", default-features = false, features = ["cors"]}
 http            = { version = "0.2" }
 
-azure_core                      = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust" }
-azure_identity                  = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust" }
-azure_security_keyvault         = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust" }
-azure_storage                   = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust" }
-azure_storage_queues            = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust" }
-azure_mgmt_resources            = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust" }
-azure_mgmt_containerinstance    = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust" }
+az_app_identity     = { version = "0.1", git = "https://github.com/axgonz/rust-crates", tag = "0.1.1" }
+az_app_variables    = { version = "0.1", git = "https://github.com/axgonz/rust-crates", tag = "0.1.1" }
+az_app_secrets      = { version = "0.1", git = "https://github.com/axgonz/rust-crates", tag = "0.1.1" }
+
+azure_core                      = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust", tag = "v2023-02-15" }
+azure_identity                  = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust", tag = "v2023-02-15" }
+azure_security_keyvault         = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust", tag = "v2023-02-15" }
+azure_storage                   = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust", tag = "v2023-02-15" }
+azure_storage_queues            = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust", tag = "v2023-02-15" }
+azure_mgmt_resources            = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust", tag = "v2023-02-15" }
+azure_mgmt_containerinstance    = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust", tag = "v2023-02-15" }
 

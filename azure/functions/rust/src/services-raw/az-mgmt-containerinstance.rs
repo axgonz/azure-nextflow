@@ -1,5 +1,11 @@
 use azure_mgmt_resources;
-use azure_mgmt_containerinstance;
+
+use azure_mgmt_containerinstance::{
+    models::*,
+    models::container_group_identity::*,
+    models::container_group_properties::*,
+    models::container_group_properties::properties::*,
+};
 
 use std::{
     fmt, 
@@ -52,7 +58,6 @@ impl AppAzMgmtContainerInstance {
     async fn create_nxfutil_ci(
         credential: Arc<DefaultAzureCredential>, 
         variables: &AppVariables,
-        secrets: &AppSecrets,
         nxfutil_cmd: &String,
         what_if: bool
     ) -> (String, String) {
@@ -69,7 +74,7 @@ impl AppAzMgmtContainerInstance {
         let unique_id = Uuid::new_v4();
         let system_time = SystemTime::now();
         let datetime: DateTime<Utc> = system_time.into();
-        let datetime_string = format!("{}", datetime.format("%Y%m%d"));
+        let datetime_string = format!("{}", datetime.format("%Y%m%d-%H%M%S"));
         
         /* Azure naming limits: Microsoft.ContainerInstance
             Entity          | Scope          | Length | Valid Characters
@@ -100,29 +105,33 @@ impl AppAzMgmtContainerInstance {
         
         // 3
         println!("[handler] Defining the container instance user assigned identity");
-        let ci_user_assigned_identities_json = serde_json::from_str(format!(
-            "{{\"/subscriptions/{}/resourcegroups/{}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{}\":{{}}}}", 
+        let ci_user_assigned_identity_id = format!("/subscriptions/{}/resourcegroups/{}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{}",
             variables.sub_id,
-            variables.rg_name, 
+            variables.rg_name,
             variables.msi_name
+        );
+
+        let ci_user_assigned_identities_json = serde_json::from_str(format!(
+            "{{\"{}\":{{}}}}", 
+            ci_user_assigned_identity_id
         ).as_str());
         println!("[handler] Defined container instance user assigned identity as {:#?}", ci_user_assigned_identities_json);
     
         println!("[handler] Defining the container instance");
-        let ci_group = azure_mgmt_containerinstance::models::ContainerGroup {
-            container_group_properties: azure_mgmt_containerinstance::models::ContainerGroupProperties {
-                identity: Some(azure_mgmt_containerinstance::models::ContainerGroupIdentity {
-                    type_: Some(azure_mgmt_containerinstance::models::container_group_identity::Type::UserAssigned),
+        let ci_group = ContainerGroup {
+            container_group_properties: ContainerGroupProperties {
+                identity: Some(ContainerGroupIdentity {
+                    type_: Some(Type::UserAssigned),
                     user_assigned_identities: Some(ci_user_assigned_identities_json.unwrap()),
                     principal_id: None,
                     tenant_id: None,
                 }),
-                properties: azure_mgmt_containerinstance::models::container_group_properties::Properties { 
+                properties: Properties { 
                     provisioning_state: None, 
-                    containers: vec![azure_mgmt_containerinstance::models::Container {
+                    containers: vec![Container {
                         name: ci_name.clone(), 
                         properties: {
-                            azure_mgmt_containerinstance::models::ContainerProperties { 
+                            ContainerProperties { 
                                 image: format!("{}.azurecr.io/default/nextflow:latest", variables.cr_name),
                                 command: vec![
                                     "/bin/bash".to_string(), 
@@ -130,29 +139,29 @@ impl AppAzMgmtContainerInstance {
                                     format!("cd /.nextflow && ./{}", nxfutil_cmd)
                                 ], 
                                 environment_variables: vec![
-                                    azure_mgmt_containerinstance::models::EnvironmentVariable {
+                                    EnvironmentVariable {
                                         name: "AZURE_CLIENT_ID".to_string(),
                                         value: Some(variables.msi_client_id.clone()),
                                         secure_value: None
                                     },
-                                    azure_mgmt_containerinstance::models::EnvironmentVariable {
+                                    EnvironmentVariable {
                                         name: "AZURE_KEYVAULT_NAME".to_string(),
                                         value: Some(variables.kv_name.clone()),
                                         secure_value: None
                                     },
-                                    azure_mgmt_containerinstance::models::EnvironmentVariable {
+                                    EnvironmentVariable {
                                         name: "AZURE_FUNCAPP_NAME".to_string(),
                                         value: Some(variables.fn_name.clone()),
                                         secure_value: None
                                     },
-                                    azure_mgmt_containerinstance::models::EnvironmentVariable {
+                                    EnvironmentVariable {
                                         name: "NXFUTIL_DISPATCHER".to_string(),
                                         value: Some(ci_name.clone()),
                                         secure_value: None
                                     }
                                 ], 
-                                resources: azure_mgmt_containerinstance::models::ResourceRequirements {
-                                    requests: azure_mgmt_containerinstance::models::ResourceRequests { 
+                                resources: ResourceRequirements {
+                                    requests: ResourceRequests { 
                                         memory_in_gb: 1.0, 
                                         cpu: 1.0,
                                         gpu: None
@@ -167,15 +176,15 @@ impl AppAzMgmtContainerInstance {
                             }
                         }
                     }], 
-                    image_registry_credentials: vec![azure_mgmt_containerinstance::models::ImageRegistryCredential {
-                        server: secrets.cr_server.clone(),
-                        username: Some(secrets.cr_username.clone()),
-                        password: Some(secrets.cr_password.clone()),
-                        identity: None,
+                    image_registry_credentials: vec![ImageRegistryCredential {
+                        server: format!("{}.azurecr.io", variables.cr_server),
+                        username: None,
+                        password: None,
+                        identity: Some(ci_user_assigned_identity_id), 
                         identity_url: None
                     }], 
-                    os_type: azure_mgmt_containerinstance::models::container_group_properties::properties::OsType::Linux, 
-                    restart_policy: Some(azure_mgmt_containerinstance::models::container_group_properties::properties::RestartPolicy::Never), 
+                    os_type: OsType::Linux, 
+                    restart_policy: Some(RestartPolicy::Never), 
                     ip_address: None, 
                     volumes: vec![], 
                     instance_view: None, 
@@ -188,7 +197,7 @@ impl AppAzMgmtContainerInstance {
                     extensions: vec![]
                 }
             },
-            resource: azure_mgmt_containerinstance::models::Resource { 
+            resource: Resource { 
                 id: None, 
                 name: None, 
                 type_: None, 
@@ -271,30 +280,11 @@ impl AppAzMgmtContainerInstance {
         what_if: bool
     ) -> (String, String) {
         /* Steps to define and build the container instance
-            1. Get the resource group to determine the deployment location
-            2. POST the deployment to ARM
-            3. Wait for the deployment to complete
+            1. POST the deployment to ARM
+            2. Wait for the deployment to complete
         */
 
         // 1
-        println!("[handler] Retrieving resource group to determine the deployment location");
-        let azure_mgmt_resources = azure_mgmt_resources::Client::builder(credential.clone()).build();
-        let rg_client = azure_mgmt_resources.resource_groups_client();  
-        let rg = match rg_client.get(
-            variables.rg_name.clone(), 
-            variables.sub_id.clone()
-        ).await {
-            Ok(rg) => {
-                println!("[handler] Resource group location is {:#?}", rg.location);
-                rg
-            },
-            Err(error) => {
-                println!("[handler] Error retrieving resource group {:#?}", variables.rg_name);
-                panic!("{}", error)
-            }
-        };
-
-        // 2
         println!("[handler] Establishing azure_mgmt_containerinstance::Client");
         let azure_mgmt_containerinstance = azure_mgmt_containerinstance::Client::builder(credential).build();
         let ci_group_client = azure_mgmt_containerinstance.container_groups_client();
@@ -329,7 +319,7 @@ impl AppAzMgmtContainerInstance {
             _ => true
         };  
     
-        // 3
+        // 2
         let delay_seconds = 15;
         let delay_duration = Duration::from_secs(delay_seconds);
         

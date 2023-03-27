@@ -1,18 +1,16 @@
 #[derive(Clone)]
 pub struct AppServer {
     variables: AppVariables,
-    secrets: AppSecrets,
     az_identity: AppAzIdentity,
     az_storage_queues: AppAzStorageQueues
 }
 
 impl AppServer {
-    fn new(variables: AppVariables, secrets: AppSecrets, az_identity: AppAzIdentity) -> Self {
+    fn new(variables: AppVariables, az_identity: AppAzIdentity) -> Self {
         Self {
-            az_storage_queues: AppAzStorageQueues::new(az_identity.credential.clone(), &variables, &secrets),
+            az_storage_queues: AppAzStorageQueues::new(az_identity.credential.clone(), &variables),
             az_identity: az_identity,
             variables: variables,
-            secrets: secrets
         }
     }
     async fn init(server: &AppServer) {
@@ -26,6 +24,7 @@ impl AppServer {
             }
         }
     }
+    #[allow(dead_code)]
     async fn send_message_to_queue(Json(req_payload): Json<Value>, server: &AppServer) {
         match server.az_storage_queues.queue_client.put_message(req_payload.to_string()).await {
             Ok(_) => {
@@ -89,9 +88,9 @@ impl AppServer {
         return messages
     }    
     fn clean_nextflow_message(raw_msg: &Value) -> Value {
-        let errorMessage: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
-        let errorReport: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
-        if errorMessage.is_some() || errorReport.is_some() {
+        let error_message: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
+        let error_report: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
+        if error_message.is_some() || error_report.is_some() {
             let mut clean_msg = raw_msg.clone();
             clean_msg["event"]="error".to_string().into();
             return clean_msg

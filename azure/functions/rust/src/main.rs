@@ -2,9 +2,7 @@ include!("app/app.rs");
 include!("app/router.rs");
 include!("app/server.rs");
 include!("app/variables.rs");
-include!("app/secrets.rs");
 include!("services/az-identity.rs");
-include!("services/az-security-keyvault.rs");
 include!("services/az-storage-queues.rs");
 include!("services-raw/az-mgmt-containerinstance.rs");
 
