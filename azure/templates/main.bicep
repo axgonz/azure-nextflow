@@ -50,6 +50,8 @@ module dep_containerRegistry 'resourceGroups/batch/containerRegistry.bicep' = {
     location: location
     name: config.containerRegistry.nameIsAlreadyUnique ? config.containerRegistry.name : '${config.containerRegistry.name}${substring(uniqueString(config.containerRegistry.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
     keyVaultName: dep_keyVault.outputs.name
+    nextflowMsi_objectId: dep_msiNextflow.outputs.objectId
+    funcMsi_objectId: dep_msiFunctionApp.outputs.objectId
   }
 }
 
