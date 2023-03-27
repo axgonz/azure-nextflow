@@ -74,51 +74,10 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                 {
                     name: 'FUNCTIONS_WORKER_RUNTIME'
                     value: 'custom'
-                }              
-            ]
-        }
-    }
-}
-
-resource functionApp_with_envVars 'Microsoft.Web/sites@2021-03-01' = {
-    name: name
-    location: location
-    kind: 'functionapp,linux'
-    identity: {
-        type: 'UserAssigned'
-        userAssignedIdentities: {
-        '${managedIdentityId}': {}
-        }
-    }
-    properties: {
-        serverFarmId: appServicePlan.id
-        httpsOnly: true
-        siteConfig: {
-            minTlsVersion: '1.2'
-            appSettings: [
-                {
-                    name: 'AzureWebJobsStorage'
-                    value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
-                }
-                {
-                    name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-                    value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
-                }
-                {
-                    name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-                    value: applicationInsights.properties.InstrumentationKey
-                }
-                {
-                    name: 'FUNCTIONS_EXTENSION_VERSION'
-                    value: '~4'
-                }
-                {
-                    name: 'FUNCTIONS_WORKER_RUNTIME'
-                    value: 'custom'
                 } 
                 {
                     name: 'NXFUTIL_API_FQDN'
-                    value: functionApp.properties.hostNames[0]
+                    value: '${name}.azurewebsites.net'
                 } 
                 {
                     name: 'NXFUTIL_AZ_SUB_ID'
