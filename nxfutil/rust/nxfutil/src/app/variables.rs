@@ -16,7 +16,7 @@ impl AppVariables {
     }
     pub fn init(variables: &mut AppVariables) {
         variables.kv_name = Self::variable("AZURE_KEYVAULT_NAME");
-        variables.fn_name = Self::variable("AZURE_FUNCAPP_NAME");
+        variables.fn_name = Self::variable("NXFUTIL_API_FQDN");
         variables.ci_name = Self::variable("NXFUTIL_DISPATCHER");
     }
     pub fn variable(name: &str) -> String {

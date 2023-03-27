@@ -152,7 +152,7 @@ async fn main() {
     if args.auto_delete {
         println!("[app] Auto delete attempt...");
 
-        let uri: String = format!("https://{}.azurewebsites.net/api/nxfutil/terminate", server.variables.fn_name);
+        let uri: String = format!("https://{}/api/nxfutil/terminate", server.variables.fn_name);
         let json: Value = serde_json::from_str(&format!("{{\"ci_name\": \"{}\"}}", server.variables.ci_name)).unwrap();
 
         let mut status = 0;
