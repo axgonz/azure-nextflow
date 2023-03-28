@@ -1,37 +1,20 @@
+use crate::services::{
+    az_storage_queues::*,
+};
+
+use actix_web::web::Json;
+use serde_json::Value;
+
 #[derive(Clone)]
-pub struct AppServer {
-    variables: AppVariables,
-    secrets: AppSecrets,
-    az_identity: AppAzIdentity,
-    az_storage_queues: AppAzStorageQueues
-}
+pub struct AppServer {}
 
 impl AppServer {
-    fn new(variables: AppVariables, secrets: AppSecrets, az_identity: AppAzIdentity) -> Self {
-        Self {
-            az_storage_queues: AppAzStorageQueues::new(az_identity.credential.clone(), &variables, &secrets),
-            az_identity: az_identity,
-            variables: variables,
-            secrets: secrets
-        }
-    }
-    async fn init(server: &AppServer) {
-        match server.az_storage_queues.queue_client.create().await {
-            Ok(_) => {
-                println!("[nxfutild][az-storage-queues] Creating queue if not exists {:#?}...Ok", server.variables.q_name);
-            },
-            Err(error) => {
-                println!("[nxfutild][az-storage-queues] Creating queue if not exists {:#?}...Err", server.variables.q_name);
-                panic!("{}", error)
-            }
-        }
-    }
-    async fn send_message_to_queue(Json(req_payload): Json<Value>, server: &AppServer) {
+    pub async fn send_status_message(req_payload: Json<Value>, queue: &AppAzStorageQueue) {
         if !(req_payload["event"] == "started") && !(req_payload["event"] == "completed") {
             println!("[nxfutild][az-storage-queues] Ignoring message {:#?}", req_payload["event"]);
             return
         }
-        match server.az_storage_queues.queue_client.put_message(req_payload.to_string()).await {
+        match queue.client.put_message(req_payload.to_string()).await {
             Ok(_) => {
                 println!("[nxfutild][az-storage-queues] Sending message {:#?}...Ok", req_payload["event"]);
             },

@@ -1,26 +1,6 @@
-//# AppVariables
-#[derive(Debug, Clone)]
-pub struct AppVariables {
-    pub kv_name: String,
-    pub q_name: String
-}
+pub use az_app_variables::*;
 
-impl AppVariables {
-    pub fn new() -> Self {
-        Self {
-            kv_name: "".to_string(),
-            q_name: "nextflow".to_string()
-        }
-    }
-    pub fn init(variables: &mut AppVariables) {
-        variables.kv_name = Self::variable("AZURE_KEYVAULT_NAME");
-    }
-    pub fn variable(name: &str) -> String {
-        match env::var(name) {
-            Ok(value) => return value,
-            Err(_) => {
-                panic!("Unable to load environment variable: {:#?}", name)
-            }
-        }
-    }
+#[derive(AzAppVariablesNew, AzAppVariablesInit, Debug)]
+pub struct AppVariables {
+    pub nxfutil_az_st_name: String,
 }

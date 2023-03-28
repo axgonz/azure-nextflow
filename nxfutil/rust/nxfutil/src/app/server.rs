@@ -1,26 +1,30 @@
+use crate::app::variables::*;
+
 use reqwest::{
     Response,
-    Error
+    Error as ReqwestError
+};
+
+use serde_json::Value;
+
+use std::{
+    error::Error,
+    time::Duration,
+    thread,
+};
+
+
+use std::process::{
+    Command,
+    Child,
+    ExitStatus,
 };
 
 #[derive(Clone)]
-pub struct AppServer {
-    pub variables: AppVariables,
-    pub secrets: AppSecrets,
-    pub az_identity: AppAzIdentity,
-}
+pub struct AppServer {}
 
 impl AppServer {
-    fn new(variables: AppVariables, secrets: AppSecrets, az_identity: AppAzIdentity) -> Self {
-        Self {
-            az_identity: az_identity,
-            variables: variables,
-            secrets: secrets            
-        }
-    }
-    async fn init(server: &AppServer) {
-    }
-    async fn web_status(uri: &String) -> u16 {
+    pub async fn web_status(uri: &String) -> u16 {
         match reqwest::get(uri).await {
             Ok(response) => {
                 println!("[reqwest] (status) GET {:#?}...Ok", uri);
@@ -32,7 +36,8 @@ impl AppServer {
             }
         }
     }
-    async fn web_get(uri: &String) -> Response {
+    
+    pub async fn web_get(uri: &String) -> Response {
         let response = match reqwest::get(uri).await {
             Ok(response) => {
                 response
@@ -52,7 +57,8 @@ impl AppServer {
             panic!("{}", response.status())
         }
     }
-    async fn web_download(uri: &String, destination: &String) {
+    
+    pub async fn web_download(uri: &String, destination: &String) {
         let response = Self::web_get(uri).await;
         let content = match response.text().await {
             Ok(content) => {
@@ -75,7 +81,8 @@ impl AppServer {
             }
         }
     }
-    async fn web_post(uri: &String, json: &Value) -> Result<Response, Error> {
+    
+    pub async fn web_post(uri: &String, json: &Value) -> Result<Response, ReqwestError> {
         let client = reqwest::Client::new();
         match client.post(uri).json(json).send().await {
             Ok(response) => {
@@ -88,7 +95,52 @@ impl AppServer {
             }
         };
     }    
-    fn nextflow(args: Vec<&str>) -> i32 {
+
+    pub async fn terminate(variables: &AppVariables) {
+        println!("[app] Auto delete attempt...");
+
+        let uri: String = format!("https://{}/api/nxfutil/terminate", variables.nxfutil_api_fqdn);
+        let json: Value = serde_json::from_str(&format!("{{\"ci_name\": \"{}\"}}", variables.nxfutil_dispatcher)).unwrap();
+
+        let mut status = 0;
+        let mut retry = 3;
+        let mut delay = 3;
+        
+        while status != 200 && retry > 0 {
+            match Self::web_post(&uri, &json).await {
+                Ok(response) => {
+                    let body: Value = response.json().await.unwrap();
+                    println!("{}", body);
+                    status = 200
+                }
+                Err(error) => {
+                    println!("{}", error);
+                    status = 400
+                }
+            };
+            thread::sleep(Duration::from_secs(delay));
+            delay += delay;
+            retry -= 1;
+        }
+    }
+
+    pub fn pre_panic(msg: &str, error: &dyn Error) {
+        println!("{}", msg);
+        println!("{:#?}", error);
+        println!("[app] About to panic!");
+    }
+
+    pub fn nxfutild() -> Child {
+        match Command::new("./nxfutild").spawn() {
+            Ok(process) => process,
+            Err(error) => {
+                Self::pre_panic("[app] Failed to start nxfutild service.", &error);
+                panic!();
+            }
+        }
+    }
+    
+    pub fn nextflow(args: Vec<&str>) -> i32 {
         let mut omit_log = false;
         for arg in &args {
             if arg.to_lowercase() == "secrets" {
@@ -108,8 +160,8 @@ impl AppServer {
                     process
                 }
                 Err(error) => {
-                    println!("[nextflow] Failed to start");
-                    panic!("{}", error)
+                    Self::pre_panic("[nextflow] Failed to start process", &error);
+                    panic!();
                 }
             };
         let exit_status: ExitStatus = match nextflow.wait() {
@@ -118,8 +170,8 @@ impl AppServer {
                 status
             }
             Err(error) => {
-                println!("[nextflow] Process crashed");
-                panic!("{}", error)
+                Self::pre_panic("[nextflow] Process crashed", &error);
+                panic!("{}", error);
             }
         };
 

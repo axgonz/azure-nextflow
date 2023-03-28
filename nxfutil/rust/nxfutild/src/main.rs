@@ -1,38 +1,65 @@
-include!("app/router.rs");
-include!("app/server.rs");
-include!("app/variables.rs");
-include!("app/secrets.rs");
-include!("services/az-identity.rs");
-include!("services/az-security-keyvault.rs");
-include!("services/az-storage-queues.rs");
+mod app; 
+mod routes;
+mod models;
+mod services;
 
-use axum::{
-    Server
+use az_app_identity::*;
+
+use app::{
+    variables::*,
+    state::*,
 };
 
-use std::{
-    env,
-    net::SocketAddr
+use services::{
+    az_storage_queues::*,
 };
 
-// Boiler-plate main fn: http server for Azure Functions
-#[tokio::main]
-async fn main() {
-    // Grab the port from the azure functions runtime; or use port 3000.
-    let port: u16 = match env::var("FUNCTIONS_CUSTOMHANDLER_PORT") {
-        Ok(val) => val.parse().expect("Custom Handler port is not a number!"),
-        Err(_) => 3000,
+use routes::{
+    root::*,
+};
+
+use actix_web::{
+    web::Data,
+    App, 
+    HttpServer
+};
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    let addr: String = match std::env::var("ACTIXWEB_SERVE_ADDRESS") {
+        Ok(value) => value,
+        Err(_) => "0.0.0.0".to_string()
     };
 
-    // Define the function address, this will be a binary on azure functions listen on localhost.
-    let addr = SocketAddr::from(([127, 0, 0, 1], port));
+    let port: u16 = match std::env::var("FUNCTIONS_CUSTOMHANDLER_PORT") {
+        Ok(value) => value.parse().unwrap(),
+        Err(_) => "3000".parse().unwrap()
+    };
 
-    // Define our service with routes, any shared state and/or middleware (aka. exceptions), etc.
-    let app = AppRouter::new().await.app_router;
+    let app_identity = AppIdentity::new();
 
-    // Log that everything is okay and we are ready to listen
-    println!("\n[nxfutild] Listening on {:#?}\n", &addr);
+    let mut app_variables = AppVariables::new();
+    AppVariables::init(&mut app_variables);
+
+    let queue = AppAzStorageQueue::new("nextflow", app_identity.clone(), &app_variables);
+    queue.init().await;
     
-    // Start listening and panic if anything doesn't work.
-    Server::bind(&addr).serve(app.into_make_service()).await.unwrap();
+    let app_state = AppState {
+        identity: app_identity,
+        variables: app_variables,
+        queue: queue,
+    };
+
+    let state = Data::new(app_state);
+
+    println!("\n[handler] Listening on http://{}:{}\n", addr, port);
+    HttpServer::new(move || {
+        App::new()
+            .app_data(state.clone())
+            .service(api_root_get)
+            .service(api_root_post)
+    })
+    .bind((addr, port))?
+    .run()
+    .await
 }
