@@ -4,22 +4,22 @@ nextflow.enable.dsl=2
 
 process prerequisites {
     queue 'default'
-    container "$params.azureRegistryServer/default/ubuntu:latest"
+    container "$params.azure_registry_server/default/ubuntu:latest"
 
     output:
         stdout
 
     script:
         """
-        echo 'Hello, I am the contents of the prerequisite file.' > $params.azureFileShare/file.txt
+        echo 'Hello, I am the contents of the prerequisite file.' > $params.azure_file_share/file.txt
         sleep 10s
-        echo $params.azureFileShare/file.txt
+        echo $params.azure_file_share/file.txt
         """
 }
 
 process parallel {
     queue 'default'
-    container "$params.azureRegistryServer/default/ubuntu:latest"
+    container "$params.azure_registry_server/default/ubuntu:latest"
 
     input:
         val fileName

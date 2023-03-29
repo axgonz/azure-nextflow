@@ -4,7 +4,7 @@ nextflow.enable.dsl=2
 
 process splitLetters {
     queue 'default'
-    container "$params.azureRegistryServer/default/ubuntu:latest"
+    container "$params.azure_registry_server/default/ubuntu:latest"
 
     output:
         path 'chunk_*'
@@ -17,7 +17,7 @@ process splitLetters {
 
 process convertToUpper {
     queue 'default'
-    container "$params.azureRegistryServer/default/ubuntu:latest"
+    container "$params.azure_registry_server/default/ubuntu:latest"
 
     input:
         file x

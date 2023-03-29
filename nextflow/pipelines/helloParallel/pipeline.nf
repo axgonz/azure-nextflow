@@ -4,7 +4,7 @@ nextflow.enable.dsl=2
 
 process listFiles {
     queue 'default'
-    container "$params.azureRegistryServer/default/ubuntu:latest"
+    container "$params.azure_registry_server/default/ubuntu:latest"
 
     input:
         val data

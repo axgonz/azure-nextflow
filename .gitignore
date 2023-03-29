@@ -411,6 +411,7 @@ azure/functions/rust/test/azure.http
 
 # Docker images artifacts
 docker/images/nextflow/nxfutil*
+docker/images/nxfutil/handler
 
 # nxfutil downloads
 nxfutil/rust/nxfutil/nextflow.config
