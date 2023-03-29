@@ -46,7 +46,14 @@ jobs:
     uses: ./.github/workflows/docker-images-nextflow.yml
     with:
       AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
-    secrets: inherit    
+    secrets: inherit
+
+  dockerImagesNxfutil:
+    needs: azureTemplates
+    uses: ./.github/workflows/docker-images-nxfutil.yml
+    with:
+      AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
+    secrets: inherit        
 
   azureFunctions:
     needs: azureTemplates

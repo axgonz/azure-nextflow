@@ -1,8 +1,5 @@
 param location string = resourceGroup().location
 param name string
-param batchMsi_objectId string
-param nextflowMsi_objectId string
-param functionAppMsi_objectId string
 param keyVaultName string
 
 resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
@@ -21,46 +18,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
         allowBlobPublicAccess: true
         allowSharedKeyAccess: true
         supportsHttpsTrafficOnly: true
-    }
-}
-
-resource roleDefinition_Contributor 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
-    scope: subscription()
-    name: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-}
-
-resource roleDefinition_StorageQueueDataContributor 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
-    scope: subscription()
-    name: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-}
-
-resource batchMsi_roleAssignment_Cont 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-    scope: storageAccount
-    name: guid(storageAccount.id, batchMsi_objectId, roleDefinition_Contributor.id)
-    properties: {
-        roleDefinitionId: roleDefinition_Contributor.id
-        principalId: batchMsi_objectId
-        principalType: 'ServicePrincipal'
-    }
-}
-
-resource nextflowMsi_roleAssignment_QueueCont 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-    scope: storageAccount
-    name: guid(storageAccount.id, nextflowMsi_objectId, roleDefinition_StorageQueueDataContributor.id)
-    properties: {
-        roleDefinitionId: roleDefinition_StorageQueueDataContributor.id
-        principalId: nextflowMsi_objectId
-        principalType: 'ServicePrincipal'
-    }
-}
-
-resource funcMsi_roleAssignment_QueueCont 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-    scope: storageAccount
-    name: guid(storageAccount.id, functionAppMsi_objectId, roleDefinition_StorageQueueDataContributor.id)
-    properties: {
-        roleDefinitionId: roleDefinition_StorageQueueDataContributor.id
-        principalId: functionAppMsi_objectId
-        principalType: 'ServicePrincipal'
     }
 }
 

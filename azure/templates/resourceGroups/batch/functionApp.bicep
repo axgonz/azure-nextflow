@@ -1,16 +1,14 @@
 param location string = resourceGroup().location
 param name string
-param managedIdentityId string
 param storageAccountName string
-param nextflowMsi_objectId string
-param functionAppMsi_objectId string
-param NXFUTIL_AZ_SUB_ID string
-param NXFUTIL_AZ_RG_NAME string
-param NXFUTIL_AZ_KV_NAME string
-param NXFUTIL_AZ_CR_NAME string
-param NXFUTIL_AZ_MSI_NAME string
-param NXFUTIL_AZ_MSI_ID string
-param AZURE_CLIENT_ID string
+param managedIdentityId string
+param managedIdentityClientId string 
+
+param NXFUTIL_API_FQDN string = '<not_defined>'
+param NXFUTIL_AZ_CR_NAME string = '<not_defined>'
+param NXFUTIL_AZ_KV_NAME string = '<not_defined>'
+param NXFUTIL_AZ_MSI_NAME string = '<not_defined>'
+param NXFUTIL_AZ_MSI_ID string = '<not_defined>'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' existing = {
     name: storageAccountName
@@ -77,17 +75,21 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                     value: 'custom'
                 } 
                 {
-                    name: 'NXFUTIL_API_FQDN'
-                    value: '${name}.azurewebsites.net'
-                } 
-                {
                     name: 'NXFUTIL_AZ_SUB_ID'
-                    value: NXFUTIL_AZ_SUB_ID
+                    value: subscription().subscriptionId
                 }
                 {
                     name: 'NXFUTIL_AZ_RG_NAME'
-                    value: NXFUTIL_AZ_RG_NAME
+                    value: resourceGroup().name
                 }
+                {
+                    name: 'NXFUTIL_AZ_ST_NAME'
+                    value: storageAccountName
+                }      
+                {
+                    name: 'NXFUTIL_API_FQDN'
+                    value: NXFUTIL_API_FQDN
+                }                           
                 {
                     name: 'NXFUTIL_AZ_KV_NAME'
                     value: NXFUTIL_AZ_KV_NAME
@@ -106,35 +108,10 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                 }
                 {
                     name: 'AZURE_CLIENT_ID'
-                    value: AZURE_CLIENT_ID
+                    value: managedIdentityClientId
                 }           
             ]
         }
-    }
-}
-
-resource roleDefinition_Contributor 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
-    scope: subscription()
-    name: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-}
-
-resource roleAssignment_functionApp 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-    scope: resourceGroup()
-    name: guid(storageAccount.id, functionAppMsi_objectId, roleDefinition_Contributor.id)
-    properties: {
-        roleDefinitionId: roleDefinition_Contributor.id
-        principalId: functionAppMsi_objectId
-        principalType: 'ServicePrincipal'
-    }
-}
-
-resource roleAssignment_nextflow 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-    scope: resourceGroup()
-    name: guid(storageAccount.id, nextflowMsi_objectId, roleDefinition_Contributor.id)
-    properties: {
-        roleDefinitionId: roleDefinition_Contributor.id
-        principalId: nextflowMsi_objectId
-        principalType: 'ServicePrincipal'
     }
 }
 

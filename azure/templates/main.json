@@ -40,5 +40,11 @@
         "//": "Will be made globally unique with an auto generated suffix.",
         "name": "fc",
         "nameIsAlreadyUnique": false
-    }
+    },
+    "containerApp": {
+        "//": "Will be made globally unique with an auto generated suffix.",
+        "name": "ca",
+        "nameIsAlreadyUnique": false
+    },
+    "deployContainerAppInsteadOfFunctionApp": false
 }
