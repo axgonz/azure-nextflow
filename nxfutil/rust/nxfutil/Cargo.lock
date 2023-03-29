@@ -3,12 +3,6 @@
 version = 3
 
 [[package]]
-name = "RustyXML"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b5ace29ee3216de37c0546865ad08edef58b0f9e76838ed8959a84a990e58c5"
-
-[[package]]
 name = "aho-corasick"
 version = "0.7.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -185,9 +179,8 @@ dependencies = [
  "reqwest",
  "rustc_version",
  "serde",
- "serde-xml-rs",
  "serde_json",
- "time",
+ "time 0.3.20",
  "url",
  "uuid",
 ]
@@ -208,9 +201,35 @@ dependencies = [
  "pin-project",
  "serde",
  "serde_json",
- "time",
+ "time 0.3.20",
  "url",
  "uuid",
+]
+
+[[package]]
+name = "azure_mgmt_containerinstance"
+version = "0.10.0"
+source = "git+https://github.com/Azure/azure-sdk-for-rust?tag=v2023-02-15#3b7d7a51a5ca952d1582df7f804e4bdfad9ea024"
+dependencies = [
+ "azure_core",
+ "bytes",
+ "futures",
+ "serde",
+ "serde_json",
+ "time 0.3.20",
+]
+
+[[package]]
+name = "azure_mgmt_resources"
+version = "0.10.0"
+source = "git+https://github.com/Azure/azure-sdk-for-rust?tag=v2023-02-15#3b7d7a51a5ca952d1582df7f804e4bdfad9ea024"
+dependencies = [
+ "azure_core",
+ "bytes",
+ "futures",
+ "serde",
+ "serde_json",
+ "time 0.3.20",
 ]
 
 [[package]]
@@ -225,50 +244,8 @@ dependencies = [
  "futures",
  "serde",
  "serde_json",
- "time",
+ "time 0.3.20",
  "url",
-]
-
-[[package]]
-name = "azure_storage"
-version = "0.10.0"
-source = "git+https://github.com/Azure/azure-sdk-for-rust?tag=v2023-02-15#3b7d7a51a5ca952d1582df7f804e4bdfad9ea024"
-dependencies = [
- "RustyXML",
- "async-trait",
- "azure_core",
- "base64 0.13.1",
- "bytes",
- "futures",
- "hmac",
- "log",
- "once_cell",
- "serde",
- "serde-xml-rs",
- "serde_derive",
- "serde_json",
- "sha2",
- "time",
- "url",
- "uuid",
-]
-
-[[package]]
-name = "azure_storage_queues"
-version = "0.10.0"
-source = "git+https://github.com/Azure/azure-sdk-for-rust?tag=v2023-02-15#3b7d7a51a5ca952d1582df7f804e4bdfad9ea024"
-dependencies = [
- "azure_core",
- "azure_storage",
- "futures",
- "log",
- "serde",
- "serde-xml-rs",
- "serde_derive",
- "serde_json",
- "time",
- "url",
- "uuid",
 ]
 
 [[package]]
@@ -329,9 +306,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4e3c5919066adf22df73762e50cffcde3a758f2a848b113b586d1f86728b673b"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-integer",
  "num-traits",
  "serde",
+ "time 0.1.45",
+ "wasm-bindgen",
  "winapi",
 ]
 
@@ -512,7 +492,6 @@ checksum = "8168378f4e5023e7218c89c891c0fd8ecdb5e5e4f18cb78f38cf245dd021e76f"
 dependencies = [
  "block-buffer",
  "crypto-common",
- "subtle",
 ]
 
 [[package]]
@@ -799,15 +778,6 @@ name = "hermit-abi"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fed44880c466736ef9a5c5b5facefb5ed0785676d0c02d612db14e54f0d84286"
-
-[[package]]
-name = "hmac"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
-dependencies = [
- "digest",
-]
 
 [[package]]
 name = "http"
@@ -1126,14 +1096,18 @@ dependencies = [
  "az_app_identity",
  "az_app_secrets",
  "az_app_variables",
- "azure_storage",
- "azure_storage_queues",
+ "azure_mgmt_containerinstance",
+ "azure_mgmt_resources",
+ "chrono",
  "clap",
  "regex",
  "reqwest",
  "serde",
  "serde_json",
+ "strum",
+ "strum_macros",
  "tokio",
+ "uuid",
 ]
 
 [[package]]
@@ -1446,6 +1420,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustversion"
+version = "1.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f3208ce4d8448b3f3e7d168a73f5e0c43a61e32930de3bceeccedb388b6bf06"
+
+[[package]]
 name = "ryu"
 version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1502,18 +1482,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "771d4d9c4163ee138805e12c710dd365e4f44be8be0503cb1bb9eb989425d9c9"
 dependencies = [
  "serde_derive",
-]
-
-[[package]]
-name = "serde-xml-rs"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb3aa78ecda1ebc9ec9847d5d3aba7d618823446a049ba2491940506da6e2782"
-dependencies = [
- "log",
- "serde",
- "thiserror",
- "xml-rs",
 ]
 
 [[package]]
@@ -1607,10 +1575,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
-name = "subtle"
-version = "2.4.1"
+name = "strum"
+version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
+checksum = "063e6045c0e62079840579a7e47a355ae92f60eb74daaf156fb1e84ba164e63f"
+
+[[package]]
+name = "strum_macros"
+version = "0.24.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e385be0d24f186b4ce2f9982191e7101bb737312ad61c1f2f984f34bcf85d59"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
+ "rustversion",
+ "syn 1.0.109",
+]
 
 [[package]]
 name = "syn"
@@ -1674,6 +1655,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.10",
+]
+
+[[package]]
+name = "time"
+version = "0.1.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b797afad3f312d1c66a56d11d0316f916356d11bd158fbc6ca6389ff6bf805a"
+dependencies = [
+ "libc",
+ "wasi 0.10.0+wasi-snapshot-preview1",
+ "winapi",
 ]
 
 [[package]]
@@ -1900,6 +1892,12 @@ checksum = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
 
 [[package]]
 name = "wasi"
+version = "0.10.0+wasi-snapshot-preview1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a143597ca7c7793eff794def352d41792a93c481eb1042423ff7ff72ba2c31f"
+
+[[package]]
+name = "wasi"
 version = "0.11.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
@@ -2122,9 +2120,3 @@ checksum = "80d0f4e272c85def139476380b12f9ac60926689dd2e01d4923222f40580869d"
 dependencies = [
  "winapi",
 ]
-
-[[package]]
-name = "xml-rs"
-version = "0.8.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2d7d3948613f75c98fd9328cfdcc45acc4d360655289d0a7d4ec931392200a3"

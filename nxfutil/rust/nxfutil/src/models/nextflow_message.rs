@@ -1,0 +1,1 @@
+include!("../../../../../azure/functions/rust/src/models/nextflow_message.rs");

@@ -1,0 +1,1 @@
+include!("../../../../../azure/functions/rust/src/services_raw/az_mgmt_containerinstance.rs");

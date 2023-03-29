@@ -12,10 +12,14 @@ serde       = { version = "1" }
 serde_json  = { version = "1" }
 regex       = { version = "1.7" }
 reqwest     = { version = "0.11", features = ["json"] }
+chrono          = { version = "0.4" }
+uuid            = { version = "1.2" }
+strum           = { version = "0.24" }
+strum_macros    = { version = "0.24" }
 
 az_app_identity     = { version = "0.1", git = "https://github.com/axgonz/rust-crates", tag = "0.1.1" }
 az_app_variables    = { version = "0.1", git = "https://github.com/axgonz/rust-crates", tag = "0.1.1" }
 az_app_secrets      = { version = "0.1", git = "https://github.com/axgonz/rust-crates", tag = "0.1.1" }
 
-azure_storage           = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust", tag = "v2023-02-15" }
-azure_storage_queues    = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust", tag = "v2023-02-15" }
+azure_mgmt_resources            = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust", tag = "v2023-02-15" }
+azure_mgmt_containerinstance    = { version = "0.10.0", git = "https://github.com/Azure/azure-sdk-for-rust", tag = "v2023-02-15" }

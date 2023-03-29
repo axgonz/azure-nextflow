@@ -1,0 +1,1 @@
+pub mod az_mgmt_containerinstance;

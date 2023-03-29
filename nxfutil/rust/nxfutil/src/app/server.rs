@@ -1,4 +1,7 @@
+use az_app_identity::*;
+
 use crate::app::variables::*;
+use crate::services_raw::az_mgmt_containerinstance::*;
 
 use reqwest::{
     Response,
@@ -9,15 +12,12 @@ use serde_json::Value;
 
 use std::{
     error::Error,
-    time::Duration,
-    thread,
 };
-
 
 use std::process::{
     Command,
     Child,
-    ExitStatus,
+    Stdio,
 };
 
 #[derive(Clone)]
@@ -53,7 +53,6 @@ impl AppServer {
         }
         else {
             println!("[reqwest] GET {:#?}...Err", uri);
-            //ToDo send_message to queue before exiting. 
             panic!("{}", response.status())
         }
     }
@@ -96,32 +95,13 @@ impl AppServer {
         };
     }    
 
-    pub async fn terminate(variables: &AppVariables) {
-        println!("[app] Auto delete attempt...");
-
-        let uri: String = format!("https://{}/api/nxfutil/terminate", variables.nxfutil_api_fqdn);
-        let json: Value = serde_json::from_str(&format!("{{\"ci_name\": \"{}\"}}", variables.nxfutil_dispatcher)).unwrap();
-
-        let mut status = 0;
-        let mut retry = 3;
-        let mut delay = 3;
-        
-        while status != 200 && retry > 0 {
-            match Self::web_post(&uri, &json).await {
-                Ok(response) => {
-                    let body: Value = response.json().await.unwrap();
-                    println!("{}", body);
-                    status = 200
-                }
-                Err(error) => {
-                    println!("{}", error);
-                    status = 400
-                }
-            };
-            thread::sleep(Duration::from_secs(delay));
-            delay += delay;
-            retry -= 1;
-        }
+    pub async fn terminate(variables: &AppVariables, credential: Arc<DefaultAzureCredential>) {
+        let _deployment = AppAzMgmtContainerInstance::delete_nxfutil_ci(
+            credential, 
+            &variables, 
+            &variables.nxfutil_dispatcher,
+            true
+        ).await;
     }
 
     pub fn pre_panic(msg: &str, error: &dyn Error) {
@@ -134,21 +114,23 @@ impl AppServer {
         match Command::new("./nxfutild").spawn() {
             Ok(process) => process,
             Err(error) => {
-                Self::pre_panic("[app] Failed to start nxfutild service.", &error);
+                Self::pre_panic("[app] Unable to start nxfutild service.", &error);
                 panic!();
             }
         }
     }
     
-    pub fn nextflow(args: Vec<&str>) -> i32 {
+    pub fn nextflow(args: Vec<&str>) -> (i32, String, String) {
         let mut omit_log = false;
         for arg in &args {
             if arg.to_lowercase() == "secrets" {
                 omit_log = true;
             }
         }
-        let mut nextflow = match Command::new("/.nextflow/nextflow")
+        let nextflow = match Command::new("/.nextflow/nextflow")
             .args(&args)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
             .spawn() {
                 Ok(process) => {
                     if omit_log {
@@ -164,17 +146,22 @@ impl AppServer {
                     panic!();
                 }
             };
-        let exit_status: ExitStatus = match nextflow.wait() {
-            Ok(status) => {
-                println!("[nextflow] Process exited with status code: {:#?}", status.code().unwrap());
-                status
+            
+        let output = match nextflow.wait_with_output() {
+            Ok(output) => {
+                println!("[nextflow] Process exited with status code: {:#?}", output.status.code().unwrap());
+                output
             }
             Err(error) => {
                 Self::pre_panic("[nextflow] Process crashed", &error);
                 panic!("{}", error);
             }
         };
-
-        return exit_status.code().unwrap()
+        
+        let stdout = String::from_utf8(output.stdout.clone()).unwrap();
+        let stderr = String::from_utf8(output.stderr.clone()).unwrap();
+        println!("{}\n{}", stdout, stderr);
+        
+        return (output.status.code().unwrap(), stdout, stderr)
     }
 }
