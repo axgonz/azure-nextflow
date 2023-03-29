@@ -52,7 +52,7 @@ async fn main() -> std::io::Result<()> {
 
     let state = Data::new(app_state);
 
-    println!("\n[handler] Listening on http://{}:{}\n", addr, port);
+    println!("\n[nxfutild] Listening on http://{}:{}\n", addr, port);
     HttpServer::new(move || {
         App::new()
             .app_data(state.clone())
