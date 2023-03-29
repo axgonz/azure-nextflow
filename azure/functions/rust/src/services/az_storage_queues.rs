@@ -15,91 +15,102 @@ use serde_json::Value;
 
 #[derive(Clone)]
 pub struct AppAzStorageQueue {
+    pub name: String,
     pub client: QueueClient,
 }
 
 impl AppAzStorageQueue { 
-    pub fn new(credential: Arc<DefaultAzureCredential>, variables: &AppVariables) -> Self {
+    pub fn new(name: &str, credential: Arc<DefaultAzureCredential>, variables: &AppVariables) -> Self {
         let storage_credentials = StorageCredentials::TokenCredential(credential);
         let queue_service = QueueServiceClient::new(&variables.nxfutil_az_st_name, storage_credentials);
         Self {
-            client: queue_service.queue_client("nextflow")
+            name: name.to_string(),
+            client: queue_service.queue_client(name)
+        }
+    }
+
+    #[allow(dead_code)]
+    pub async fn init(&self) {
+        match self.client.create().await {
+            Ok(_) => {
+                println!("[az-storage-queues] Creating queue if not exists {:#?}...Ok", self.name);
+            },
+            Err(error) => {
+                println!("[az-storage-queues] Creating queue if not exists {:#?}...Err", self.name);
+                panic!("{}", error)
+            }
         }
     }
     
     #[allow(dead_code)]
     pub async fn send_message_to_queue(
-        credential: Arc<DefaultAzureCredential>, 
-        variables: &AppVariables,
-        req_payload: Json<Value>
+        &self,
+        message: Json<Value>
     ) {
-        let queue = AppAzStorageQueue::new(credential.clone(), &variables);
-        match queue.client.put_message(req_payload.to_string()).await {
+        match self.client.put_message(message.to_string()).await {
             Ok(_) => {
-                println!("[handler][az-storage-queues] Sending message...Ok");
+                println!("[az-storage-queues] Sending message...Ok");
             },
             Err(error) => {
-                println!("[handler][az-storage-queues] Sending message...Err");
+                println!("[az-storage-queues] Sending message...Err");
                 println!("{}", error)
             }        
         }
     }
 
+    #[allow(dead_code)]
     pub async fn peak_message_from_queue(
-        credential: Arc<DefaultAzureCredential>, 
-        variables: &AppVariables,
+        &self,
         count: u8
     ) -> Vec<Value> {       
         if count < 1 {
             return vec![];
         }
-        let mut messages: Vec<Value> = vec![]; 
-        let queue = AppAzStorageQueue::new(credential.clone(), &variables);
-        match queue.client.peek_messages().number_of_messages(count).await {
+        let mut messages: Vec<Value> = vec![];
+        match self.client.peek_messages().number_of_messages(count).await {
             Ok(response) => {
-                println!("[handler][az-storage-queues] Peak message...Ok");
+                println!("[az-storage-queues] Peak message...Ok");
                 for message in response.messages {
                     let raw_msg: Value = serde_json::from_str(&message.message_text).unwrap();
                     messages.push(raw_msg);
                 }
             },
             Err(error) => {
-                println!("[handler][az-storage-queues] Peak message...Err");
+                println!("[az-storage-queues] Peak message...Err");
                 println!("{}", error);
             }        
         };
         return messages
     }
     
+    #[allow(dead_code)]
     pub async fn get_message_from_queue(
-        credential: Arc<DefaultAzureCredential>, 
-        variables: &AppVariables,
+        &self,
         count: u8
     ) -> Vec<Value> {       
         if count < 1 {
             return vec![];
         }
         let mut messages: Vec<Value> = vec![]; 
-        let queue = AppAzStorageQueue::new(credential.clone(), &variables);
-        match queue.client.get_messages().number_of_messages(count).await {
+        match self.client.get_messages().number_of_messages(count).await {
             Ok(response) => {
-                println!("[handler][az-storage-queues] Get messages...Ok");
+                println!("[az-storage-queues] Get messages...Ok");
                 for message in response.messages {
                     let raw_msg: Value = serde_json::from_str(&message.message_text).unwrap();
                     messages.push(raw_msg);
-                    match queue.client.pop_receipt_client(message).delete().await {
+                    match self.client.pop_receipt_client(message).delete().await {
                         Ok(_) => {
-                            println!("[handler][az-storage-queues] Delete message...Ok");
+                            println!("[az-storage-queues] Delete message...Ok");
                         }
                         Err(error) => {
-                            println!("[handler][az-storage-queues] Delete message...Err");
+                            println!("[az-storage-queues] Delete message...Err");
                             println!("{}", error);
                         }
                     }
                 }
             },
             Err(error) => {
-                println!("[handler][az-storage-queues] Get messages...Err");
+                println!("[az-storage-queues] Get messages...Err");
                 println!("{}", error);
             }        
         };

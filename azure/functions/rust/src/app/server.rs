@@ -58,9 +58,14 @@ impl AppServer {
         return nxfutil_cmd
     }
 
-    fn clean_nextflow_message(raw_msg: &Value) -> Value {
+    fn clean_nextflow_message(mut raw_msg: Value) -> Value {
         let error_message: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
         let error_report: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
+        
+        if error_message.is_none() && error_report.is_some() {
+            raw_msg["metadata"]["workflow"]["errorMessage"] = raw_msg["metadata"]["workflow"]["errorReport"].clone();
+        }
+        
         if error_message.is_some() || error_report.is_some() {
             let mut clean_msg = raw_msg.clone();
             clean_msg["event"]="error".to_string().into();
@@ -77,23 +82,20 @@ impl AppServer {
         count: u8, 
         dequeue: bool
     ) -> Vec<Value>  {
+        let queue = AppAzStorageQueue::new("nextflow", credential.clone(), &variables);
         if dequeue {
-            AppAzStorageQueue::get_message_from_queue(
-                credential,
-                variables,
+            queue.get_message_from_queue(
                 count
             ).await
                 .iter()
-                .map(|msg| Self::clean_nextflow_message(msg))
+                .map(|msg| Self::clean_nextflow_message(msg.clone()))
                 .collect()
         } else {
-            AppAzStorageQueue::peak_message_from_queue(
-                credential,
-                variables,
+            queue.peak_message_from_queue(
                 count
             ).await
                 .iter()
-                .map(|msg| Self::clean_nextflow_message(msg))
+                .map(|msg| Self::clean_nextflow_message(msg.clone()))
                 .collect()
         }
     }  
@@ -120,13 +122,6 @@ impl AppServer {
             }
             if !msg_ids.contains(&raw_msg["runId"].to_string()) {
                 msg_ids.push(raw_msg["runId"].to_string());
-
-                let error_message: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
-                let error_report: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
-
-                if error_message.is_none() && error_report.is_some() {
-                    raw_msg["metadata"]["workflow"]["errorMessage"] = raw_msg["metadata"]["workflow"]["errorReport"].clone()
-                }
 
                 // Cast to strict type Message to drop unwanted properties
                 let msg: Message = serde_json::from_value(raw_msg).unwrap();

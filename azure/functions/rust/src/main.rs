@@ -36,8 +36,8 @@ async fn main() -> std::io::Result<()> {
     };
 
     let app_identity = AppIdentity::new();
-    let mut app_variables = AppVariables::new();
 
+    let mut app_variables = AppVariables::new();
     AppVariables::init(&mut app_variables);
     
     let app_state = AppState {

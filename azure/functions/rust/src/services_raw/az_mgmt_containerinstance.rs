@@ -59,6 +59,7 @@ impl fmt::Display for ProvisioningState {
 pub struct AppAzMgmtContainerInstance {}
 
 impl AppAzMgmtContainerInstance { 
+    #[allow(dead_code)]
     pub async fn create_nxfutil_ci(
         credential: Arc<DefaultAzureCredential>, 
         variables: &AppVariables,
@@ -152,15 +153,45 @@ impl AppAzMgmtContainerInstance {
                                         name: "NXFUTIL_API_FQDN".to_string(),
                                         value: Some(variables.nxfutil_api_fqdn.clone()),
                                         secure_value: None
-                                    },                                    
+                                    },
+                                    EnvironmentVariable {
+                                        name: "NXFUTIL_AZ_SUB_ID".to_string(),
+                                        value: Some(variables.nxfutil_az_sub_id.clone()),
+                                        secure_value: None
+                                    },
+                                    EnvironmentVariable {
+                                        name: "NXFUTIL_AZ_RG_NAME".to_string(),
+                                        value: Some(variables.nxfutil_az_rg_name.clone()),
+                                        secure_value: None
+                                    },
+                                    EnvironmentVariable {
+                                        name: "NXFUTIL_AZ_ST_NAME".to_string(),
+                                        value: Some(variables.nxfutil_az_st_name.clone()),
+                                        secure_value: None
+                                    },
+                                    EnvironmentVariable {
+                                        name: "NXFUTIL_AZ_KV_NAME".to_string(),
+                                        value: Some(variables.nxfutil_az_kv_name.clone()),
+                                        secure_value: None
+                                    },
+                                    EnvironmentVariable {
+                                        name: "NXFUTIL_AZ_CR_NAME".to_string(),
+                                        value: Some(variables.nxfutil_az_cr_name.clone()),
+                                        secure_value: None
+                                    },
                                     EnvironmentVariable {
                                         name: "AZURE_CLIENT_ID".to_string(),
                                         value: Some(variables.nxfutil_az_msi_id.clone()),
                                         secure_value: None
                                     },
                                     EnvironmentVariable {
-                                        name: "AZURE_KEYVAULT_NAME".to_string(),
-                                        value: Some(variables.nxfutil_az_kv_name.clone()),
+                                        name: "NXFUTIL_AZ_MSI_NAME".to_string(),
+                                        value: Some(variables.nxfutil_az_msi_name.clone()),
+                                        secure_value: None
+                                    },
+                                    EnvironmentVariable {
+                                        name: "NXFUTIL_AZ_MSI_ID".to_string(),
+                                        value: Some(variables.nxfutil_az_msi_id.clone()),
                                         secure_value: None
                                     }
                                 ], 
@@ -278,6 +309,7 @@ impl AppAzMgmtContainerInstance {
         return (ci_name, deployment_result);
     }
     
+    #[allow(dead_code)]
     pub async fn delete_nxfutil_ci(
         credential: Arc<DefaultAzureCredential>, 
         variables: &AppVariables,
