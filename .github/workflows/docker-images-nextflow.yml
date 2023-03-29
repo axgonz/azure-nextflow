@@ -27,7 +27,12 @@ jobs:
   rust_build_nxfutil:
     runs-on: ubuntu-latest
     steps:
-        # Variables
+    # Inputs
+    - name: 'Show inputs'
+      run: |
+        echo AZURE_KEYVAULT_NAME : ${{ inputs.AZURE_KEYVAULT_NAME }}
+
+    # Variables
     - name: 'Show variables'
       run: |
         echo NXFUTIL_BIN_NAME : ${{ env.NXFUTIL_BIN_NAME }} 

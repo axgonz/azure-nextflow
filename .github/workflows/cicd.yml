@@ -1,7 +1,7 @@
 # Authentication
-# Set up the following secrets in your GitHub repository: 
+# Set up the following secret in your GitHub repository: 
 #
-#   AZURE_CREDENTIALS
+#   AZURE_MSI
 #
 # For details on usage of secrets, please refer to:
 #  https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets
@@ -11,11 +11,6 @@ name: GitHub Workflows
 on: 
   workflow_dispatch:
     inputs:
-      AZURE_LOCATION: 
-        type: string
-        description: 'Azure region name'
-        required: true
-        default: 'australiaeast'
       AZURE_SUBSCRIPTION_ID:
         type: string
         description: 'Azure subscription id'
@@ -29,7 +24,6 @@ jobs:
   azureTemplates:
     uses: ./.github/workflows/azure-templates.yml
     with:
-      AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
       AZURE_SUBSCRIPTION_ID: ${{ inputs.AZURE_SUBSCRIPTION_ID }}
       AZURE_RESOURCEGROUP_NAME: ${{ inputs.AZURE_RESOURCEGROUP_NAME }}
     secrets: inherit

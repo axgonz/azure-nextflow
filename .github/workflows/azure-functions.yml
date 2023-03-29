@@ -11,14 +11,6 @@ on:
         type: string
         description: 'Azure Function App name'
         required: true
-  # push:
-  #   branches:
-  #     - 'main'
-  #   paths:
-  #     - 'azure/functions/rust/src'
-  #     - 'azure/functions/rust/Cargo.toml'
-  #     - 'azure/functions/rust/nxfutil*'
-  #     - 'azure/functions/rust/host.json'
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure/functions/rust'

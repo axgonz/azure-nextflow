@@ -4,11 +4,10 @@ param storageAccountName string
 param managedIdentityId string
 param managedIdentityClientId string 
 
-param NXFUTIL_API_FQDN string = '<not_defined>'
-param NXFUTIL_AZ_CR_NAME string = '<not_defined>'
-param NXFUTIL_AZ_KV_NAME string = '<not_defined>'
-param NXFUTIL_AZ_MSI_NAME string = '<not_defined>'
-param NXFUTIL_AZ_MSI_ID string = '<not_defined>'
+param NXFUTIL_AZ_CR_NAME string
+param NXFUTIL_AZ_KV_NAME string
+param NXFUTIL_AZ_MSI_NAME string
+param NXFUTIL_AZ_MSI_ID string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' existing = {
     name: storageAccountName
@@ -88,7 +87,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                 }      
                 {
                     name: 'NXFUTIL_API_FQDN'
-                    value: NXFUTIL_API_FQDN
+                    value: '${name}.azurewebsites.net'
                 }                           
                 {
                     name: 'NXFUTIL_AZ_KV_NAME'

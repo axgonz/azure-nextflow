@@ -7,11 +7,6 @@ permissions:
 on: 
   workflow_call:
     inputs:
-      AZURE_LOCATION: 
-        type: string
-        description: 'Azure region name'
-        required: true
-        default: 'australiaeast'
       AZURE_SUBSCRIPTION_ID:
         type: string
         description: 'Azure subscription id'
@@ -33,7 +28,7 @@ env:
   BICEP_FILE_NAME: 'main'
 
 jobs:
-  validate_and_deploy:
+  deploy:
     runs-on: ubuntu-latest 
     outputs:
       AZURE_KEYVAULT_NAME: ${{ steps.azureResources.outputs.keyVaultName }} 
@@ -83,35 +78,6 @@ jobs:
     - name: 'Checkout repository branch'
       uses: actions/checkout@v2
 
-    # # Get objectId from clientId
-    # - name: 'Get principal from clientId'
-    #   id: msiPrincipal
-    #   run: |
-    #     az --version
-    #     spn=$(az account show --query "user.name" --output tsv)
-    #     objectId=$(az ad sp list --spn "$spn" --query "[].objectId" --output tsv)
-    #     if test "$objectId" == ''
-    #     then 
-    #       echo "property 'objectId' not found trying 'id' instead"
-    #       objectId=$(az ad sp list --spn "$spn" --query "[].id" --output tsv)
-    #     fi
-    #     echo setting objectId to $objectId
-    #     echo "objectId=$objectId" >> $GITHUB_OUTPUT 
-
-    # Build
-    - name: Validate Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
-      uses: Azure/cli@1.0.4
-      with:
-        inlineScript: |
-          az config set bicep.use_binary_from_path=false
-          az --version
-          az deployment sub validate \
-            --name 'github-${{ github.run_number }}' \
-            --location ${{ inputs.AZURE_LOCATION }} \
-            --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID }} \
-            --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep \
-            --parameters resourceGroupName=${{ inputs.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=${{ steps.msiPrincipal.outputs.objectId }}
-
     # Deployment
     - name: Deploy Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
       id: azureResources
@@ -120,12 +86,11 @@ jobs:
         inlineScript: |
           az config set bicep.use_binary_from_path=false
           az --version
-          deployment=$(az deployment sub create \
+          deployment=$(az deployment group create \
             --name 'github-${{ github.run_number }}' \
-            --location ${{ inputs.AZURE_LOCATION }} \
             --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID }} \
             --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep \
-            --parameters resourceGroupName=${{ inputs.AZURE_RESOURCEGROUP_NAME }} deploymentPrincipalObjectId=${{ steps.msiPrincipal.outputs.objectId }})
+            --parameters deploymentPrincipalObjectId=${{ steps.msiPrincipal.outputs.objectId }})
           state=$(echo $deployment | jq -r ".properties.provisioningState")
           if test "$state" == 'Succeeded'
           then 

@@ -1,7 +1,6 @@
-targetScope = 'subscription'
+targetScope = 'resourceGroup'
 
-param location string = deployment().location
-param resourceGroupName string
+param location string = resourceGroup().location
 param deploymentPrincipalObjectId string = 'null'
 
 var configText = loadTextContent('./main.json')
@@ -10,15 +9,8 @@ var config = json(configText)
 // Get the short location and update place holders in config
 //var shortLocation = config.regionPrefixLookup[location]
 
-// Create core resource group and update the deployment
-resource rg_batch 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: resourceGroupName
-  location: location
-}
-
 module dep_msiBatchAccount 'resourceGroups/batch/managedIdentity.bicep' = {
-  name: '${rg_batch.name}-managedIdentity_batch'
-  scope: rg_batch
+  name: '${resourceGroup().name}-managedIdentity_batch'
   params: {
     location: location
     name: config.managedIdentity.batchAccount.name
@@ -26,8 +18,7 @@ module dep_msiBatchAccount 'resourceGroups/batch/managedIdentity.bicep' = {
 }
 
 module dep_msiFunctionApp 'resourceGroups/batch/managedIdentity.bicep' = {
-  name: '${rg_batch.name}-managedIdentity_func'
-  scope: rg_batch
+  name: '${resourceGroup().name}-managedIdentity_func'
   params: {
     location: location
     name: config.managedIdentity.functionApp.name
@@ -35,8 +26,7 @@ module dep_msiFunctionApp 'resourceGroups/batch/managedIdentity.bicep' = {
 }
 
 module dep_msiNextflow 'resourceGroups/batch/managedIdentity.bicep' = {
-  name: '${rg_batch.name}-managedIdentity_nextflow'
-  scope: rg_batch
+  name: '${resourceGroup().name}-managedIdentity_nextflow'
   params: {
     location: location
     name: config.managedIdentity.containerInstance.name
@@ -44,31 +34,28 @@ module dep_msiNextflow 'resourceGroups/batch/managedIdentity.bicep' = {
 }
 
 module dep_storageAccount 'resourceGroups/batch/storageAccount.bicep' = {
-  name: '${rg_batch.name}-storageAccount'
-  scope: rg_batch
+  name: '${resourceGroup().name}-storageAccount'
   params: {
     location: location
-    name: config.storageAccount.nameIsAlreadyUnique ? config.storageAccount.name : '${config.storageAccount.name}${substring(uniqueString(config.storageAccount.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
+    name: config.storageAccount.nameIsAlreadyUnique ? config.storageAccount.name : '${config.storageAccount.name}${substring(uniqueString(config.storageAccount.name, subscription().subscriptionId, resourceGroup().name, location), 0, 4)}'
     keyVaultName: dep_keyVault.outputs.name
   }
 }
 
 module dep_containerRegistry 'resourceGroups/batch/containerRegistry.bicep' = {
-  name: '${rg_batch.name}-containerRegistry'
-  scope: rg_batch
+  name: '${resourceGroup().name}-containerRegistry'
   params: {
     location: location
-    name: config.containerRegistry.nameIsAlreadyUnique ? config.containerRegistry.name : '${config.containerRegistry.name}${substring(uniqueString(config.containerRegistry.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
+    name: config.containerRegistry.nameIsAlreadyUnique ? config.containerRegistry.name : '${config.containerRegistry.name}${substring(uniqueString(config.containerRegistry.name, subscription().subscriptionId, resourceGroup().name, location), 0, 4)}'
     keyVaultName: dep_keyVault.outputs.name
   }
 }
 
 module dep_batchAccount 'resourceGroups/batch/batchAccount.bicep' = {
-  name: '${rg_batch.name}-batchAccount'
-  scope: rg_batch
+  name: '${resourceGroup().name}-batchAccount'
   params: {
     location: location
-    name: config.batchAccount.nameIsAlreadyUnique ? config.batchAccount.name : '${config.batchAccount.name}${substring(uniqueString(config.batchAccount.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
+    name: config.batchAccount.nameIsAlreadyUnique ? config.batchAccount.name : '${config.batchAccount.name}${substring(uniqueString(config.batchAccount.name, subscription().subscriptionId, resourceGroup().name, location), 0, 4)}'
     managedIdentityId: dep_msiBatchAccount.outputs.id
     storageAccountId: dep_storageAccount.outputs.id
     keyVaultName: dep_keyVault.outputs.name
@@ -76,27 +63,13 @@ module dep_batchAccount 'resourceGroups/batch/batchAccount.bicep' = {
 }
 
 module dep_functionApp 'resourceGroups/batch/functionApp.bicep' = if (config.deployContainerAppInsteadOfFunctionApp == false) {
-  name: '${rg_batch.name}-functionApp'
-  scope: rg_batch
+  name: '${resourceGroup().name}-functionApp-envVars'
   params: {
     location: location
-    name: config.functionApp.nameIsAlreadyUnique ? config.functionApp.name : '${config.functionApp.name}${substring(uniqueString(config.functionApp.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
+    name: config.functionApp.nameIsAlreadyUnique ? config.functionApp.name : '${config.functionApp.name}${substring(uniqueString(config.functionApp.name, subscription().subscriptionId, resourceGroup().name, location), 0, 4)}'
     storageAccountName: dep_storageAccount.outputs.name
     managedIdentityId: dep_msiFunctionApp.outputs.id
     managedIdentityClientId: dep_msiFunctionApp.outputs.clientId
-  }
-}
-
-module dep_functionApp_envVars 'resourceGroups/batch/functionApp.bicep' = if (config.deployContainerAppInsteadOfFunctionApp == false) {
-  name: '${rg_batch.name}-functionApp-envVars'
-  scope: rg_batch
-  params: {
-    location: location
-    name: config.functionApp.nameIsAlreadyUnique ? config.functionApp.name : '${config.functionApp.name}${substring(uniqueString(config.functionApp.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
-    storageAccountName: dep_storageAccount.outputs.name
-    managedIdentityId: dep_msiFunctionApp.outputs.id
-    managedIdentityClientId: dep_msiFunctionApp.outputs.clientId
-    NXFUTIL_API_FQDN: dep_functionApp.outputs.fqdn
     NXFUTIL_AZ_KV_NAME: dep_keyVault.outputs.name
     NXFUTIL_AZ_CR_NAME: dep_containerRegistry.outputs.name
     NXFUTIL_AZ_MSI_NAME: dep_msiNextflow.outputs.name
@@ -104,31 +77,14 @@ module dep_functionApp_envVars 'resourceGroups/batch/functionApp.bicep' = if (co
   }
 }
 
-module dep_containerApp 'resourceGroups/batch/containerApp.bicep' = if (config.deployContainerAppInsteadOfFunctionApp == true) {
-  name: '${rg_batch.name}-continaerApp'
-  scope: rg_batch
+module dep_containerApp 'resourceGroups/batch/containerAppWrapper.bicep' = if (config.deployContainerAppInsteadOfFunctionApp == true) {
+  name: '${resourceGroup().name}-containerApp'
   params: {
     location: location
-    name: config.containerApp.nameIsAlreadyUnique ? config.containerApp.name : '${config.containerApp.name}${substring(uniqueString(config.containerApp.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
+    name: config.containerApp.nameIsAlreadyUnique ? config.containerApp.name : '${config.containerApp.name}${substring(uniqueString(config.containerApp.name, subscription().subscriptionId, resourceGroup().name, location), 0, 4)}'
     storageAccountName: dep_storageAccount.outputs.name
     managedIdentityId: dep_msiFunctionApp.outputs.id
     managedIdentityClientId: dep_msiFunctionApp.outputs.clientId
-  }
-  dependsOn: [
-    dep_permissions
-  ]
-}
-
-module dep_contianerApp_envVars 'resourceGroups/batch/containerApp.bicep' = if (config.deployContainerAppInsteadOfFunctionApp == true) {
-  name: '${rg_batch.name}-continaerApp-envVars'
-  scope: rg_batch
-  params: {
-    location: location
-    name: config.containerApp.nameIsAlreadyUnique ? config.containerApp.name : '${config.containerApp.name}${substring(uniqueString(config.containerApp.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
-    storageAccountName: dep_storageAccount.outputs.name
-    managedIdentityId: dep_msiFunctionApp.outputs.id
-    managedIdentityClientId: dep_msiFunctionApp.outputs.clientId
-    NXFUTIL_API_FQDN: dep_containerApp.outputs.fqdn
     NXFUTIL_AZ_KV_NAME: dep_keyVault.outputs.name
     NXFUTIL_AZ_CR_NAME: dep_containerRegistry.outputs.name
     NXFUTIL_AZ_MSI_NAME: dep_msiNextflow.outputs.name
@@ -140,11 +96,10 @@ module dep_contianerApp_envVars 'resourceGroups/batch/containerApp.bicep' = if (
 }
 
 module dep_keyVault 'resourceGroups/batch/keyVault.bicep' = {
-  name: '${rg_batch.name}-keyVault'
-  scope: rg_batch
+  name: '${resourceGroup().name}-keyVault'
   params: {
     location: location
-    name: config.keyVault.nameIsAlreadyUnique ? config.keyVault.name : '${config.keyVault.name}${substring(uniqueString(config.keyVault.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
+    name: config.keyVault.nameIsAlreadyUnique ? config.keyVault.name : '${config.keyVault.name}${substring(uniqueString(config.keyVault.name, subscription().subscriptionId, resourceGroup().name, location), 0, 4)}'
     tenantId: dep_msiNextflow.outputs.tenantId
     objectIds: deploymentPrincipalObjectId == 'null' ? [
       dep_msiFunctionApp.outputs.objectId
@@ -158,8 +113,7 @@ module dep_keyVault 'resourceGroups/batch/keyVault.bicep' = {
 }
 
 module dep_permissions 'resourceGroups/batch/permissions.bicep' = {
-  name: '${rg_batch.name}-permissions'
-  scope: rg_batch
+  name: '${resourceGroup().name}-permissions'
   params: {
     functionAppMsi_objectId: dep_msiFunctionApp.outputs.objectId
     nextflowMsi_objectId: dep_msiNextflow.outputs.objectId
@@ -175,7 +129,7 @@ output keyVaultId string = dep_keyVault.outputs.id
 output keyVaultName string = dep_keyVault.outputs.name
 
 output NXFUTIL_AZ_SUB_ID string = subscription().subscriptionId
-output NXFUTIL_AZ_RG_NAME string = rg_batch.name
+output NXFUTIL_AZ_RG_NAME string = resourceGroup().name
 output NXFUTIL_AZ_KV_NAME string = dep_keyVault.outputs.name
 output NXFUTIL_AZ_CR_NAME string = dep_containerRegistry.outputs.name
 output NXFUTIL_AZ_MSI_ID string = dep_msiNextflow.outputs.clientId
