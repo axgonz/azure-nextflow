@@ -67,7 +67,7 @@ jobs:
         name: '${{ env.HANDLER_BIN_NAME }}'
         path: '${{ env.HANDLER_SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.HANDLER_BIN_NAME }}'
 
-  validate_and_push:
+  nxfutil_image:
     runs-on: ubuntu-latest
     needs: 
       - rust_build_handler

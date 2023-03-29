@@ -16,7 +16,7 @@ env:
   DOCKER_IMAGES_PATH: './docker/images'
   
 jobs:
-  validate_and_push:
+  ubuntu_image:
     runs-on: ubuntu-latest
     steps:
     # Inputs
