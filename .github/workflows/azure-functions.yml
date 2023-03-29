@@ -1,4 +1,4 @@
-name: Az functions
+name: Azure - functions
 
 permissions:
       id-token: write

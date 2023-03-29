@@ -1,4 +1,4 @@
-name: Az templates
+name: Azure - templates
 
 permissions:
       id-token: write
@@ -88,6 +88,7 @@ jobs:
           az --version
           deployment=$(az deployment group create \
             --name 'github-${{ github.run_number }}' \
+            --resource-group ${{ inputs.AZURE_RESOURCEGROUP_NAME }} \
             --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID }} \
             --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep \
             --parameters deploymentPrincipalObjectId=${{ steps.msiPrincipal.outputs.objectId }})

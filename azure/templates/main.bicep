@@ -123,9 +123,7 @@ module dep_permissions 'resourceGroups/batch/permissions.bicep' = {
   }
 }
 
-output functionAppId string = dep_functionApp.outputs.id
-output functionAppName string = dep_functionApp.outputs.name
-output keyVaultId string = dep_keyVault.outputs.id
+output functionAppName string = config.deployContainerAppInsteadOfFunctionApp ? '' : dep_functionApp.outputs.name
 output keyVaultName string = dep_keyVault.outputs.name
 
 output NXFUTIL_AZ_SUB_ID string = subscription().subscriptionId
