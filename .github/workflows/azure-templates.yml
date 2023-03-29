@@ -1,11 +1,7 @@
 name: Azure - templates
 
-permissions:
-      id-token: write
-      contents: read
-      
 on: 
-  workflow_call:
+  workflow_dispatch:
     inputs:
       AZURE_SUBSCRIPTION_ID:
         type: string
@@ -14,107 +10,12 @@ on:
       AZURE_RESOURCEGROUP_NAME:
         type: string
         description: 'Azure resource group name'
-        required: true        
-    outputs:
-      AZURE_KEYVAULT_NAME:
-        description: 'Key Vault name'
-        value: ${{ jobs.validate_and_deploy.outputs.AZURE_KEYVAULT_NAME }}
-      AZURE_FUNCTIONAPP_NAME:
-        description: 'Function App name'
-        value: ${{ jobs.validate_and_deploy.outputs.AZURE_FUNCTIONAPP_NAME }}
+        required: true  
 
-env:
-  BICEP_FILE_PATH: './azure/templates'
-  BICEP_FILE_NAME: 'main'
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest 
-    outputs:
-      AZURE_KEYVAULT_NAME: ${{ steps.azureResources.outputs.keyVaultName }} 
-      AZURE_FUNCTIONAPP_NAME: ${{ steps.azureResources.outputs.functionAppName }} 
-    steps:
-    # Inputs
-    - name: 'Show inputs'
-      run: |
-        echo AZURE_LOCATION : ${{ inputs.AZURE_LOCATION }}
-        echo AZURE_SUBSCRIPTION_ID : ${{ inputs.AZURE_SUBSCRIPTION_ID }}
-        echo AZURE_RESOURCEGROUP_NAME : ${{ inputs.AZURE_RESOURCEGROUP_NAME }}
-
-    # Variables
-    - name: 'Show variables'
-      run: |
-        echo BICEP_FILE_PATH : ${{ env.BICEP_FILE_PATH }}       
-        echo BICEP_FILE_NAME : ${{ env.BICEP_FILE_NAME }}       
-
-    # Prase AZURE_MSI secret
-    - name: Prase AZURE_MSI secret
-      id: msiPrincipal
-      env:
-        SECRET: ${{ secrets.AZURE_MSI }}
-      run: |
-        clientId=$(echo $SECRET | jq -r '.["clientId"]')
-        tenantId=$(echo $SECRET | jq -r '.["tenantId"]')
-        subscriptionId=$(echo $SECRET | jq -r '.["id"] | split("/")[2]')
-        principalId=$(echo $SECRET | jq -r '.["principalId"]')
-        echo "::add-mask::$clientId"
-        echo "::add-mask::$tenantId"
-        echo "::add-mask::$subscriptionId"
-        echo "::add-mask::$principalId"
-        echo clientId=$clientId >> $GITHUB_OUTPUT
-        echo tenantId=$tenantId >> $GITHUB_OUTPUT
-        echo subscriptionId=$subscriptionId >> $GITHUB_OUTPUT
-        echo objectId=$principalId >> $GITHUB_OUTPUT
-
-    # Login
-    - name: 'Azure login'
-      uses: azure/login@v1
-      with:
-        client-id: ${{ steps.msiPrincipal.outputs.clientId }}
-        tenant-id: ${{ steps.msiPrincipal.outputs.tenantId }}
-        subscription-id: ${{ steps.msiPrincipal.outputs.subscriptionId }}
-        
-    # Checkout
-    - name: 'Checkout repository branch'
-      uses: actions/checkout@v2
-
-    # Deployment
-    - name: Deploy Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
-      id: azureResources
-      uses: Azure/cli@1.0.4
-      with:
-        inlineScript: |
-          az config set bicep.use_binary_from_path=false
-          az --version
-          deployment=$(az deployment group create \
-            --name 'github-${{ github.run_number }}' \
-            --resource-group ${{ inputs.AZURE_RESOURCEGROUP_NAME }} \
-            --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID }} \
-            --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep \
-            --parameters deploymentPrincipalObjectId=${{ steps.msiPrincipal.outputs.objectId }})
-          state=$(echo $deployment | jq -r ".properties.provisioningState")
-          if test "$state" == 'Succeeded'
-          then 
-            kvName=$(echo $deployment | jq -r ".properties.outputs.keyVaultName.value")
-            echo setting keyVaultName to $kvName
-            echo "::set-output name=keyVaultName::$kvName"
-            
-            faName=$(echo $deployment | jq -r ".properties.outputs.functionAppName.value")
-            echo setting functionAppName to $faName
-            echo "::set-output name=functionAppName::$faName"
-          else
-            echo $deployment | jq -r "."
-            exit 1
-          fi
-
-    # Outputs
-    - name: 'Show outputs'
-      run: |
-        echo AZURE_KEYVAULT_NAME : ${{ steps.azureResources.outputs.keyVaultName }}
-        echo AZURE_FUNCTIONAPP_NAME : ${{ steps.azureResources.outputs.functionAppName }}
-
-    # Logout
-    - name: 'Azure logout'
-      run: |
-        az logout
-      if: always()
+jobs:      
+  azureTemplates:
+    uses: ./.github/workflows/azure-templates.yml
+    with:
+      AZURE_SUBSCRIPTION_ID: ${{ inputs.AZURE_SUBSCRIPTION_ID }}
+      AZURE_RESOURCEGROUP_NAME: ${{ inputs.AZURE_RESOURCEGROUP_NAME }}
+    secrets: inherit

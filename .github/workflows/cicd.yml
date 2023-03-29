@@ -6,7 +6,7 @@
 # For details on usage of secrets, please refer to:
 #  https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets
 
-name: Run GitHub Workflows
+name: All GitHub Workflows
 
 on: 
   workflow_dispatch:

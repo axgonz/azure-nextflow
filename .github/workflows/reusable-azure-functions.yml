@@ -1,0 +1,128 @@
+name: reusable/Azure - functions
+
+permissions:
+      id-token: write
+      contents: read
+
+on:
+  workflow_call:
+    inputs:
+      AZURE_FUNCTIONAPP_NAME: 
+        type: string
+        description: 'Azure Function App name'
+        required: true
+
+env:
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure/functions/rust'
+  RUST_BACKTRACE: 'full'
+  CARGO_TARGET: 'x86_64-unknown-linux-gnu'
+  HANDLER_BIN_NAME: 'handler'
+  HANDLER_SOURCE_PATH: 'azure/functions/rust'    
+
+jobs:
+  build_and_publish:
+    # Azure functions does not yet support openssl.3
+    #  ubuntu-latest uses openssl.3 so we need to 
+    #  downgrade runner to 20.04.
+    runs-on: ubuntu-20.04
+    steps:
+    # Inputs
+    - name: 'Show inputs'
+      run: |
+        echo AZURE_FUNCTIONAPP_NAME : ${{ inputs.AZURE_FUNCTIONAPP_NAME }}
+
+    # Variables
+    - name: 'Show variables'
+      run: |
+        echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} 
+
+    # Checkout
+    - name: 'Checkout repository branch'
+      uses: actions/checkout@v2   
+
+    # Prase AZURE_MSI secret
+    - name: Prase AZURE_MSI secret
+      id: msiPrincipal
+      env:
+        SECRET: ${{ secrets.AZURE_MSI }}
+      run: |
+        clientId=$(echo $SECRET | jq -r '.["clientId"]')
+        tenantId=$(echo $SECRET | jq -r '.["tenantId"]')
+        subscriptionId=$(echo $SECRET | jq -r '.["id"] | split("/")[2]')
+        echo "::add-mask::$clientId"
+        echo "::add-mask::$tenantId"
+        echo "::add-mask::$subscriptionId"
+        echo clientId=$clientId >> $GITHUB_OUTPUT
+        echo tenantId=$tenantId >> $GITHUB_OUTPUT
+        echo subscriptionId=$subscriptionId >> $GITHUB_OUTPUT
+
+    # Login
+    - name: 'Azure login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ steps.msiPrincipal.outputs.clientId }}
+        tenant-id: ${{ steps.msiPrincipal.outputs.tenantId }}
+        subscription-id: ${{ steps.msiPrincipal.outputs.subscriptionId }}
+
+    # Cache
+    - name: 'Cache cargo target dir'
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
+        key: cargo-cache-nxfutil-target 
+
+    # Update / Install Rust
+    - name: 'Update / install rust'
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        target: ${{ env.CARGO_TARGET }}
+        toolchain: stable
+        default: true
+        override: true
+    
+    # Build
+    - name: 'Build custom handler binary'
+      shell: bash
+      run: |       
+        pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        cargo build --target "${{ env.CARGO_TARGET }}" --release
+        popd
+
+    # Archive
+    - name: Archive binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: '${{ env.HANDLER_BIN_NAME }}'
+        path: '${{ env.HANDLER_SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.HANDLER_BIN_NAME }}'        
+   
+    # Move files 
+    - name: 'Select only required files for FuncApp'
+      shell: bash
+      run: |
+        pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        mkdir -p output
+        cp -rv `find nxfutil* -type d` output/
+        cp -v host.json output/
+        popd
+
+    # Download
+    - name: Download binary
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ env.HANDLER_BIN_NAME }}
+        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'        
+
+    # Deployment
+    - name: 'Run Azure Functions Action'
+      uses: Azure/functions-action@v1
+      with:
+        app-name: ${{ inputs.AZURE_FUNCTIONAPP_NAME }}
+        package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output
+
+    # Logout
+    - name: 'Azure logout'
+      run: |
+        az logout
+      if: always()        

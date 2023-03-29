@@ -1,156 +1,16 @@
 name: Docker - nxfutil
 
-permissions:
-      id-token: write
-      contents: read
-
-on:
-  workflow_call:
+on: 
+  workflow_dispatch:
     inputs:
       AZURE_KEYVAULT_NAME:
         type: string
         description: 'Azure Key Vault name'
         required: true
 
-env:
-  DOCKER_IMAGES_PATH: './docker/images'
-  RUST_BACKTRACE: 'full'
-  CARGO_TARGET: 'x86_64-unknown-linux-gnu'
-  
-  HANDLER_BIN_NAME: 'handler'
-  HANDLER_SOURCE_PATH: 'azure/functions/rust'
-  
-jobs:
-  rust_build_handler:
-    runs-on: ubuntu-latest
-    steps:
-    # Inputs
-    - name: 'Show inputs'
-      run: |
-        echo AZURE_KEYVAULT_NAME : ${{ inputs.AZURE_KEYVAULT_NAME }}
-            
-    # Variables
-    - name: 'Show variables'
-      run: |
-        echo HANDLER_BIN_NAME : ${{ env.HANDLER_BIN_NAME }} 
-        echo HANDLER_SOURCE_PATH : ${{ env.HANDLER_SOURCE_PATH }} 
-
-    # Checkout
-    - name: 'Checkout repository branch'
-      uses: actions/checkout@v2                 
-    
-    # Update / Install Rust
-    - name: 'Update / install rust'
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        target: ${{ env.CARGO_TARGET }}
-        toolchain: stable
-        default: true
-        override: true
-
-    # Cache
-    - name: 'Cache cargo target dir'
-      id: cache_handler
-      uses: actions/cache@v3
-      with:
-        path: '${{ env.HANDLER_SOURCE_PATH }}/target'
-        key: 'cargo-target-${{ env.HANDLER_BIN_NAME }}'
-
-    # Build
-    - name: 'Build binary'
-      shell: bash
-      run: |       
-        pushd '${{ env.HANDLER_SOURCE_PATH }}'
-        cargo build --target "${{ env.CARGO_TARGET }}" --release
-        popd
-
-    # Archive
-    - name: Archive binary
-      uses: actions/upload-artifact@v3
-      with:
-        name: '${{ env.HANDLER_BIN_NAME }}'
-        path: '${{ env.HANDLER_SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.HANDLER_BIN_NAME }}'
-
-  nxfutil_image:
-    runs-on: ubuntu-latest
-    needs: 
-      - rust_build_handler
-    steps:
-    # Inputs
-    - name: 'Show inputs'
-      run: |
-        echo AZURE_KEYVAULT_NAME : ${{ inputs.AZURE_KEYVAULT_NAME }}
-
-    # Variables
-    - name: 'Show variables'
-      run: |
-        echo DOCKER_IMAGES_PATH : ${{ env.DOCKER_IMAGES_PATH }} 
-
-    # Prase AZURE_MSI secret
-    - name: Prase AZURE_MSI secret
-      id: msiPrincipal
-      env:
-        SECRET: ${{ secrets.AZURE_MSI }}
-      run: |
-        clientId=$(echo $SECRET | jq -r '.["clientId"]')
-        tenantId=$(echo $SECRET | jq -r '.["tenantId"]')
-        subscriptionId=$(echo $SECRET | jq -r '.["id"] | split("/")[2]')
-        echo "::add-mask::$clientId"
-        echo "::add-mask::$tenantId"
-        echo "::add-mask::$subscriptionId"
-        echo clientId=$clientId >> $GITHUB_OUTPUT
-        echo tenantId=$tenantId >> $GITHUB_OUTPUT
-        echo subscriptionId=$subscriptionId >> $GITHUB_OUTPUT
-
-    # Login
-    - name: 'Azure login'
-      uses: azure/login@v1
-      with:
-        client-id: ${{ steps.msiPrincipal.outputs.clientId }}
-        tenant-id: ${{ steps.msiPrincipal.outputs.tenantId }}
-        subscription-id: ${{ steps.msiPrincipal.outputs.subscriptionId }}
-
-    # Checkout
-    - name: 'Checkout repository branch'
-      uses: actions/checkout@v2                 
-    
-    # Key Vault secrets
-    - name: 'Get secrets from Key Vault' 
-      id: keyVaultSecrets
-      uses: Azure/get-keyvault-secrets@v1
-      with: 
-        keyvault: ${{ inputs.AZURE_KEYVAULT_NAME }}
-        secrets: 'azure-registry-server, azure-registry-username, azure-registry-password'
-
-    # ACR login 
-    - name: 'Login to Container Registry'
-      uses: azure/docker-login@v1
-      with:
-        login-server: ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}
-        username: ${{ steps.keyVaultSecrets.outputs.azure-registry-username }}
-        password: ${{ steps.keyVaultSecrets.outputs.azure-registry-password }}
-
-    # Download
-    - name: Download binary
-      uses: actions/download-artifact@v3
-      with:
-        name: handler
-        path: '${{ env.DOCKER_IMAGES_PATH }}/nxfutil' 
-
-    # Deployment
-    - name: 'Build and push images'
-      shell: bash
-      run: |
-        pushd '${{ env.DOCKER_IMAGES_PATH }}/nxfutil'
-        docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nxfutil:${{ github.sha }}
-        docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nxfutil:${{ github.sha }}
-        docker build -f Dockerfile . -t ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nxfutil:latest
-        docker push ${{ steps.keyVaultSecrets.outputs.azure-registry-server }}/default/nxfutil:latest
-        popd
-
-    # Logout
-    - name: 'Azure logout'
-      run: |
-        az logout
-      if: always()
+jobs:      
+  dockerImagesNxfutil:
+    uses: ./.github/workflows/docker-images-nxfutil.yml
+    with:
+      AZURE_KEYVAULT_NAME: ${{ inputs.AZURE_KEYVAULT_NAME }}
+    secrets: inherit        
