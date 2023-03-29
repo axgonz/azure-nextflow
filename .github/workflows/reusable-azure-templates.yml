@@ -37,7 +37,6 @@ jobs:
     # Inputs
     - name: 'Show inputs'
       run: |
-        echo AZURE_LOCATION : ${{ inputs.AZURE_LOCATION }}
         echo AZURE_SUBSCRIPTION_ID : ${{ inputs.AZURE_SUBSCRIPTION_ID }}
         echo AZURE_RESOURCEGROUP_NAME : ${{ inputs.AZURE_RESOURCEGROUP_NAME }}
 
@@ -97,11 +96,11 @@ jobs:
           then 
             kvName=$(echo $deployment | jq -r ".properties.outputs.keyVaultName.value")
             echo setting keyVaultName to $kvName
-            echo "::set-output name=keyVaultName::$kvName"
+            echo "keyVaultName=$kvName" >> $GITHUB_OUTPUT
             
             faName=$(echo $deployment | jq -r ".properties.outputs.functionAppName.value")
             echo setting functionAppName to $faName
-            echo "::set-output name=functionAppName::$faName"
+            echo "functionAppName=$faName" >> $GITHUB_OUTPUT
           else
             echo $deployment | jq -r "."
             exit 1
