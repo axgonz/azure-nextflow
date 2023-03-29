@@ -34,6 +34,7 @@ jobs:
     with:
       AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit
+    if: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME != '' }} 
 
   dockerImagesNextflow:
     needs: azureTemplates
@@ -41,13 +42,15 @@ jobs:
     with:
       AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit
+    if: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME != '' }} 
 
   dockerImagesNxfutil:
     needs: azureTemplates
     uses: ./.github/workflows/reusable-docker-images-nxfutil.yml
     with:
       AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
-    secrets: inherit        
+    secrets: inherit  
+    if: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME != '' }}      
 
   azureFunctions:
     needs: azureTemplates
@@ -55,3 +58,4 @@ jobs:
     with:
       AZURE_FUNCTIONAPP_NAME: ${{ needs.azureTemplates.outputs.AZURE_FUNCTIONAPP_NAME }}
     secrets: inherit    
+    if: ${{ needs.azureTemplates.outputs.AZURE_FUNCTIONAPP_NAME != '' }}
