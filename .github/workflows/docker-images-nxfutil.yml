@@ -10,7 +10,7 @@ on:
 
 jobs:      
   dockerImagesNxfutil:
-    uses: ./.github/workflows/docker-images-nxfutil.yml
+    uses: ./.github/workflows/reusable-docker-images-nxfutil.yml
     with:
       AZURE_KEYVAULT_NAME: ${{ inputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit        

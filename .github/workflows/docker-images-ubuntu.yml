@@ -10,7 +10,7 @@ on:
 
 jobs:      
   dockerImagesUbuntu:
-    uses: ./.github/workflows/docker-images-ubuntu.yml
+    uses: ./.github/workflows/reusable-docker-images-ubuntu.yml
     with:
       AZURE_KEYVAULT_NAME: ${{ inputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit

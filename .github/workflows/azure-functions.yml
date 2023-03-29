@@ -10,7 +10,7 @@ on:
 
 jobs:      
   azureFunctions:
-    uses: ./.github/workflows/azure-functions.yml
+    uses: ./.github/workflows/reusable-azure-functions.yml
     with:
       AZURE_FUNCTIONAPP_NAME: ${{ inputs.AZURE_FUNCTIONAPP_NAME }}
     secrets: inherit    
