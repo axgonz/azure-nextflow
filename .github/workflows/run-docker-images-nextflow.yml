@@ -10,7 +10,7 @@ on:
 
 jobs:      
   dockerImagesNextflow:
-    uses: ./.github/workflows/reusable/docker-images-nextflow.yml
+    uses: ./.github/workflows/docker-images-nextflow.yml
     with:
       AZURE_KEYVAULT_NAME: ${{ inputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit

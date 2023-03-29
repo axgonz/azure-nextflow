@@ -22,7 +22,7 @@ on:
 
 jobs:      
   azureTemplates:
-    uses: ./.github/workflows/reusable/azure-templates.yml
+    uses: ./.github/workflows/azure-templates.yml
     with:
       AZURE_SUBSCRIPTION_ID: ${{ inputs.AZURE_SUBSCRIPTION_ID }}
       AZURE_RESOURCEGROUP_NAME: ${{ inputs.AZURE_RESOURCEGROUP_NAME }}
@@ -30,28 +30,28 @@ jobs:
 
   dockerImagesUbuntu:
     needs: azureTemplates
-    uses: ./.github/workflows/reusable/docker-images-ubuntu.yml
+    uses: ./.github/workflows/docker-images-ubuntu.yml
     with:
       AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit
 
   dockerImagesNextflow:
     needs: azureTemplates
-    uses: ./.github/workflows/reusable/docker-images-nextflow.yml
+    uses: ./.github/workflows/docker-images-nextflow.yml
     with:
       AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit
 
   dockerImagesNxfutil:
     needs: azureTemplates
-    uses: ./.github/workflows/reusable/docker-images-nxfutil.yml
+    uses: ./.github/workflows/docker-images-nxfutil.yml
     with:
       AZURE_KEYVAULT_NAME: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME }}
     secrets: inherit        
 
   azureFunctions:
     needs: azureTemplates
-    uses: ./.github/workflows/reusable/azure-functions.yml
+    uses: ./.github/workflows/azure-functions.yml
     with:
       AZURE_FUNCTIONAPP_NAME: ${{ needs.azureTemplates.outputs.AZURE_FUNCTIONAPP_NAME }}
     secrets: inherit    
