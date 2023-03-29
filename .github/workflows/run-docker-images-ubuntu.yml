@@ -1,0 +1,16 @@
+name: Run Docker - ubuntu
+
+on: 
+  workflow_dispatch:
+    inputs:
+      AZURE_KEYVAULT_NAME:
+        type: string
+        description: 'Azure Key Vault name'
+        required: true 
+
+jobs:      
+  dockerImagesUbuntu:
+    uses: ./.github/workflows/reusable/docker-images-ubuntu.yml
+    with:
+      AZURE_KEYVAULT_NAME: ${{ inputs.AZURE_KEYVAULT_NAME }}
+    secrets: inherit

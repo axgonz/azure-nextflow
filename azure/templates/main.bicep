@@ -63,7 +63,7 @@ module dep_batchAccount 'resourceGroups/batch/batchAccount.bicep' = {
 }
 
 module dep_functionApp 'resourceGroups/batch/functionApp.bicep' = if (config.deployContainerAppInsteadOfFunctionApp == false) {
-  name: '${resourceGroup().name}-functionApp-envVars'
+  name: '${resourceGroup().name}-functionApp'
   params: {
     location: location
     name: config.functionApp.nameIsAlreadyUnique ? config.functionApp.name : '${config.functionApp.name}${substring(uniqueString(config.functionApp.name, subscription().subscriptionId, resourceGroup().name, location), 0, 4)}'
