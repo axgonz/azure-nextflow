@@ -63,7 +63,7 @@ module dep_storageAccount 'resourceGroups/batch/storageAccount.bicep' = {
     name: config.storageAccount.nameIsAlreadyUnique ? config.storageAccount.name : '${config.storageAccount.name}${substring(uniqueString(config.storageAccount.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
     batchMsi_objectId: dep_msiBatchAccount.outputs.objectId
     nextflowMsi_objectId: dep_msiNextflow.outputs.objectId
-    funcMsi_objectId: dep_msiFunctionApp.outputs.objectId
+    functionAppMsi_objectId: dep_msiFunctionApp.outputs.objectId
     keyVaultName: dep_keyVault.outputs.name
   }
 }
@@ -88,7 +88,8 @@ module dep_functionApp 'resourceGroups/batch/functionApp.bicep' = {
     name: config.functionApp.nameIsAlreadyUnique ? config.functionApp.name : '${config.functionApp.name}${substring(uniqueString(config.functionApp.name, subscription().subscriptionId, rg_batch.name, location), 0, 4)}'
     managedIdentityId: dep_msiFunctionApp.outputs.id
     storageAccountName: dep_storageAccount.outputs.name
-    objectId: dep_msiFunctionApp.outputs.objectId
+    nextflowMsi_objectId: dep_msiNextflow.outputs.objectId
+    functionAppMsi_objectId: dep_msiFunctionApp.outputs.objectId
     NXFUTIL_AZ_SUB_ID: subscription().subscriptionId
     NXFUTIL_AZ_RG_NAME: rg_batch.name
     NXFUTIL_AZ_KV_NAME: dep_keyVault.outputs.name

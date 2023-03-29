@@ -2,7 +2,7 @@ param location string = resourceGroup().location
 param name string
 param batchMsi_objectId string
 param nextflowMsi_objectId string
-param funcMsi_objectId string
+param functionAppMsi_objectId string
 param keyVaultName string
 
 resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
@@ -56,10 +56,10 @@ resource nextflowMsi_roleAssignment_QueueCont 'Microsoft.Authorization/roleAssig
 
 resource funcMsi_roleAssignment_QueueCont 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
     scope: storageAccount
-    name: guid(storageAccount.id, funcMsi_objectId, roleDefinition_StorageQueueDataContributor.id)
+    name: guid(storageAccount.id, functionAppMsi_objectId, roleDefinition_StorageQueueDataContributor.id)
     properties: {
         roleDefinitionId: roleDefinition_StorageQueueDataContributor.id
-        principalId: funcMsi_objectId
+        principalId: functionAppMsi_objectId
         principalType: 'ServicePrincipal'
     }
 }

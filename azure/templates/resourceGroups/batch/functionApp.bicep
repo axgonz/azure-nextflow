@@ -2,7 +2,8 @@ param location string = resourceGroup().location
 param name string
 param managedIdentityId string
 param storageAccountName string
-param objectId string
+param nextflowMsi_objectId string
+param functionAppMsi_objectId string
 param NXFUTIL_AZ_SUB_ID string
 param NXFUTIL_AZ_RG_NAME string
 param NXFUTIL_AZ_KV_NAME string
@@ -117,12 +118,22 @@ resource roleDefinition_Contributor 'Microsoft.Authorization/roleDefinitions@201
     name: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
 }
 
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource roleAssignment_functionApp 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
     scope: resourceGroup()
-    name: guid(storageAccount.id, objectId, roleDefinition_Contributor.id)
+    name: guid(storageAccount.id, functionAppMsi_objectId, roleDefinition_Contributor.id)
     properties: {
         roleDefinitionId: roleDefinition_Contributor.id
-        principalId: objectId
+        principalId: functionAppMsi_objectId
+        principalType: 'ServicePrincipal'
+    }
+}
+
+resource roleAssignment_nextflow 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+    scope: resourceGroup()
+    name: guid(storageAccount.id, nextflowMsi_objectId, roleDefinition_Contributor.id)
+    properties: {
+        roleDefinitionId: roleDefinition_Contributor.id
+        principalId: nextflowMsi_objectId
         principalType: 'ServicePrincipal'
     }
 }
