@@ -18,7 +18,7 @@ It is assumed that regardless of deployment method, GitHub is used for hosting t
 
     ``` bash
     # Check version
-    az --version 
+    az --version
 
     # Login
     az login
@@ -29,10 +29,11 @@ It is assumed that regardless of deployment method, GitHub is used for hosting t
 
 1. Define these variables (change values as needed).
 
-    ``` bash 
+    ``` bash
     az_subId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
     az_location="australiaeast"
-    az_rgName="GitHubFederatedIdentities"
+    az_rgName="nxfutil001"
+    az_msiRgName="GitHubFederatedIdentities"
     az_msiName="GitHubActions"
 
     gh_org="xxxxxx"          # this repo's org or username
@@ -42,41 +43,49 @@ It is assumed that regardless of deployment method, GitHub is used for hosting t
 1. Create a Resource Group for the Managed Identity.
 
     ``` bash
-    # Create Resource Group
-    az group create --name $az_rgName --location $az_location --subscription $az_subId
+    # Create MSI Resource Group
+    az group create --name $az_msiRgName --location $az_location --subscription $az_subId
     ```
 
-1. Create a Managed Identity (user assigned) for GitHub to authenticate with Azure. 
+1. Create a Managed Identity (user assigned) for GitHub to authenticate with Azure.
 
     ``` bash
     # Create MSI
-    az identity create --name $az_msiName --resource-group $az_rgName --subscription $az_subId
+    az identity create --name $az_msiName --resource-group $az_msiRgName --subscription $az_subId
 
     # Federate with GitHub
-    az identity federated-credential create --name "${gh_org}--${gh_repo}" --identity-name $az_msiName --subject "repo:${gh_org}/${gh_repo}:ref:refs/heads/main" --issuer "https://token.actions.githubusercontent.com" --resource-group $az_rgName --subscription $az_subId 
+    az identity federated-credential create --name "${gh_org}--${gh_repo}" --identity-name $az_msiName --subject "repo:${gh_org}/${gh_repo}:ref:refs/heads/main" --issuer "https://token.actions.githubusercontent.com" --resource-group $az_msiRgName --subscription $az_subId
 
     # Show details (needed to create the AZURE_MSI GitHub secret)
-    az identity show --name $az_msiName --resource-group $az_rgName
+    az identity show --name $az_msiName --resource-group $az_msiRgName --subscription $az_subId
     ```
 
-1. Assign ARM permissions to the Managed Identity
-
-    ``` bash
-    # Assign ARM permissions
-    az role assignment create --assignee $az_msiName --role 'Owner' --scope /subscriptions/$az_subId
-    ```    
-
-    > Note: The permissions above are an example, use the least privileged approach when assigning permissions.
-        
 ## Set up
 
 The following uses the provided GitHub workflows to build and deploy the sample.
 
-The deployment is targeted at the subscription level and will create the target resource group if it does not exist. This is why the deployment principal requires permission at the `Subscription` scope.
+The deployment is targeted at the resource group level and will require the target resource group to be created first.
 
-The deployment creates and assigns permissions to a number of Managed Identities. This is why the deployment principal requires the `Owner` permission.
+1. Create the target resource group
 
-> Important: As a minimum the deployment principal will require `Contributor` permission on the subscription and `Owner` permission on the target resource group provided the **target resource group** is **created ahead of time**.
+    ``` bash
+    # Create the target Resource Group
+    az group create --name $az_rgName --location $az_location --subscription $az_subId
+    ```
+
+The deployment creates and assigns permissions to a number of additional Managed Identities. This is why the deployment principal requires the `Owner` permission.
+
+1. Assign ARM permissions to the deployment Managed Identity
+
+    ``` bash
+    # Get the objectId of the deployment MSI
+    az_msiObjectId=$(az identity show --name $az_msiName --resource-group $az_msiRgName --subscription $az_subId --query principalId --output tsv)
+
+    # Assign ARM permissions
+    az role assignment create --assignee $az_msiObjectId --role 'Owner' --scope /subscriptions/$az_subId/resourceGroups/$az_rgName
+    ```
+
+    > Note: The permissions above are an example, use the least privileged approach when assigning permissions.
 
 ### Deploy using GitHub
 
@@ -104,7 +113,7 @@ The deployment creates and assigns permissions to a number of Managed Identities
     }
     ```
 
-1. Run the workflow called `GitHub Workflows`.
+1. Run the workflow called `All GitHub Workflows`.
 
     <img src="./docs/GitHubWorkflow.png" width="300" alt="Running the GitHub Workflow">
 
@@ -133,9 +142,9 @@ az_funcAppName="myFuncAppName"
 curl --get "https://$az_funcAppName.azurewebsites.net/api/nxfutil"
 
 # returns
-# [GET,POST] api/nxfutil/dispatch 
-# [GET,POST] api/nxfutil/status 
-# [GET,POST] api/nxfutil/terminate 
+# [GET,POST] api/nxfutil/dispatch
+# [GET,POST] api/nxfutil/status
+# [GET,POST] api/nxfutil/terminate
 ```
 
 ### GET api/nxfutil/dispatch
@@ -152,10 +161,16 @@ The http trigger requires a json payload to provide the nextflow job with it's r
 
 ``` json
 {
-    "config_uri": "",
-    "pipeline_uri": "",
-    "parameters_uri": "",
-    "auto_delete": true
+  "config_uri": "String",
+  "pipeline_uri": "String",
+  "parameters_uri": "String",
+  "parameters_json": [
+    {
+      "name": "String",
+      "value": "Value"
+    }
+  ],
+  "auto_delete": true
 }
 ```
 
@@ -172,14 +187,14 @@ curl -X POST "https://$az_funcAppName.azurewebsites.net/api/nxfutil?whatif=true"
 
 Will show the json payload required for the corresponding POST method.
 
-### POST api/nxfutil/status 
+### POST api/nxfutil/status
 
-Will return the progress of the nextflow job by dumping messages from the nextflow storage queue. 
+Will return the progress of the nextflow job by dumping messages from the nextflow storage queue.
 
-- Use `summary=true` to show only the latest event from a given nextflow job id. 
+- Use `summary=true` to show only the latest event from a given nextflow job id.
 - Use `dequeue=true` to delete the messages as they are read.
 
-> Important: If no process is dequeueing the messages from the storage queue, only the oldest 32 messages can be summarized. 
+> Important: If no process is dequeueing the messages from the storage queue, only the oldest 32 messages can be summarized.
 
 ``` bash
 az_funcAppName="myFuncAppName"
@@ -205,11 +220,11 @@ curl -X POST "https://$az_funcAppName.azurewebsites.net/api/nxfutil_status" -H '
 # ]
 ```
 
-### GET api/nxfutil/terminate 
+### GET api/nxfutil/terminate
 
 Will show the json payload required for the corresponding POST method.
 
-### POST api/nxfutil/terminate 
+### POST api/nxfutil/terminate
 
 Will delete the container instance specified in the request body.
 
@@ -224,11 +239,10 @@ curl -X POST "https://$az_funcAppName.azurewebsites.net/api/nxfutil_status" -H '
 
 ## Documentation
 
-### [Azure infrastructure](./docs/AzureInfrastructure.md)
-
 ### [nxfutil](./docs/nxfutil.md)
 
 ### [Azure functions](./azure/functions/rust/README.md)
 
-### [Data upload](./docs/DataUpload.md)
+### [Docker images](./docker/images/README.md)
 
+### [Azure infrastructure](./docs/AzureInfrastructure.md)

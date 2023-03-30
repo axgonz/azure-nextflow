@@ -1,5 +1,7 @@
 # Azure infrastructure
 
+WORK_IN_PROGRESS
+
 ## Key Vault
 
 With the following secrets created:
@@ -50,4 +52,4 @@ With the following secrets created:
     ./nxfutil -c "https://<...>/nextflow.config" \
         -p "https://<...>/pipeline.nf" \
         -a "https://<...>/parameters.json"
-    ``` 
+    ```

@@ -1,24 +1,26 @@
-# Azure Function App
+# Docker images
 
 ## Pre-requisites
 
 ### Tool chain
 
-Building this app requires a ubuntu (or similar) build host. This is to avoid complexities of cross-compilation.
+Building these containers requires a ubuntu (or similar) build host. This is to avoid complexities of cross-compilation.
 
 When developing locally using a Windows system this can be achieved by enabling WSL and then installing the Rust and Azure Functions tool chains.
+
+The Docker Engine is also required to build these images.
 
 - [Install Linux on Windows with WSL](https://learn.microsoft.com/en-us/windows/wsl/install)
 - [Install Rust](https://www.rust-lang.org/tools/install)
 - [Install the Azure CLI on Linux](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt)
-- [Install the Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=v4%2Clinux%2Ccsharp%2Cportal%2Cbash)
+- [Install Docker Engine](https://docs.docker.com/engine/install/ubuntu/)
 
 These pre-requisites are met when the following commands return without errors in the WSL terminal:
 
 ```
 cargo --version;
 az --version;
-func --version;
+docker --version;
 ```
 
 > NOTE: When building via a CI-CD pipeline be sure to select an appropriate linux build host.
@@ -45,31 +47,22 @@ When developing locally:
     az login;
     ```
 
-A Makefile is provided to aid the developer. This Makefile can be used to perform the steps written out in full below. The Makefile command is provided above each step.
+A Makefile is provided with each image to aid the developer. Each Makefile can be used to perform the steps written out in full below.
 
-**`make env`**
-
-Creates a `local.settings.json` file and `.env` file in the same directory as this README.
-
-Update variables that start with `NXFUTIL_` in the `local.settings.json` and `.env` file before continuing.
-
-> IMPORTANT: Do not provide the `AZURE_CLIENT_ID` value when developing locally, this is used for Azure Manage Identities.
+> IMPORTANT: Ensure to run the Makefile in the subfolder of the desired image.
 
 **`make`**
 
-Compiles the rust binary and copies the binary to the same directory as this README.
+Builds any pre-requisite rust binaries, and copies them locally and build the docker image.
 
-    ```
-    cargo build --target x86_64-unknown-linux-gnu;
-    cp -v target/release/handler handler;
-    ```
+**`make env`**
+
+If the image requires certain environment variables, this will create a template `.env` file which can be updated manually *before* running any of the below commands.
 
 **`make serve`**
 
-Runs the function app locally.
+If the image contains a http server, this will start the container and expose its ports.
 
-    ```
-    func start;
-    ```
+**`make enter`**
 
-> IMPORTANT: When ready to deploy to production build the release version of the rust binary by adding `--release` to the cargo build command.
+Used for troubleshooting the image, this will override any start CMD with an interactive Bash shell in the container.
