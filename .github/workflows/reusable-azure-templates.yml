@@ -18,10 +18,10 @@ on:
     outputs:
       AZURE_KEYVAULT_NAME:
         description: 'Key Vault name'
-        value: ${{ jobs.validate_and_deploy.outputs.AZURE_KEYVAULT_NAME }}
+        value: ${{ jobs.deploy.outputs.AZURE_KEYVAULT_NAME }}
       AZURE_FUNCTIONAPP_NAME:
         description: 'Function App name'
-        value: ${{ jobs.validate_and_deploy.outputs.AZURE_FUNCTIONAPP_NAME }}
+        value: ${{ jobs.deploy.outputs.AZURE_FUNCTIONAPP_NAME }}
 
 env:
   BICEP_FILE_PATH: './azure/templates'
