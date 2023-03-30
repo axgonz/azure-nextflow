@@ -4,6 +4,10 @@ permissions:
       id-token: write
       contents: read
 
+concurrency:
+  group: 'reusable-azure-functions'
+  cancel-in-progress: true
+  
 on:
   workflow_call:
     inputs:

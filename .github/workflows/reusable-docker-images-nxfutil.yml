@@ -4,6 +4,10 @@ permissions:
       id-token: write
       contents: read
 
+concurrency:
+  group: 'reusable-docker-images-nxfutil'
+  cancel-in-progress: true
+
 on:
   workflow_call:
     inputs:
