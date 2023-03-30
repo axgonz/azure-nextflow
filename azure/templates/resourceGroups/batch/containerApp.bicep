@@ -80,7 +80,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
             {
               name: 'NXFUTIL_API_FQDN'
               value: NXFUTIL_API_FQDN
-            }                
+            }
             {
               name: 'NXFUTIL_AZ_KV_NAME'
               value: NXFUTIL_AZ_KV_NAME
