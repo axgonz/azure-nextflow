@@ -11,11 +11,27 @@ on:
         type: string
         description: 'Azure resource group name'
         required: true  
+  push:
+    branches:
+    - 'main'
+    paths:
+    - 'azure/templates/*'
 
 jobs:      
+  # Use user provided variables on dispatch trigger
   azureTemplates:
     uses: ./.github/workflows/reusable-azure-templates.yml
     with:
       AZURE_SUBSCRIPTION_ID: ${{ inputs.AZURE_SUBSCRIPTION_ID }}
       AZURE_RESOURCEGROUP_NAME: ${{ inputs.AZURE_RESOURCEGROUP_NAME }}
     secrets: inherit
+    if: ${{ inputs.AZURE_SUBSCRIPTION_ID != '' && inputs.AZURE_RESOURCEGROUP_NAME != '' }}
+
+  # Use repo variables on push trigger
+  azureTemplates:
+    uses: ./.github/workflows/reusable-azure-templates.yml
+    with:
+      AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
+      AZURE_RESOURCEGROUP_NAME: ${{ env.AZURE_RESOURCEGROUP_NAME }}
+    secrets: inherit
+    if: ${{ inputs.AZURE_SUBSCRIPTION_ID == '' && inputs.AZURE_RESOURCEGROUP_NAME == '' }}
