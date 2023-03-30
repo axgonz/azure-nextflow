@@ -12,6 +12,8 @@ on:
     - 'main'
     paths:
     - 'azure/docker/images/nxfutil/Dockerfile'
+    - 'azure/functions/rust/src/**' 
+    - 'azure/functions/rust/Cargo.toml'
 
 jobs:      
   dockerImagesNxfutil:

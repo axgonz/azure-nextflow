@@ -12,6 +12,10 @@ on:
     - 'main'
     paths:
     - 'azure/docker/images/nextflow/Dockerfile'
+    - 'nxfutil/rust/nxfutil/src/**' 
+    - 'nxfutil/rust/nxfutil/Cargo.toml'
+    - 'nxfutil/rust/nxfutild/src/**' 
+    - 'nxfutil/rust/nxfutild/Cargo.toml'    
 
 jobs:      
   dockerImagesNextflow:

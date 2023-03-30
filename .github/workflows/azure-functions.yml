@@ -11,10 +11,10 @@ on:
     branches:
     - 'main'
     paths:
-    - 'azure/functions/src/**' 
-    - 'azure/functions/Cargo.toml'
-    - 'azure/functions/nxfutil**/function.json'      
-    - 'azure/functions/host.json'
+    - 'azure/functions/rust/src/**' 
+    - 'azure/functions/rust/Cargo.toml'
+    - 'azure/functions/rust/nxfutil**/function.json'      
+    - 'azure/functions/rust/host.json'
     
 jobs:      
   azureFunctions:
