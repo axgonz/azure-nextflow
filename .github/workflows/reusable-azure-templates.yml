@@ -80,31 +80,28 @@ jobs:
     # Deployment
     - name: Deploy Bicep file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep
       id: azureResources
-      uses: Azure/cli@1.0.4
-      with:
-        inlineScript: |
-          az config set bicep.use_binary_from_path=false
-          az --version
-          deployment=$(az deployment group create \
-            --name 'github-${{ github.run_number }}' \
-            --resource-group ${{ inputs.AZURE_RESOURCEGROUP_NAME }} \
-            --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID }} \
-            --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep \
-            --parameters deploymentPrincipalObjectId=${{ steps.msiPrincipal.outputs.objectId }})
-          state=$(echo $deployment | jq -r ".properties.provisioningState")
-          if test "$state" == 'Succeeded'
-          then 
-            kvName=$(echo $deployment | jq -r ".properties.outputs.keyVaultName.value")
-            echo setting keyVaultName to $kvName
-            echo "keyVaultName=${kvName}" >> $GITHUB_ENV
-            
-            faName=$(echo $deployment | jq -r ".properties.outputs.functionAppName.value")
-            echo setting functionAppName to $faName
-            echo "functionAppName=${faName}" >> $GITHUB_ENV
-          else
-            echo $deployment | jq -r "."
-            exit 1
-          fi
+      run: |
+        az --version
+        deployment=$(az deployment group create \
+          --name 'github-${{ github.run_number }}' \
+          --resource-group ${{ inputs.AZURE_RESOURCEGROUP_NAME }} \
+          --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID }} \
+          --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep \
+          --parameters deploymentPrincipalObjectId=${{ steps.msiPrincipal.outputs.objectId }})
+        state=$(echo $deployment | jq -r ".properties.provisioningState")
+        if test "$state" == 'Succeeded'
+        then 
+          kvName=$(echo $deployment | jq -r ".properties.outputs.keyVaultName.value")
+          echo setting keyVaultName to $kvName
+          echo "keyVaultName=$kvName" >> $GITHUB_OUTPUT
+          
+          faName=$(echo $deployment | jq -r ".properties.outputs.functionAppName.value")
+          echo setting functionAppName to $faName
+          echo "functionAppName=$faName" >> $GITHUB_OUTPUT
+        else
+          echo $deployment | jq -r "."
+          exit 1
+        fi
 
     # Outputs
     - name: 'Show outputs'
