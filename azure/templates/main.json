@@ -46,5 +46,5 @@
         "name": "ca",
         "nameIsAlreadyUnique": false
     },
-    "deployContainerAppInsteadOfFunctionApp": true 
+    "deployContainerAppInsteadOfFunctionApp": false 
 }
