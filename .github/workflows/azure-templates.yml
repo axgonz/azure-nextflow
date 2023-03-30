@@ -28,7 +28,7 @@ jobs:
     if: ${{ inputs.AZURE_SUBSCRIPTION_ID != '' && inputs.AZURE_RESOURCEGROUP_NAME != '' }}
 
   # Use repo variables on push trigger
-  azureTemplates:
+  azureTemplates_:
     uses: ./.github/workflows/reusable-azure-templates.yml
     with:
       AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
