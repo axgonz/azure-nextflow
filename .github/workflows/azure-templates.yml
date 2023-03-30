@@ -15,7 +15,7 @@ on:
     branches:
     - 'main'
     paths:
-    - 'azure/templates/*'
+    - 'azure/templates/*/*'
 
 jobs:      
   azureTemplates:
