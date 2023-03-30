@@ -34,8 +34,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
       registries: [
         {
           identity: managedIdentityId
-          server: 'crodxx.azurecr.io'
-          username: 'crodxx'
+          server: '${NXFUTIL_AZ_CR_NAME}.azurecr.io'
         }
       ]
       ingress: {
@@ -64,7 +63,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
       containers: [
         {
           name: name
-          image: 'crodxx.azurecr.io/default/nxfutil:latest'
+          image: '${NXFUTIL_AZ_CR_NAME}.azurecr.io/default/nxfutil:latest'
           env: [
             {
               name: 'NXFUTIL_AZ_SUB_ID'
