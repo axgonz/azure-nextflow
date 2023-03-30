@@ -83,10 +83,10 @@ module dep_containerApp 'resourceGroups/batch/containerAppWrapper.bicep' = if (c
     location: location
     name: config.containerApp.nameIsAlreadyUnique ? config.containerApp.name : '${config.containerApp.name}${substring(uniqueString(config.containerApp.name, subscription().subscriptionId, resourceGroup().name, location), 0, 4)}'
     storageAccountName: dep_storageAccount.outputs.name
+    containerRegistryName: dep_containerRegistry.outputs.name
     managedIdentityId: dep_msiFunctionApp.outputs.id
     managedIdentityClientId: dep_msiFunctionApp.outputs.clientId
     NXFUTIL_AZ_KV_NAME: dep_keyVault.outputs.name
-    NXFUTIL_AZ_CR_NAME: dep_containerRegistry.outputs.name
     NXFUTIL_AZ_MSI_NAME: dep_msiNextflow.outputs.name
     NXFUTIL_AZ_MSI_ID: dep_msiNextflow.outputs.clientId
   }

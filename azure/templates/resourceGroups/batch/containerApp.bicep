@@ -1,11 +1,11 @@
 param location string = resourceGroup().location
 param name string
 param storageAccountName string
+param containerRegistryName string
 param managedIdentityId string
 param managedIdentityClientId string
 
 param NXFUTIL_API_FQDN string     = '<not_defined>'
-param NXFUTIL_AZ_CR_NAME string   = '<not_defined>'
 param NXFUTIL_AZ_KV_NAME string   = '<not_defined>'
 param NXFUTIL_AZ_MSI_NAME string  = '<not_defined>'
 param NXFUTIL_AZ_MSI_ID string    = '<not_defined>'
@@ -34,7 +34,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
       registries: [
         {
           identity: managedIdentityId
-          server: '${NXFUTIL_AZ_CR_NAME}.azurecr.io'
+          server: '${containerRegistryName}.azurecr.io'
         }
       ]
       ingress: {
@@ -63,7 +63,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
       containers: [
         {
           name: name
-          image: '${NXFUTIL_AZ_CR_NAME}.azurecr.io/default/nxfutil:latest'
+          image: '${containerRegistryName}.azurecr.io/default/nxfutil:latest'
           env: [
             {
               name: 'NXFUTIL_AZ_SUB_ID'
@@ -87,7 +87,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
             }
             {
               name: 'NXFUTIL_AZ_CR_NAME'
-              value: NXFUTIL_AZ_CR_NAME
+              value: containerRegistryName
             }
             {
               name: 'NXFUTIL_AZ_MSI_NAME'
