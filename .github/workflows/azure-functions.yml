@@ -7,7 +7,15 @@ on:
         type: string
         description: 'Azure Function App name'
         required: true
-
+  push:
+    branches:
+    - 'main'
+    paths:
+    - 'azure/functions/src/*' 
+    - 'azure/functions/Cargo.toml'
+    - 'azure/functions/nxfutil*/function.json'      
+    - 'azure/functions/host.json'
+    
 jobs:      
   azureFunctions:
     uses: ./.github/workflows/reusable-azure-functions.yml
