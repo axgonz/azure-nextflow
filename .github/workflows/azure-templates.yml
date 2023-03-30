@@ -31,7 +31,7 @@ jobs:
   azureTemplates_:
     uses: ./.github/workflows/reusable-azure-templates.yml
     with:
-      AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
-      AZURE_RESOURCEGROUP_NAME: ${{ env.AZURE_RESOURCEGROUP_NAME }}
+      AZURE_SUBSCRIPTION_ID: ${{ variables.AZURE_SUBSCRIPTION_ID }}
+      AZURE_RESOURCEGROUP_NAME: ${{ variables.AZURE_RESOURCEGROUP_NAME }}
     secrets: inherit
     if: ${{ inputs.AZURE_SUBSCRIPTION_ID == '' && inputs.AZURE_RESOURCEGROUP_NAME == '' }}
