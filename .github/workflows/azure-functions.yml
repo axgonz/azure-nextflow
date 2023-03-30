@@ -1,9 +1,9 @@
 name: Azure - functions
 
-on: 
+on:
   workflow_dispatch:
     inputs:
-      AZURE_FUNCTIONAPP_NAME: 
+      AZURE_FUNCTIONAPP_NAME:
         type: string
         description: 'Azure Function App name'
         required: true
@@ -11,14 +11,14 @@ on:
     branches:
     - 'main'
     paths:
-    - 'azure/functions/rust/src/**' 
+    - 'azure/functions/rust/src/**'
     - 'azure/functions/rust/Cargo.toml'
-    - 'azure/functions/rust/nxfutil**/function.json'      
+    - 'azure/functions/rust/nxfutil**/function.json'
     - 'azure/functions/rust/host.json'
-    
-jobs:      
+
+jobs:
   azureFunctions:
     uses: ./.github/workflows/reusable-azure-functions.yml
     with:
       AZURE_FUNCTIONAPP_NAME: ${{ inputs.AZURE_FUNCTIONAPP_NAME }}
-    secrets: inherit    
+    secrets: inherit

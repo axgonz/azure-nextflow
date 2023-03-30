@@ -1,4 +1,8 @@
 {
+    "workbench.colorCustomizations": {
+        "titleBar.activeBackground": "#152c34",
+        "titleBar.activeForeground": "#F7FCFE"
+    },
     "files.associations": {
         "**/.devops/pipelines/*.yml": "azure-pipelines",
         "**/.github/workflows/*.yml": "yaml"
@@ -17,5 +21,7 @@
         "pushd",
         "reqwest",
         "RESOURCEGROUP"
-    ]
+    ],
+    "trailing-spaces.trimOnSave": true,
+    "trailing-spaces.highlightCurrentLine": true
 }

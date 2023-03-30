@@ -1,6 +1,6 @@
 name: Azure - templates
 
-on: 
+on:
   workflow_dispatch:
     inputs:
       AZURE_SUBSCRIPTION_ID:
@@ -10,14 +10,14 @@ on:
       AZURE_RESOURCEGROUP_NAME:
         type: string
         description: 'Azure resource group name'
-        required: true  
+        required: true
   push:
     branches:
     - 'main'
     paths:
     - 'azure/templates/**'
 
-jobs:      
+jobs:
   azureTemplates:
     uses: ./.github/workflows/reusable-azure-templates.yml
     with:

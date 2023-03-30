@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "ms-vscode-remote.remote-wsl",
+        "stuart.unique-window-colors",
+        "eamodio.gitlens",
+        "streetsidesoftware.code-spell-checker",
+        "humao.rest-client",
+        "rust-lang.rust-analyzer",
+        "shardulm94.trailing-spaces"
+    ]
+}

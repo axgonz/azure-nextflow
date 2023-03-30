@@ -18,7 +18,7 @@ on:
 
 env:
   DOCKER_IMAGES_PATH: './docker/images'
-  
+
 jobs:
   ubuntu_image:
     runs-on: ubuntu-latest
@@ -31,7 +31,7 @@ jobs:
     # Variables
     - name: 'Show variables'
       run: |
-        echo DOCKER_IMAGES_PATH : ${{ env.DOCKER_IMAGES_PATH }} 
+        echo DOCKER_IMAGES_PATH : ${{ env.DOCKER_IMAGES_PATH }}
 
     # Prase AZURE_MSI secret
     - name: Prase AZURE_MSI secret
@@ -59,17 +59,17 @@ jobs:
 
     # Checkout
     - name: 'Checkout repository branch'
-      uses: actions/checkout@v2                 
-    
+      uses: actions/checkout@v2
+
     # Key Vault secrets
-    - name: 'Get secrets from Key Vault' 
+    - name: 'Get secrets from Key Vault'
       id: keyVaultSecrets
       uses: Azure/get-keyvault-secrets@v1
-      with: 
+      with:
         keyvault: ${{ inputs.AZURE_KEYVAULT_NAME || vars.AZURE_KEYVAULT_NAME }}
         secrets: 'azure-registry-server, azure-registry-username, azure-registry-password'
 
-    # ACR login 
+    # ACR login
     - name: 'Login to Container Registry'
       uses: azure/docker-login@v1
       with:

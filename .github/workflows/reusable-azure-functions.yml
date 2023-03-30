@@ -7,11 +7,11 @@ permissions:
 concurrency:
   group: 'reusable-azure-functions'
   cancel-in-progress: true
-  
+
 on:
   workflow_call:
     inputs:
-      AZURE_FUNCTIONAPP_NAME: 
+      AZURE_FUNCTIONAPP_NAME:
         type: string
         description: 'Azure Function App name'
         required: false
@@ -21,12 +21,12 @@ env:
   RUST_BACKTRACE: 'full'
   CARGO_TARGET: 'x86_64-unknown-linux-gnu'
   HANDLER_BIN_NAME: 'handler'
-  HANDLER_SOURCE_PATH: 'azure/functions/rust'    
+  HANDLER_SOURCE_PATH: 'azure/functions/rust'
 
 jobs:
   rust_build_handler:
     # Azure functions does not yet support openssl.3
-    #  ubuntu-latest uses openssl.3 so we need to 
+    #  ubuntu-latest uses openssl.3 so we need to
     #  downgrade runner to 20.04.
     runs-on: ubuntu-20.04
     steps:
@@ -38,11 +38,11 @@ jobs:
     # Variables
     - name: 'Show variables'
       run: |
-        echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} 
+        echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
     # Checkout
     - name: 'Checkout repository branch'
-      uses: actions/checkout@v2   
+      uses: actions/checkout@v2
 
     # Update / Install Rust
     - name: 'Update / install rust'
@@ -61,11 +61,11 @@ jobs:
       with:
         path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
         key: 'cargo-target-${{ env.HANDLER_BIN_NAME }}'
-   
+
     # Build
     - name: 'Build custom handler binary'
       shell: bash
-      run: |       
+      run: |
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         cargo build --target "${{ env.CARGO_TARGET }}" --release
         popd
@@ -75,11 +75,11 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: '${{ env.HANDLER_BIN_NAME }}'
-        path: '${{ env.HANDLER_SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.HANDLER_BIN_NAME }}'        
-   
+        path: '${{ env.HANDLER_SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.HANDLER_BIN_NAME }}'
+
   publish:
     runs-on: ubuntu-latest
-    needs: 
+    needs:
       - rust_build_handler
     steps:
     # Inputs
@@ -90,7 +90,7 @@ jobs:
     # Variables
     - name: 'Show variables'
       run: |
-        echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} 
+        echo AZURE_FUNCTIONAPP_PACKAGE_PATH : ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
     # Prase AZURE_MSI secret
     - name: Prase AZURE_MSI secret
@@ -118,9 +118,9 @@ jobs:
 
     # Checkout
     - name: 'Checkout repository branch'
-      uses: actions/checkout@v2   
+      uses: actions/checkout@v2
 
-    # Move files 
+    # Move files
     - name: 'Select only required files for FuncApp'
       shell: bash
       run: |
@@ -135,7 +135,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: ${{ env.HANDLER_BIN_NAME }}
-        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'        
+        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
 
     # Deployment
     - name: 'Run Azure Functions Action'
@@ -148,4 +148,4 @@ jobs:
     - name: 'Azure logout'
       run: |
         az logout
-      if: always()        
+      if: always()
