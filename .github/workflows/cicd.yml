@@ -69,13 +69,4 @@ jobs:
       run: |
         echo "Output variable AZURE_KEYVAULT_NAME from azureTemplates is empty."
         exit 1
-
-  AZURE_FUNCTIONAPP_NAME:
-    needs: azureTemplates
-    runs-on: ubuntu-latest 
-    if: ${{ needs.azureTemplates.outputs.AZURE_FUNCTIONAPP_NAME == '' }} 
-    steps:
-    - name: 'Missing AZURE_FUNCTIONAPP_NAME value'
-      run: |
-        echo "Output variable AZURE_FUNCTIONAPP_NAME from azureTemplates is empty."
-        exit 1
+        
