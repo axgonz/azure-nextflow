@@ -11,9 +11,9 @@ on:
     branches:
     - 'main'
     paths:
-    - 'azure/functions/src/*/*' 
+    - 'azure/functions/src/**' 
     - 'azure/functions/Cargo.toml'
-    - 'azure/functions/nxfutil*/function.json'      
+    - 'azure/functions/nxfutil**/function.json'      
     - 'azure/functions/host.json'
     
 jobs:      
