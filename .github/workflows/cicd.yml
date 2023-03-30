@@ -63,7 +63,7 @@ jobs:
   raiseErrorAZURE_KEYVAULT_NAME:
     needs: azureTemplates
     runs-on: ubuntu-latest 
-    if: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME = '' }} 
+    if: ${{ needs.azureTemplates.outputs.AZURE_KEYVAULT_NAME == '' }} 
     steps:
     - name: 'Missing AZURE_KEYVAULT_NAME value'
       run: |
@@ -73,7 +73,7 @@ jobs:
   raiseErrorAZURE_FUNCTIONAPP_NAME:
     needs: azureTemplates
     runs-on: ubuntu-latest 
-    if: ${{ needs.azureTemplates.outputs.AZURE_FUNCTIONAPP_NAME = '' }} 
+    if: ${{ needs.azureTemplates.outputs.AZURE_FUNCTIONAPP_NAME == '' }} 
     steps:
     - name: 'Missing AZURE_FUNCTIONAPP_NAME value'
       run: |
