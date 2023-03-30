@@ -21,4 +21,4 @@ ADD handler /.nxfutil/handler
 RUN chmod +x /.nxfutil/handler
 
 # Start service pipeline
-CMD /.nxfutil/handler 
+CMD /.nxfutil/handler
