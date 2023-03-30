@@ -37,8 +37,8 @@ jobs:
     # Inputs
     - name: 'Show inputs'
       run: |
-        echo AZURE_SUBSCRIPTION_ID : ${{ env.AZURE_SUBSCRIPTION_ID }}
-        echo AZURE_RESOURCEGROUP_NAME : ${{ inputs.AZURE_RESOURCEGROUP_NAME || env.AZURE_RESOURCEGROUP_NAME }}
+        echo AZURE_SUBSCRIPTION_ID : ${{ vars.AZURE_SUBSCRIPTION_ID }}
+        echo AZURE_RESOURCEGROUP_NAME : ${{ inputs.AZURE_RESOURCEGROUP_NAME || vars.AZURE_RESOURCEGROUP_NAME }}
 
     # Variables
     - name: 'Show variables'
@@ -84,8 +84,8 @@ jobs:
         az --version
         deployment=$(az deployment group create \
           --name 'github-${{ github.run_number }}' \
-          --resource-group ${{ inputs.AZURE_RESOURCEGROUP_NAME || env.AZURE_RESOURCEGROUP_NAME }} \
-          --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID || env.AZURE_SUBSCRIPTION_ID }} \
+          --resource-group ${{ inputs.AZURE_RESOURCEGROUP_NAME || vars.AZURE_RESOURCEGROUP_NAME }} \
+          --subscription ${{ inputs.AZURE_SUBSCRIPTION_ID || vars.AZURE_SUBSCRIPTION_ID }} \
           --template-file ${{ env.BICEP_FILE_PATH }}/${{ env.BICEP_FILE_NAME }}.bicep \
           --parameters deploymentPrincipalObjectId=${{ steps.msiPrincipal.outputs.objectId }})
         state=$(echo $deployment | jq -r ".properties.provisioningState")
