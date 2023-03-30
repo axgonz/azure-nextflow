@@ -11,7 +11,7 @@ on:
     branches:
     - 'main'
     paths:
-    - 'azure/docker/images/nextflow/Dockerfile'
+    - 'docker/images/nextflow/Dockerfile'
     - 'nxfutil/rust/nxfutil/src/**' 
     - 'nxfutil/rust/nxfutil/Cargo.toml'
     - 'nxfutil/rust/nxfutild/src/**' 
