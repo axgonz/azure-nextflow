@@ -10,7 +10,7 @@ on:
       AZURE_KEYVAULT_NAME:
         type: string
         description: 'Azure Key Vault name'
-        required: true
+        required: false
 
 env:
   DOCKER_IMAGES_PATH: './docker/images'
@@ -30,7 +30,7 @@ jobs:
     # Inputs
     - name: 'Show inputs'
       run: |
-        echo AZURE_KEYVAULT_NAME : ${{ inputs.AZURE_KEYVAULT_NAME }}
+        echo AZURE_KEYVAULT_NAME : ${{ inputs.AZURE_KEYVAULT_NAME || vars.AZURE_KEYVAULT_NAME }}
 
     # Variables
     - name: 'Show variables'
@@ -130,7 +130,7 @@ jobs:
     # Inputs
     - name: 'Show inputs'
       run: |
-        echo AZURE_KEYVAULT_NAME : ${{ inputs.AZURE_KEYVAULT_NAME }}
+        echo AZURE_KEYVAULT_NAME : ${{ inputs.AZURE_KEYVAULT_NAME || vars.AZURE_KEYVAULT_NAME }}
 
     # Variables
     - name: 'Show variables'
@@ -170,7 +170,7 @@ jobs:
       id: keyVaultSecrets
       uses: Azure/get-keyvault-secrets@v1
       with: 
-        keyvault: ${{ inputs.AZURE_KEYVAULT_NAME }}
+        keyvault: ${{ inputs.AZURE_KEYVAULT_NAME || vars.AZURE_KEYVAULT_NAME }}
         secrets: 'azure-registry-server, azure-registry-username, azure-registry-password'
 
     # ACR login 
