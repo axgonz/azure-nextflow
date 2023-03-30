@@ -18,7 +18,6 @@ on:
     - 'azure/templates/*'
 
 jobs:      
-  # Use user provided variables on dispatch trigger
   azureTemplates:
     uses: ./.github/workflows/reusable-azure-templates.yml
     with:
