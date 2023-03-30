@@ -4,11 +4,11 @@ param storageAccountName string
 param managedIdentityId string
 param managedIdentityClientId string
 
-param NXFUTIL_API_FQDN string = '<not_defined>'
-param NXFUTIL_AZ_CR_NAME string = '<not_defined>'
-param NXFUTIL_AZ_KV_NAME string = '<not_defined>'
-param NXFUTIL_AZ_MSI_NAME string = '<not_defined>'
-param NXFUTIL_AZ_MSI_ID string = '<not_defined>'
+param NXFUTIL_API_FQDN string     = '<not_defined>'
+param NXFUTIL_AZ_CR_NAME string   = '<not_defined>'
+param NXFUTIL_AZ_KV_NAME string   = '<not_defined>'
+param NXFUTIL_AZ_MSI_NAME string  = '<not_defined>'
+param NXFUTIL_AZ_MSI_ID string    = '<not_defined>'
 
 resource managedEnvironment 'Microsoft.App/managedEnvironments@2022-10-01' = {
   location: location
