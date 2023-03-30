@@ -10,6 +10,10 @@ param NXFUTIL_AZ_KV_NAME string   = '<not_defined>'
 param NXFUTIL_AZ_MSI_NAME string  = '<not_defined>'
 param NXFUTIL_AZ_MSI_ID string    = '<not_defined>'
 
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' existing = {
+  name: storageAccountName
+}
+
 resource managedEnvironment 'Microsoft.App/managedEnvironments@2022-10-01' = {
   location: location
   name: name
@@ -42,7 +46,6 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
         external: true
         corsPolicy: {
           allowCredentials: true
-          maxAge: 0
           allowedHeaders: [
             '*'
           ]
@@ -50,7 +53,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
             '*'
           ]
           allowedOrigins: [
-            '*'
+            '${substring(storageAccount.properties.primaryEndpoints.web, 0, length(storageAccount.properties.primaryEndpoints.web)-1)}'
           ]
         }
       }

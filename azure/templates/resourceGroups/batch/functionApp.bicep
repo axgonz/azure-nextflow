@@ -52,6 +52,12 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         httpsOnly: true
         siteConfig: {
             minTlsVersion: '1.2'
+            cors: {
+                supportCredentials: true
+                allowedOrigins: [
+                    '${substring(storageAccount.properties.primaryEndpoints.web, 0, length(storageAccount.properties.primaryEndpoints.web)-1)}'
+                ]
+            }
             appSettings: [
                 {
                     name: 'AzureWebJobsStorage'
