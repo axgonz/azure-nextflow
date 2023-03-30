@@ -10,11 +10,11 @@ on:
       AZURE_SUBSCRIPTION_ID:
         type: string
         description: 'Azure subscription id'
-        required: true
+        required: false
       AZURE_RESOURCEGROUP_NAME:
         type: string
         description: 'Azure resource group name'
-        required: true        
+        required: false        
     outputs:
       AZURE_KEYVAULT_NAME:
         description: 'Key Vault name'
