@@ -26,10 +26,6 @@ env:
   
 jobs:
   rust_build_handler:
-    # The build host and run host need to share the same 
-    #  version of openssl. To make sure this is true we hard 
-    #  code the version in the docker image and the github 
-    #  worker which is building the binary to the same value.
     runs-on: ubuntu-latest
     steps:
     # Inputs
