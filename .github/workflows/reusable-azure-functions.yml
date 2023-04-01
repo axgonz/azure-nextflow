@@ -44,6 +44,13 @@ jobs:
     - name: 'Checkout repository branch'
       uses: actions/checkout@v2
 
+    # Update worker build chain
+    - name: 'Update worker build chain'
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install -y make build-essential libssl-dev pkg-config
+
     # Update / Install Rust
     - name: 'Update / install rust'
       uses: actions-rs/toolchain@v1
