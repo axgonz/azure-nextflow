@@ -51,15 +51,22 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y make build-essential libssl-dev pkg-config
 
-    # Update / Install Rust
-    - name: 'Update / install rust'
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        target: ${{ env.CARGO_TARGET }}
-        toolchain: stable
-        default: true
-        override: true
+    # # Update / Install Rust
+    # - name: 'Update / install rust'
+    #   uses: actions-rs/toolchain@v1
+    #   with:
+    #     profile: minimal
+    #     target: ${{ env.CARGO_TARGET }}
+    #     toolchain: stable
+    #     default: true
+    #     override: true
+
+    # Update worker build chain
+    - name: 'Update worker build chain'
+      shell: bash
+      run: |
+        rustup update
+        rustup target install ${{ env.CARGO_TARGET }}
 
     # Cache
     - name: 'Cache cargo target dir'
