@@ -61,8 +61,8 @@ jobs:
     #     default: true
     #     override: true
 
-    # Update worker build chain
-    - name: 'Update worker build chain'
+    # Update rust
+    - name: 'Update rust'
       shell: bash
       run: |
         rustup update
