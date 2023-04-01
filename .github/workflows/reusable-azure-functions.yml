@@ -28,7 +28,7 @@ jobs:
     # Azure functions does not yet support openssl.3
     #  ubuntu-latest uses openssl.3 so we need to
     #  downgrade runner to 20.04.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     # Inputs
     - name: 'Show inputs'
