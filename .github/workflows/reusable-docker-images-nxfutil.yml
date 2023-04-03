@@ -139,7 +139,7 @@ jobs:
     - name: Download binary
       uses: actions/download-artifact@v3
       with:
-        name: handler
+        name: handler_containerApp
         path: '${{ env.DOCKER_IMAGES_PATH }}/nxfutil'
 
     # Deployment
