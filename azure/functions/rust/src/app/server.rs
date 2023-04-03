@@ -19,7 +19,7 @@ impl AppServer {
             println!("[handler] Found 'config_uri' in RequestPayload {:#?}", req_payload.config_uri);
             config_uri = req_payload.config_uri.clone();
         }
-        
+
         println!("[handler] Checking RequestPayload for `pipeline_uri`");
         let mut pipeline_uri = "".to_string();
         if !req_payload.pipeline_uri.is_empty() {
@@ -54,18 +54,18 @@ impl AppServer {
             None => {}
         };
         println!("[handler] Generated nextflow cmd is {}", &nxfutil_cmd);
-        
+
         return nxfutil_cmd
     }
 
     fn clean_nextflow_message(mut raw_msg: Value) -> Value {
         let error_message: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorMessage"].clone()).unwrap();
         let error_report: Option<String> = serde_json::from_value(raw_msg["metadata"]["workflow"]["errorReport"].clone()).unwrap();
-        
+
         if error_message.is_none() && error_report.is_some() {
             raw_msg["metadata"]["workflow"]["errorMessage"] = raw_msg["metadata"]["workflow"]["errorReport"].clone();
         }
-        
+
         if error_message.is_some() || error_report.is_some() {
             let mut clean_msg = raw_msg.clone();
             clean_msg["event"]="error".to_string().into();
@@ -77,9 +77,9 @@ impl AppServer {
     }
 
     pub async fn get_status_message(
-        credential: Arc<DefaultAzureCredential>, 
+        credential: Arc<DefaultAzureCredential>,
         variables: &AppVariables,
-        count: u8, 
+        count: u8,
         dequeue: bool
     ) -> Vec<Value>  {
         let queue = AppAzStorageQueue::new("nextflow", credential.clone(), &variables);
@@ -98,12 +98,12 @@ impl AppServer {
                 .map(|msg| Self::clean_nextflow_message(msg.clone()))
                 .collect()
         }
-    }  
+    }
 
     pub async fn get_status_summary(
-        credential: Arc<DefaultAzureCredential>, 
+        credential: Arc<DefaultAzureCredential>,
         variables: &AppVariables,
-        count: u8, 
+        count: u8,
         dequeue: bool
     ) -> Vec<Value>  {
         let raw_msgs: Vec<Value>;
@@ -112,9 +112,9 @@ impl AppServer {
         let mut msg_ids: Vec<String> = vec![];
 
         // Iterate in reverse order to create summary
-        for mut raw_msg in raw_msgs.into_iter().rev() {
-            if !(raw_msg["event"] == "started") && 
-                !(raw_msg["event"] == "completed") && 
+        for raw_msg in raw_msgs.into_iter().rev() {
+            if !(raw_msg["event"] == "started") &&
+                !(raw_msg["event"] == "completed") &&
                 !(raw_msg["event"] == "error") {
                 // Error events are skinny and do not contain error details.
                 // All other events are too verbose.
@@ -128,7 +128,7 @@ impl AppServer {
 
                 // Cast back to Value to satisfy return type
                 let raw_msg: Value = serde_json::from_str(&serde_json::to_string(&msg).unwrap()).unwrap();
-                
+
                 msgs.push(raw_msg);
             }
         }
