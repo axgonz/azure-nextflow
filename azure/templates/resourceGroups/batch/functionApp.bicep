@@ -3,6 +3,7 @@ param name string
 param storageAccountName string
 param managedIdentityId string
 param managedIdentityClientId string
+param alwaysOn bool = false
 
 param NXFUTIL_AZ_CR_NAME string
 param NXFUTIL_AZ_KV_NAME string
@@ -13,7 +14,20 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' existing 
     name: storageAccountName
 }
 
-resource appServicePlan 'Microsoft.Web/serverFarms@2020-06-01' = {
+resource appServicePlan 'Microsoft.Web/serverFarms@2020-06-01' =  if (!alwaysOn) {
+    name: name
+    location: location
+    kind: 'functionapp,linux'
+    sku: {
+        name: 'Y1'
+        tier: 'Dynamic'
+    }
+    properties: {
+        reserved: true
+    }
+}
+
+resource appServicePlan_alwaysOn 'Microsoft.Web/serverFarms@2020-06-01' =  if (alwaysOn) {
     name: name
     location: location
     kind: 'linux'
@@ -48,10 +62,10 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
     }
     properties: {
-        serverFarmId: appServicePlan.id
+        serverFarmId: alwaysOn ? appServicePlan_alwaysOn.id : appServicePlan.id
         httpsOnly: true
         siteConfig: {
-            alwaysOn: true
+            alwaysOn: alwaysOn
             minTlsVersion: '1.2'
             cors: {
                 supportCredentials: true

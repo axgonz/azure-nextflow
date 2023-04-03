@@ -70,6 +70,7 @@ module dep_functionApp 'resourceGroups/batch/functionApp.bicep' = if (config.dep
     storageAccountName: dep_storageAccount.outputs.name
     managedIdentityId: dep_msiFunctionApp.outputs.id
     managedIdentityClientId: dep_msiFunctionApp.outputs.clientId
+    alwaysOn: config.functionAppAlwaysOn
     NXFUTIL_AZ_KV_NAME: dep_keyVault.outputs.name
     NXFUTIL_AZ_CR_NAME: dep_containerRegistry.outputs.name
     NXFUTIL_AZ_MSI_NAME: dep_msiNextflow.outputs.name
