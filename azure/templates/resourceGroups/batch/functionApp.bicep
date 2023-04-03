@@ -2,7 +2,7 @@ param location string = resourceGroup().location
 param name string
 param storageAccountName string
 param managedIdentityId string
-param managedIdentityClientId string 
+param managedIdentityClientId string
 
 param NXFUTIL_AZ_CR_NAME string
 param NXFUTIL_AZ_KV_NAME string
@@ -16,10 +16,10 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' existing 
 resource appServicePlan 'Microsoft.Web/serverFarms@2020-06-01' = {
     name: name
     location: location
-    kind: 'functionapp,linux'
+    kind: 'linux'
     sku: {
-        name: 'Y1'
-        tier: 'Dynamic'
+        name: 'B1'
+        tier: 'Basic'
     }
     properties: {
         reserved: true
@@ -51,11 +51,13 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         serverFarmId: appServicePlan.id
         httpsOnly: true
         siteConfig: {
+            alwaysOn: true
             minTlsVersion: '1.2'
             cors: {
                 supportCredentials: true
                 allowedOrigins: [
                     '${substring(storageAccount.properties.primaryEndpoints.web, 0, length(storageAccount.properties.primaryEndpoints.web)-1)}'
+                    'https://ms.portal.azure.com'
                 ]
             }
             appSettings: [
@@ -78,7 +80,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                 {
                     name: 'FUNCTIONS_WORKER_RUNTIME'
                     value: 'custom'
-                } 
+                }
                 {
                     name: 'NXFUTIL_AZ_SUB_ID'
                     value: subscription().subscriptionId
@@ -90,11 +92,11 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                 {
                     name: 'NXFUTIL_AZ_ST_NAME'
                     value: storageAccountName
-                }      
+                }
                 {
                     name: 'NXFUTIL_API_FQDN'
                     value: '${name}.azurewebsites.net'
-                }                           
+                }
                 {
                     name: 'NXFUTIL_AZ_KV_NAME'
                     value: NXFUTIL_AZ_KV_NAME
@@ -102,7 +104,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                 {
                     name: 'NXFUTIL_AZ_CR_NAME'
                     value: NXFUTIL_AZ_CR_NAME
-                }               
+                }
                 {
                     name: 'NXFUTIL_AZ_MSI_NAME'
                     value: NXFUTIL_AZ_MSI_NAME
@@ -114,7 +116,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
                 {
                     name: 'AZURE_CLIENT_ID'
                     value: managedIdentityClientId
-                }           
+                }
             ]
         }
     }

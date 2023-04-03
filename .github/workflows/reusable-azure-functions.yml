@@ -27,8 +27,9 @@ jobs:
   rust_build_handler:
     # Azure functions does not yet support openssl.3
     #  ubuntu-latest uses openssl.3 so we need to
-    #  downgrade runner to 20.04.
-    runs-on: ubuntu-20.04
+    #  downgrade libssl just before building and
+    #  restore it right after.
+    runs-on: ubuntu-latest
     steps:
     # Inputs
     - name: 'Show inputs'
@@ -51,16 +52,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y make build-essential libssl-dev pkg-config
 
-    # # Update / Install Rust
-    # - name: 'Update / install rust'
-    #   uses: actions-rs/toolchain@v1
-    #   with:
-    #     profile: minimal
-    #     target: ${{ env.CARGO_TARGET }}
-    #     toolchain: stable
-    #     default: true
-    #     override: true
-
     # Update rust
     - name: 'Update rust'
       shell: bash
@@ -76,12 +67,37 @@ jobs:
         path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
         key: 'cargo-target-${{ env.HANDLER_BIN_NAME }}'
 
+    # Downgrade libssl
+    - name: 'Downgrade libssl'
+      shell: bash
+      run: |
+        echo "deb http://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
+        sudo apt-get update
+        sudo apt-get install libssl1.1
+        pushd /usr/lib/x86_64-linux-gnu
+        ls -la libssl*
+        sudo rm libssl.so
+        sudo ln -s libssl.so.1.1 libssl.so
+        ls -la libssl*
+        popd
+
     # Build
     - name: 'Build custom handler binary'
       shell: bash
       run: |
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         cargo build --target "${{ env.CARGO_TARGET }}" --release
+        popd
+
+    # Restore libssl
+    - name: 'Restore libssl'
+      shell: bash
+      run: |
+        pushd /usr/lib/x86_64-linux-gnu
+        ls -la libssl*
+        sudo rm libssl.so
+        sudo ln -s libssl.so.3 libssl.so
+        ls -la libssl*
         popd
 
     # Archive
