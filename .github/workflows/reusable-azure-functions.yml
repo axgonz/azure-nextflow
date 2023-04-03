@@ -29,7 +29,7 @@ jobs:
     #  ubuntu-latest uses openssl.3 so we need to
     #  downgrade libssl just before building and
     #  restore it right after.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     # Inputs
     - name: 'Show inputs'
@@ -59,6 +59,16 @@ jobs:
         rustup update
         rustup target install ${{ env.CARGO_TARGET }}
 
+    # Install Azure Functions core tools
+    - name: 'Install Azure Functions core tools'
+      shell: bash
+      run: |
+        curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+        sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+        sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list'
+        sudo apt-get update
+        sudo apt-get install azure-functions-core-tools-4
+
     # Cache
     - name: 'Cache cargo target dir'
       id: cache
@@ -67,21 +77,21 @@ jobs:
         path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
         key: 'cargo-target-${{ env.HANDLER_BIN_NAME }}'
 
-    # Downgrade libssl openssl
-    - name: 'Downgrade libssl and openssl'
-      shell: bash
-      run: |
-        echo "deb http://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
-        sudo apt-get update
-        sudo apt-get install libssl1.1 openssl1.1
-        pushd /usr/lib/x86_64-linux-gnu
-        ls -la libssl* libcrypto*
-        sudo rm libssl.so
-        sudo ln -s libssl.so.1.1 libssl.so
-        sudo rm libcrypto.so
-        sudo ln -s libcrypto.so.1.1 libcrypto.so
-        ls -la libssl* libcrypto*
-        popd
+    # # Downgrade openssl
+    # - name: 'Downgrade openssl'
+    #   shell: bash
+    #   run: |
+    #     echo "deb http://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
+    #     sudo apt-get update
+    #     sudo apt-get install libssl1.1 openssl1.1
+    #     pushd /usr/lib/x86_64-linux-gnu
+    #     ls -la libssl* libcrypto*
+    #     sudo rm libssl.so
+    #     sudo ln -s libssl.so.1.1 libssl.so
+    #     sudo rm libcrypto.so
+    #     sudo ln -s libcrypto.so.1.1 libcrypto.so
+    #     ls -la libssl* libcrypto*
+    #     popd
 
     # Build
     - name: 'Build custom handler binary'
@@ -91,18 +101,18 @@ jobs:
         cargo build --target "${{ env.CARGO_TARGET }}" --release
         popd
 
-    # Restore libssl libcrypto
-    - name: 'Restore libssl and libcrypto'
-      shell: bash
-      run: |
-        pushd /usr/lib/x86_64-linux-gnu
-        ls -la libssl* libcrypto*
-        sudo rm libssl.so
-        sudo ln -s libssl.so.3 libssl.so
-        sudo rm libcrypto.so
-        sudo ln -s libcrypto.so.3 libcrypto.so
-        ls -la libssl* libcrypto*
-        popd
+    # # Restore openssl
+    # - name: 'Restore openssl'
+    #   shell: bash
+    #   run: |
+    #     pushd /usr/lib/x86_64-linux-gnu
+    #     ls -la libssl* libcrypto*
+    #     sudo rm libssl.so
+    #     sudo ln -s libssl.so.3 libssl.so
+    #     sudo rm libcrypto.so
+    #     sudo ln -s libcrypto.so.3 libcrypto.so
+    #     ls -la libssl* libcrypto*
+    #     popd
 
     # Archive
     - name: Archive binary
