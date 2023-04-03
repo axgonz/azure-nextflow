@@ -14,31 +14,19 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' existing 
     name: storageAccountName
 }
 
-resource appServicePlan 'Microsoft.Web/serverFarms@2020-06-01' =  if (!alwaysOn) {
+resource appServicePlan 'Microsoft.Web/serverFarms@2020-06-01' = {
     name: name
     location: location
-    kind: 'functionapp,linux'
+    kind: alwaysOn ? 'linux' : 'functionapp,linux'
     sku: {
-        name: 'Y1'
-        tier: 'Dynamic'
+        name: alwaysOn ? 'B1' : 'Y1'
+        tier: alwaysOn ? 'Basic' : 'Dynamic'
     }
     properties: {
         reserved: true
     }
 }
 
-resource appServicePlan_alwaysOn 'Microsoft.Web/serverFarms@2020-06-01' =  if (alwaysOn) {
-    name: name
-    location: location
-    kind: 'linux'
-    sku: {
-        name: 'B1'
-        tier: 'Basic'
-    }
-    properties: {
-        reserved: true
-    }
-}
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
     name: name
@@ -62,7 +50,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
     }
     properties: {
-        serverFarmId: alwaysOn ? appServicePlan_alwaysOn.id : appServicePlan.id
+        serverFarmId: appServicePlan.id
         httpsOnly: true
         siteConfig: {
             alwaysOn: alwaysOn
