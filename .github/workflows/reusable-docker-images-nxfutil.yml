@@ -59,7 +59,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: '${{ env.HANDLER_SOURCE_PATH }}/target'
-        key: 'cargo-target-${{ env.HANDLER_BIN_NAME }}_containerApp''
+        key: 'cargo-target-${{ env.HANDLER_BIN_NAME }}_containerApp'
 
     # Build
     - name: 'Build binary'
