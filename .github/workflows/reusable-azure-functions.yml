@@ -98,6 +98,9 @@ jobs:
       shell: bash
       run: |
         pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        cargo clean
+        rm Cargo.lock
+        cargo clean
         cargo build --target "${{ env.CARGO_TARGET }}" --release
         popd
 
