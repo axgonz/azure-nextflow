@@ -73,7 +73,7 @@ jobs:
     - name: Archive binary
       uses: actions/upload-artifact@v3
       with:
-        name: '${{ env.HANDLER_BIN_NAME }}'
+        name: '${{ env.HANDLER_BIN_NAME }}_containerApp'
         path: '${{ env.HANDLER_SOURCE_PATH }}/target/${{ env.CARGO_TARGET }}/release/${{ env.HANDLER_BIN_NAME }}'
 
   nxfutil_image:
