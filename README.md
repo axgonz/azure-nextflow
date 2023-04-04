@@ -239,6 +239,8 @@ curl -X POST "https://$az_funcAppName.azurewebsites.net/api/nxfutil_status" -H '
 
 ## Documentation
 
+### [Authentication](./docs/Authentication.md)
+
 ### [nxfutil](./docs/nxfutil.md)
 
 ### [Azure functions](./azure/functions/rust/README.md)
