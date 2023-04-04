@@ -1,4 +1,4 @@
-mod app; 
+mod app;
 mod routes;
 mod models;
 mod services;
@@ -15,13 +15,17 @@ use routes::{
     status::*,
     terminate::*,
 };
+use services::{
+    auth::*,
+};
 
 use actix_web::{
     web::Data,
-    App, 
+    App,
     HttpServer
 };
 use actix_cors::Cors;
+use actix_web_grants::GrantsMiddleware;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -39,7 +43,7 @@ async fn main() -> std::io::Result<()> {
 
     let mut app_variables = AppVariables::new();
     AppVariables::init(&mut app_variables);
-    
+
     let app_state = AppState {
         identity: app_identity,
         variables: app_variables
@@ -55,6 +59,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(state.clone())
             .wrap(cors)
+            .wrap(GrantsMiddleware::with_extractor(extract_roles))
             .service(api_root_get)
             .service(api_dispatch_get)
             .service(api_dispatch_post)

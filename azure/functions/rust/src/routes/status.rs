@@ -9,8 +9,10 @@ use actix_web::{
     Responder,
     HttpResponse
 };
+use actix_web_grants::proc_macro::{has_permissions};
 
 #[get("/api/nxfutil/status")]
+#[has_permissions("admin")]
 pub async fn api_status_get() -> impl Responder {
     let help = StatusRequestPayload {
         summary: true,
@@ -22,29 +24,30 @@ pub async fn api_status_get() -> impl Responder {
 }
 
 #[post("/api/nxfutil/status")]
+#[has_permissions("admin")]
 pub async fn api_status_post(
-    req_payload: Json<StatusRequestPayload>, 
+    req_payload: Json<StatusRequestPayload>,
     state: Data<AppState>
 ) -> impl Responder {
     println!("{:#?}", &req_payload);
     if req_payload.summary {
-        return HttpResponse::Ok() 
+        return HttpResponse::Ok()
             .json(serde_json::Value::Array(
                 AppServer::get_status_summary(
-                    state.identity.clone(), 
+                    state.identity.clone(),
                     &state.variables,
-                    req_payload.message_count, 
+                    req_payload.message_count,
                     req_payload.dequeue
                 ).await
-            ))                
+            ))
     }
     else {
-        return HttpResponse::Ok() 
+        return HttpResponse::Ok()
             .json(serde_json::Value::Array(
                 AppServer::get_status_message(
-                    state.identity.clone(), 
+                    state.identity.clone(),
                     &state.variables,
-                    req_payload.message_count, 
+                    req_payload.message_count,
                     req_payload.dequeue
                 ).await
             ))

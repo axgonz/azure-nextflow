@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 actix-web       = { version = "4" }
 actix-cors      = { version = "0.6" }
+actix-web-grants = { version = "3.0" }
+base64-url      = { version = "2.0" }
 serde           = { version = "1", features = ["derive", "std", "serde_derive"] }
 serde_json      = { version = "1" }
 chrono          = { version = "0.4" }
