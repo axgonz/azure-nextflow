@@ -19,7 +19,7 @@ pub struct AppAzStorageQueue {
     pub client: QueueClient,
 }
 
-impl AppAzStorageQueue { 
+impl AppAzStorageQueue {
     pub fn new(name: &str, credential: Arc<DefaultAzureCredential>, variables: &AppVariables) -> Self {
         let storage_credentials = StorageCredentials::TokenCredential(credential);
         let queue_service = QueueServiceClient::new(&variables.nxfutil_az_st_name, storage_credentials);
@@ -41,7 +41,7 @@ impl AppAzStorageQueue {
             }
         }
     }
-    
+
     #[allow(dead_code)]
     pub async fn send_message_to_queue(
         &self,
@@ -54,7 +54,7 @@ impl AppAzStorageQueue {
             Err(error) => {
                 println!("[az-storage-queues] Sending message...Err");
                 println!("{}", error)
-            }        
+            }
         }
     }
 
@@ -62,7 +62,7 @@ impl AppAzStorageQueue {
     pub async fn peak_message_from_queue(
         &self,
         count: u8
-    ) -> Vec<Value> {       
+    ) -> Vec<Value> {
         if count < 1 {
             return vec![];
         }
@@ -78,20 +78,20 @@ impl AppAzStorageQueue {
             Err(error) => {
                 println!("[az-storage-queues] Peak message...Err");
                 println!("{}", error);
-            }        
+            }
         };
         return messages
     }
-    
+
     #[allow(dead_code)]
     pub async fn get_message_from_queue(
         &self,
         count: u8
-    ) -> Vec<Value> {       
+    ) -> Vec<Value> {
         if count < 1 {
             return vec![];
         }
-        let mut messages: Vec<Value> = vec![]; 
+        let mut messages: Vec<Value> = vec![];
         match self.client.get_messages().number_of_messages(count).await {
             Ok(response) => {
                 println!("[az-storage-queues] Get messages...Ok");
@@ -112,7 +112,7 @@ impl AppAzStorageQueue {
             Err(error) => {
                 println!("[az-storage-queues] Get messages...Err");
                 println!("{}", error);
-            }        
+            }
         };
         return messages
     }
