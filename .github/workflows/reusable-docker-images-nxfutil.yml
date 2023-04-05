@@ -75,7 +75,7 @@ jobs:
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
           ${{ env.HANDLER_SOURCE_PATH }}/target/
-        key: ${{ runner.os }}-${{ steps.cache_name.outputs.distro }}-${{ steps.cache_name.outputs.version }}-cargo-${{ steps.cache_name.outputs.hash }}
+        key: ${{ runner.os }}-${{ steps.cache_name.outputs.distro }}-${{ steps.cache_name.outputs.version }}-cargo-${{ env.HANDLER_BIN_NAME }}-${{ steps.cache_name.outputs.hash }}
 
     # Build
     - name: 'Build binary'
