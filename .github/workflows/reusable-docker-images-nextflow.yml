@@ -46,15 +46,12 @@ jobs:
     - name: 'Checkout repository branch'
       uses: actions/checkout@v2
 
-    # Update / Install Rust
-    - name: 'Update / install rust'
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        target: ${{ env.CARGO_TARGET }}
-        toolchain: stable
-        default: true
-        override: true
+    # Update Rust
+    - name: 'Update rust'
+      shell: bash
+      run: |
+        rustup update
+        rustup target install ${{ env.CARGO_TARGET }}
 
     # Cache name
     - name: 'Generate cache name'
@@ -108,15 +105,12 @@ jobs:
     - name: 'Checkout repository branch'
       uses: actions/checkout@v2
 
-    # Update / Install Rust
-    - name: 'Update / install rust'
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        target: ${{ env.CARGO_TARGET }}
-        toolchain: stable
-        default: true
-        override: true
+    # Update Rust
+    - name: 'Update rust'
+      shell: bash
+      run: |
+        rustup update
+        rustup target install ${{ env.CARGO_TARGET }}
 
     # Cache name
     - name: 'Generate cache name'
