@@ -56,6 +56,18 @@ jobs:
         default: true
         override: true
 
+    # Cache name
+    - name: 'Generate cache name'
+      id: cache_name
+      shell: bash
+      run: |
+        distro=$(lsb_release -si)
+        version=$(lsb_release -sr)
+        hash=($(sha1sum ${{ env.NXFUTIL_SOURCE_PATH }}/Cargo.lock))
+        echo "distro=$distro" >> $GITHUB_OUTPUT
+        echo "version=$version" >> $GITHUB_OUTPUT
+        echo "hash=$hash" >> $GITHUB_OUTPUT
+
     # Cache
     - name: 'Cache'
       uses: actions/cache@v3
@@ -66,7 +78,7 @@ jobs:
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
           ${{ env.NXFUTIL_SOURCE_PATH }}/target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('nxfutil/rust/nxfutil/Cargo.lock') }}
+        key: ${{ runner.os }}-${{ steps.cache_name.outputs.distro }}-${{ steps.cache_name.outputs.version }}-cargo-${{ steps.cache_name.outputs.hash }}
 
     # Build
     - name: 'Build binary'
@@ -106,6 +118,18 @@ jobs:
         default: true
         override: true
 
+    # Cache name
+    - name: 'Generate cache name'
+      id: cache_name
+      shell: bash
+      run: |
+        distro=$(lsb_release -si)
+        version=$(lsb_release -sr)
+        hash=($(sha1sum ${{ env.NXFUTILD_SOURCE_PATH }}/Cargo.lock))
+        echo "distro=$distro" >> $GITHUB_OUTPUT
+        echo "version=$version" >> $GITHUB_OUTPUT
+        echo "hash=$hash" >> $GITHUB_OUTPUT
+
     # Cache
     - name: 'Cache'
       uses: actions/cache@v3
@@ -116,7 +140,7 @@ jobs:
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
           ${{ env.NXFUTILD_SOURCE_PATH }}/target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('nxfutil/rust/nxfutild/Cargo.lock') }}
+        key: ${{ runner.os }}-${{ steps.cache_name.outputs.distro }}-${{ steps.cache_name.outputs.version }}-cargo-${{ steps.cache_name.outputs.hash }}
 
     # Build
     - name: 'Build binary'
