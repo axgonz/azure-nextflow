@@ -59,12 +59,16 @@ jobs:
         rustup target install ${{ env.CARGO_TARGET }}
 
     # Cache
-    - name: 'Cache cargo target dir'
-      id: cache
+    - name: 'Cache'
       uses: actions/cache@v3
       with:
-        path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target'
-        key: 'cargo-target-${{ env.HANDLER_BIN_NAME }}'
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('azure/functions/rust/Cargo.lock') }}
 
     # Build
     - name: 'Build custom handler binary'

@@ -57,12 +57,16 @@ jobs:
         override: true
 
     # Cache
-    - name: 'Cache cargo target dir'
-      id: cache_nxfutil
+    - name: 'Cache'
       uses: actions/cache@v3
       with:
-        path: '${{ env.NXFUTIL_SOURCE_PATH }}/target'
-        key: 'cargo-target-${{ env.NXFUTIL_BIN_NAME }}'
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          ${{ env.NXFUTIL_SOURCE_PATH }}/target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('nxfutil/rust/nxfutil/Cargo.lock') }}
 
     # Build
     - name: 'Build binary'
@@ -103,12 +107,16 @@ jobs:
         override: true
 
     # Cache
-    - name: 'Cache cargo target dir'
-      id: cache_nxfutil
+    - name: 'Cache'
       uses: actions/cache@v3
       with:
-        path: '${{ env.NXFUTILD_SOURCE_PATH }}/target'
-        key: 'cargo-target-${{ env.NXFUTILD_BIN_NAME }}'
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          ${{ env.NXFUTILD_SOURCE_PATH }}/target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('nxfutil/rust/nxfutild/Cargo.lock') }}
 
     # Build
     - name: 'Build binary'
