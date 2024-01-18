@@ -248,3 +248,4 @@ curl -X POST "https://$az_funcAppName.azurewebsites.net/api/nxfutil_status" -H '
 ### [Docker images](./docker/images/README.md)
 
 ### [Azure infrastructure](./docs/AzureInfrastructure.md)
+
